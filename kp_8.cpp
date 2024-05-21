@@ -2,6 +2,8 @@
 
 using namespace std;
 
+
+
 class Node {
 public:
     int data;
@@ -11,7 +13,7 @@ private:
 
 public:
     Node() :data(0), next(nullptr) {};
-    explicit Node(int d) : data(d), next(nullptr) {};
+    Node(int d) : data(d), next(nullptr) {};
     Node(Node& nod) : data(nod.data), next(nullptr) {};
     ~Node() { data = 0; next = nullptr; }
     friend class List;
@@ -21,12 +23,14 @@ public:
     }
 };
 
+Node* EOL = new Node(1e9 + 7);
+
 class List {
     Node* head;
     int len{};
 
 public:
-    List() : head(nullptr) {};
+    List() : head(EOL) {};
     List(int l, int val) : head(nullptr), len(l) {
         head = new Node(val);
         Node* a = new Node(val);
@@ -35,20 +39,21 @@ public:
             a->next = new Node(val);
             a = a->next;
         }
+        a->next = EOL;
     };
     List(List& lis) {
-        //        Node* root = lis.head;
-        //        head = new Node(root->data);
-        //        root = root->next;
-        //        Node * a = new Node(root->data);
-        //        head -> next = a;
-        //        while (root != nullptr) {
-        //            a -> next = new Node(root->data);
-        //            root = root->next;
-        //            a = a -> next;
+        // Node* root = lis.head;
+        // head = new Node(root->data);
+        // root = root->next;
+        // Node * a = new Node(root->data);
+        // head -> next = a;
+        // while (root != nullptr) {
+        //     a -> next = new Node(root->data);
+        //     root = root->next;
+        //     a = a -> next;
     };
 
-    ~List() { len = 0, head = nullptr; }
+    ~List() { len = 0, head = EOL; }
 
     int getIndex(int v, int i = 0, int j = 10) {
         Node* a = head;
@@ -58,7 +63,7 @@ public:
             }
             a = a->next;
         }
-        throw - 1;
+        throw -1;
     }
 
     int& operator[](int i) {
@@ -79,15 +84,16 @@ public:
 
     void appEnd(int vak) {
         Node* a = head;
-        while (a->next != nullptr) {
+        while (a->next != EOL) {
             a = a->next;
         }
         a->next = new Node(vak);
+        a->next->next = EOL;
         len += 1;
     }
 
     bool isEmpty() {
-        return head == nullptr;
+        return head == EOL;
     }
 
     void printList() {
@@ -100,12 +106,13 @@ public:
     }
 
     void deleteList() {
-        head = nullptr;
+        head = EOL;
         delete[] & len;
     }
 
     Node* findNode(int ind) {
         // int ind = getIndex(v);
+        if (len <= ind) return EOL;
         Node* a = head;
         while (ind > 0) {
             a = a->next;
@@ -123,6 +130,7 @@ public:
     }
 
     void insertNext(int ind, int val) {
+        if (len <= ind) throw -1;
         Node* cur = findNode(ind);
         Node* cur_next = cur->next;
         Node* a = new Node(val);
@@ -132,6 +140,7 @@ public:
     }
 
     void swap_sec_minussec() {
+        if (len < 2) throw -1;
         Node* sec = findNode(1);
         Node* prev2 = findPrev(len - 2);
         Node* minussec = prev2->next;
@@ -147,7 +156,13 @@ public:
 int main() {
     List mama1(10, 4);
     mama1.insertNext(0, 11);
+    for (int i = 0; i < 11; ++i) {
+        cout << mama1[i] << ' ';
+    }
+
+    cout << "\n\n\n";
     mama1.swap_sec_minussec();
+    
     for (int i = 0; i < 11; ++i) {
         cout << mama1[i] << ' ';
     }
