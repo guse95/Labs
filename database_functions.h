@@ -4,6 +4,7 @@
 using namespace std;
 
 void generateDatabase(ComputerDatabase* db) {
+    ofstream outfile ("data.bin", ios::out | ios::binary);
     db->count = 0;
 
     // Массивы для генерации случайных значений
@@ -50,6 +51,21 @@ void generateDatabase(ComputerDatabase* db) {
         int os_type_index = rand() % (sizeof(os_types) / sizeof(os_types[0]));
         strcpy(pc.os, os_types[os_type_index]);
 
+        outfile.write(pc.owner, sizeof(pc.owner));
+        outfile.write(pc.processor.type, sizeof(pc.processor.type));
+        outfile.write((char*)&pc.processor.count, sizeof(pc.processor.count));
+        outfile.write((char*)&pc.ram, sizeof(pc.ram));
+        outfile.write(pc.video.type, sizeof(pc.video.type));
+        outfile.write((char*)&pc.video.memory, sizeof(pc.video.memory));
+        outfile.write((char*)&pc.hdd.count, sizeof(pc.hdd.count));
+        outfile.write(pc.hdd.type, sizeof(pc.hdd.type));
+        outfile.write((char*)&pc.hdd.capacity, sizeof(pc.hdd.capacity));
+        outfile.write((char*)&pc.num_controllers, sizeof(pc.num_controllers));
+        outfile.write((char*)&pc.num_peripherals, sizeof(pc.num_peripherals));
+        outfile.write(pc.os, sizeof(pc.os));
+        const char* a = new char('\n');
+        outfile.write(a, sizeof(a));
+
         if (db->count < MAX_COMPUTERS) {
             db->computers[db->count++] = pc;
         }
@@ -59,11 +75,27 @@ void generateDatabase(ComputerDatabase* db) {
 
 
 void printDatabase(const ComputerDatabase* db) {
+    ifstream file("data.bin", ios::binary);
+
     printf("%-20s %-20s %-10s %-20s %-10s %-10s %-10s %-10s %-20s\n",
            "Owner", "Processor", "RAM", "Video Card", "Video Memory", "HDD Type", "HDD Count", "HDD Capacity", "OS");
     for (int i = 0; i < db->count; i++) {
         const Computer* pc = &db->computers[i];
-        printf("%-20s %-20s %-10dGB %-20s %-10dMB %-10s %-10d %-10dGB %-20s\n",
+
+        // file.read(reinterpret_cast<char*>(&pc.owner), sizeof(pc.owner));
+        // file.read(reinterpret_cast<char*>(&pc.processor.type), sizeof(pc.processor.type));
+        // file.read(reinterpret_cast<char*>(&pc.processor.count), sizeof(pc.processor.count));
+        // file.read(reinterpret_cast<char*>(&pc.ram), sizeof(pc.ram));
+        // file.read(reinterpret_cast<char*>(&pc.video.type), sizeof(pc.video.type));
+        // file.read(reinterpret_cast<char*>(&pc.video.memory), sizeof(pc.video.memory));
+        // file.read(reinterpret_cast<char*>(&pc.hdd.count), sizeof(pc.hdd.count));
+        // file.read(reinterpret_cast<char*>(&pc.hdd.type), sizeof(pc.hdd.type));
+        // file.read(reinterpret_cast<char*>(&pc.hdd.capacity), sizeof(pc.hdd.capacity));
+        // file.read(reinterpret_cast<char*>(&pc.num_controllers), sizeof(pc.num_controllers));
+        // file.read(reinterpret_cast<char*>(&pc.num_peripherals), sizeof(pc.num_peripherals));
+        // file.read(reinterpret_cast<char*>(&pc.os), sizeof(pc.os));
+
+        printf("%-20s %-20s %dGB       %-20s %dMB           %-10s %-10d %-10dGB %-20s\n",
                pc->owner, pc->processor.type, pc->ram, pc->video.type, pc->video.memory,
                pc->hdd.type, pc->hdd.count, pc->hdd.capacity, pc->os);
     }
