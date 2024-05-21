@@ -1,0 +1,10 @@
+Emily Brown;Intel Core i7;16;PCIe;8;SSD;2;2;macOS               
+John Doe;Intel Celeron;28;Integrated;3;SSD;2;4;Windows 11          
+Michael Johnson;AMD Ryzen 5;16;Dedicated;8;SSD;3;3;macOS               
+Emily Brown;Intel Celeron;12;Integrated;6;HDD;1;1;Windows 10          
+John Doe;Intel Core i7;28;Dedicated;5;HDD;3;3;Windows 11          
+John Doe;Intel Core i5;32;PCIe;2;HDD;2;2;macOS               
+Michael Johnson;AMD Ryzen 5;32;PCIe;5;SSD;1;4;Ubuntu              
+Emily Brown;Intel Celeron;16;PCIe;8;SSD;1;1;Windows 10          
+Jane Smith;AMD Ryzen 5;16;Integrated;3;SSD;3;4;Ubuntu              
+Michael Johnson;Intel Core i5;20;Dedicated;1;HDD;3;2;macOS  
