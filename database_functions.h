@@ -4,6 +4,7 @@
 using namespace std;
 
 void generateDatabase(ComputerDatabase* db) {
+    ifstream inpfile ("data.txt");
     ofstream outfile ("data.bin", ios::out | ios::binary);
     db->count = 0;
 
@@ -15,12 +16,22 @@ void generateDatabase(ComputerDatabase* db) {
     const char* owners[] = { "John Doe", "Jane Smith", "Michael Johnson", "Emily Brown", "Robert Davis" };
 
     // Генерация 20 записей
-    for (int i = 0; i < 20; i++) {
+    for (int i = 0; i < 10; i++) {
+        string comp;
+        getline(inpfile, comp);
+
         Computer pc;
 
         // Владелец
-        int owner_index = rand() % 5;
-        strcpy(pc.owner, owners[owner_index]);
+        char c = comp[0];
+        int j = 0;
+        char res[20] = { "" };
+        while(c != ';') {
+            res[j] = c;
+            ++j;
+            c = comp[j];
+        }
+        strcpy(pc.owner, res);
 
         // Процессор
         int processor_count = rand() % 2 + 1;
@@ -95,7 +106,7 @@ void printDatabase(const ComputerDatabase* db) {
         // file.read(reinterpret_cast<char*>(&pc.num_peripherals), sizeof(pc.num_peripherals));
         // file.read(reinterpret_cast<char*>(&pc.os), sizeof(pc.os));
 
-        printf("%-20s %-20s %dGB       %-20s %dMB           %-10s %-10d %-10dGB %-20s\n",
+        printf("%-20s %-20s %dGB       %-20s %dGB           %-10s %-10d %dTB         %-20s\n",
                pc->owner, pc->processor.type, pc->ram, pc->video.type, pc->video.memory,
                pc->hdd.type, pc->hdd.count, pc->hdd.capacity, pc->os);
     }
