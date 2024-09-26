@@ -1,0 +1,1 @@
+add_executable(prog1 main.cpp)
