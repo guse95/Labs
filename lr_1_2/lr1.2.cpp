@@ -25,14 +25,37 @@ int is_number(const char* s) {
     return ERROR;
 }
 
-double faq(const double n) {
+long long faq(const long long n) {
     if (!n) {
         return 1;
     }
-    double res = 1;
+    long long res = 1;
     for (int i = 2; i - n <= 0; ++i) {
         res *= i;
     }
+    return res;
+}
+
+double comb(double m, double n) {
+    double res = 1;
+    for (double i = m + 1; i <= n; i += 1) {
+        res *= i;
+    }
+    for (double i = 2; i <= (n - m); i += 1) {
+        res /= i;
+    }
+    return res;
+}
+
+
+double Pow(const double x, const double n) {
+    double res = x;
+    if (n >= 1) {
+        for(int _ = 0; _ <= n; ++_) {
+            res *= x;
+        }
+    } else
+        res = pow(x, n);
     return res;
 }
 
@@ -42,7 +65,7 @@ double ELimFunc(const double n) {
 }
 
 double ERowFunc(const double n) {
-    double res = 1 / faq(n);
+    double res = 1.0 / faq(n);
     return res;
 }
 
@@ -54,7 +77,6 @@ double EEqFunc(const double n) {
 
 double PiLimFunc(const double n) {
     double res = ((pow(2, 4 * n) /pow(faq(2 * n) , 2)) * pow(faq(n), 4)) / n;
-    printf("%fl\n", res);
     return res;
 }
 
@@ -69,20 +91,62 @@ double PiEqFunc(const double n) {
 }
 
 
-//double lnLimFunc(const double n) {
-//    double res = n * (pow(2, 1/n) - 1);
-//    return res;
-//}
-//
-//double lnRowFunc(const double n) {
+double lnLimFunc(const double n) {
+    double res = n * (pow(2, 1/n) - 1);
+    return res;
+}
+
+double lnRowFunc(const double n) {
+    double res = pow((-1), n - 1) / n;
+    return res;
+}
+
+//double lnEqFunc(const double n) {
 //    double res = ;
 //    return res;
 //}
-//
-//double lnEqFunc(const double n) {
-//    double res = n * (pow(2, 1/n) - 1);
-//    return res;
-//}
+
+
+double SqrtLimFunc(const double n) {
+    static double x_n;
+    if (n == 1) x_n = -0.5;
+    x_n = x_n - x_n * x_n / 2 + 1;
+    return x_n;
+}
+
+double SqrtMultFunc(const double n) {
+    static double x_n;
+    if (n == 2) x_n = (2 * 2) * (2 * 2);
+    x_n = x_n * 4;
+    return x_n;
+}
+
+double SqrtEqFunc(const double n) {
+    double res = n * n;
+    return res;
+}
+
+
+double GamLimFunc(const double n) {
+    double res;
+    for (int k = 1; k <= n; ++k) {
+        res += (comb(k, n) * ((k % 2 == 0) ? 1: -1) / k) * log(faq(k));
+    }
+    return res;
+}
+
+ret_type_t Mult(const double eps, callback MultFunc, double n) {
+    double PrevAns = MultFunc(n);
+    n += 1;
+    double CurAns = PrevAns * MultFunc(n);
+    while (fabs(PrevAns - CurAns) > eps) {
+        PrevAns = CurAns;
+        n += 1;
+        CurAns *= MultFunc(n);
+    }
+    printf("%fl\n", CurAns);
+    return SUCCSESS;
+}
 
 ret_type_t Lim(const double eps, callback LimFunc) {
     double n = 1;
@@ -112,7 +176,7 @@ ret_type_t Row(const double eps, callback RowFunc, double n) {
 }
 
 ret_type_t Equation(const double eps, callback FuncEquation, const double EqRes) {
-    double LBorder = 2;
+    double LBorder = 1;
     double RBorder = 100;
     double m = 0;
     double CurAns = 0;
@@ -124,7 +188,6 @@ ret_type_t Equation(const double eps, callback FuncEquation, const double EqRes)
         } else {
             RBorder = m;
         }
-//        printf("%fl\n", m);
     } while (fabs(CurAns - EqRes) > eps);
     printf("%fl\n", m);
     return SUCCSESS;
@@ -138,6 +201,7 @@ ret_type_t EquationForPi(const double eps, callback FuncEquation) {
         CurAns = FuncEquation(CurAns);
     }
     printf("%fl\n", CurAns);
+    return SUCCSESS;
 }
 
 int main(int argc, char* argv[]) {
@@ -149,15 +213,12 @@ int main(int argc, char* argv[]) {
         return ERROR;
     }
     double eps = strtod(argv[1], NULL);
-    printf("%f\n", eps);
-
-//    callback e[] = { &eByLim, &eByRow, &eByEquation};
-//    callback pi[] = { &piByLim, &piByRow, &piByEquation};
+    printf("%fl\n", eps);
 
 
-    Lim(eps, PiLimFunc);
-    Row(eps, PiRowFunc, 1);
-    Equation(eps, PiEqFunc, -1);
+    Lim(eps, ELimFunc);
+    Row(eps, ERowFunc, 0);
+    Equation(eps, EEqFunc, 1);
 
     return 0;
 }
