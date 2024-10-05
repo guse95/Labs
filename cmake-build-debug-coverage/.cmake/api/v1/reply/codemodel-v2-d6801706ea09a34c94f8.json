@@ -1,0 +1,126 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1,
+						2,
+						3
+					],
+					"jsonFile" : "directory-.-Debug-d0094a50bb2071803777.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.26"
+					},
+					"projectIndex" : 0,
+					"source" : "."
+				},
+				{
+					"build" : "lr_1_1",
+					"jsonFile" : "directory-lr_1_1-Debug-9c9575beab5a68d61a35.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.26"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "lr_1_1",
+					"targetIndexes" : 
+					[
+						0
+					]
+				},
+				{
+					"build" : "prog1",
+					"jsonFile" : "directory-prog1-Debug-212a9062c59ef0b4247e.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.26"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "prog1",
+					"targetIndexes" : 
+					[
+						2
+					]
+				},
+				{
+					"build" : "lr_1_2",
+					"jsonFile" : "directory-lr_1_2-Debug-f9584a6da943248f9944.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.26"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "lr_1_2",
+					"targetIndexes" : 
+					[
+						1
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3
+					],
+					"name" : "Labs",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 1,
+					"id" : "lr_1_1::@68f58d3c72110298ff9c",
+					"jsonFile" : "target-lr_1_1-Debug-54c317dab1eec44c6715.json",
+					"name" : "lr_1_1",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 3,
+					"id" : "lr_1_2::@72e0e3793c41436d94da",
+					"jsonFile" : "target-lr_1_2-Debug-1376a5e7353516e4afa1.json",
+					"name" : "lr_1_2",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "prog1::@0c2a3e0067e31b87b080",
+					"jsonFile" : "target-prog1-Debug-425198dca588c882c812.json",
+					"name" : "prog1",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "C:/Users/\u041a\u0440\u044f/CLionProjects/untitled/cmake-build-debug-coverage",
+		"source" : "C:/Users/\u041a\u0440\u044f/CLionProjects/untitled"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 7
+	}
+}
