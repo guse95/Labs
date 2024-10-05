@@ -184,7 +184,10 @@ int findFlag(char* curarg, const char** flags, int size) {
 }
 
 int main(int argc, char* argv[]) {
-    if (argc < 3 || argc % 2 == 0) return -1;
+    if (argc != 3) {
+        printf("Wrong number of arguments.\n");
+        return -1;
+    }
 
     const char* flags[] = { "-h", "/h", "-p", "/p", "-s", "/s", "-e", "/e", "-a", "/a", "-f", "/f" };
     callback cbs[] = { &funcForH, &funcForP, &funcForS, &funcForE, &funcForA, &funcForF };

@@ -81,12 +81,19 @@ double PiLimFunc(const double n) {
 }
 
 double PiRowFunc(const double n) {
-    double res =  4 * pow(-1, n - 1) / (2 * n - 1);
-    return res;
+    //double res =  4 * pow(-1, n - 1) / (2 * n - 1);
+    double up = 1;
+    int power = (int)n;
+    if (power % 2 == 0) {
+        up = -1;
+    }
+    double res = up / (2 * n - 1);
+    printf("%lf\n", res);
+    return 4*res;
 }
 
 double PiEqFunc(const double n) {
-    double res =  cos(n) + 1;
+    double res =  sin(n) - 1;
     return res;
 }
 
@@ -163,15 +170,27 @@ ret_type_t Lim(const double eps, callback LimFunc) {
 }
 
 ret_type_t Row(const double eps, callback RowFunc, double n) {
-    double PrevAns = RowFunc(n);
-    n += 1;
-    double CurAns = PrevAns + RowFunc(n);
-    while (fabs(PrevAns - CurAns) > eps) {
-        PrevAns = CurAns;
-        n += 1;
-        CurAns += RowFunc(n);
-    }
-    printf("%fl\n", CurAns);
+    // double PrevAns = RowFunc(n);
+    // n += 1;
+    // double CurAns = PrevAns + RowFunc(n);
+    // while (fabs(PrevAns - CurAns) > eps) {
+    //     PrevAns = CurAns;
+    //     n += 1;
+    //     CurAns += RowFunc(n);
+    // }
+    // printf("%fl\n", CurAns);
+
+    double x = n;
+    double summ = 0;
+    double cur_summ = 0;
+
+    do {
+        cur_summ = summ;
+        summ += RowFunc(x);
+        x += 1;
+    } while ((fabs(cur_summ - summ)) > eps);
+
+    printf("%lf\n", summ);
     return SUCCSESS;
 }
 
@@ -216,9 +235,19 @@ int main(int argc, char* argv[]) {
     printf("%fl\n", eps);
 
 
-    Lim(eps, ELimFunc);
-    Row(eps, ERowFunc, 0);
-    Equation(eps, EEqFunc, 1);
+    // Lim(eps, ELimFunc);
+    // Row(eps, ERowFunc, 0);
+    // Equation(eps, EEqFunc, 1);
+    //
+    // Lim(eps, PiLimFunc);
+    Row(eps, PiRowFunc, 0);
+    EquationForPi(eps, PiEqFunc);
+
+    Lim(eps, lnLimFunc);
+    Row(eps, lnRowFunc, 0);
+    //Equation(eps, lnEqFunc, 1);
+
+
 
     return 0;
 }
