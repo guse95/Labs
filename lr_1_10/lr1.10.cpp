@@ -115,7 +115,9 @@ int main(int argc, char* argv[]) {
     }
     int base = Atoi(argv[1]);
     if (base < 2 || base > 36) {
-        return ERROR_NUMBER_OUT_OF_RANGE;
+        ret_type_t code = ERROR_NUMBER_OUT_OF_RANGE;
+        HandlingError(code);
+        return code;
     }
     int MaxVal = 0, CurVal;
     for (int i = 2; i < argc; ++i) {
