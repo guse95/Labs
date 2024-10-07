@@ -114,6 +114,9 @@ int main(int argc, char* argv[]) {
         return code;
     }
     int base = Atoi(argv[1]);
+    if (base < 2 || base > 36) {
+        return ERROR_NUMBER_OUT_OF_RANGE;
+    }
     int MaxVal = 0, CurVal;
     for (int i = 2; i < argc; ++i) {
         if (ret_type_t code = isNumberInSsWithBase(base, argv[i])) {
