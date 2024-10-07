@@ -9,3 +9,6 @@ C:/Users/Кря/CLionProjects/untitled/cmake-build-debug/prog1/CMakeFiles/rebuil
 C:/Users/Кря/CLionProjects/untitled/cmake-build-debug/lr_1_2/CMakeFiles/lr_1_2.dir
 C:/Users/Кря/CLionProjects/untitled/cmake-build-debug/lr_1_2/CMakeFiles/edit_cache.dir
 C:/Users/Кря/CLionProjects/untitled/cmake-build-debug/lr_1_2/CMakeFiles/rebuild_cache.dir
+C:/Users/Кря/CLionProjects/untitled/cmake-build-debug/lr_1_10/CMakeFiles/lr_1_10.dir
+C:/Users/Кря/CLionProjects/untitled/cmake-build-debug/lr_1_10/CMakeFiles/edit_cache.dir
+C:/Users/Кря/CLionProjects/untitled/cmake-build-debug/lr_1_10/CMakeFiles/rebuild_cache.dir

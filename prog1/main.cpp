@@ -1,4 +1,8 @@
 #include <iostream>
+#include <stdio.h>
+#include <math.h>
+#include <ctype.h>
+#include <stdlib.h>
 
 using namespace std;
 
@@ -47,19 +51,23 @@ int atoi(const char* s) {
     return res;
 }
 
-double comb(double m, double n) {
-    double res = 1;
-    for (double i = m + 1; i <= n; i += 1) {
+long long comb(long long up, long long down) {
+    long long res = 1;
+    if (up < (down - up)) {
+        up = down - up;
+    }
+    for (long long i = up + 1; i < down + 1; ++i) {
         res *= i;
     }
-    for (double i = 2; i <= (n - m); i += 1) {
+    for (long long i = 2; i < (down - up) + 1; i += 1) {
         res /= i;
     }
+    printf("%lld  %lld  %lld\n", down, up, res);
     return res;
 }
 
 int main(){
     char str[] = "12345678987654";
-    std::cout << atoi(str);
+    printf("%d", pow(2, 31));
 
 }
