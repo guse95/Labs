@@ -3,54 +3,85 @@
 #include <ctype.h>
 #include <stdlib.h>
 
-enum ret_type_t { SUCCSESS, ERROR };
+enum ret_type_t {
+    SUCCSESS,
+    ERROR_NO_VALUE,
+    ERROR_NEGATIVE_VALUE,
+    ERROR_NOT_NUMBER,
+    ERROR_TOO_LONG_STR,
+    ERROR_NUMBER_OUT_OF_RANGE,
+    ERROR_WRONG_NUMB_OF_ARGS
+};
 
-typedef double(*callback)(int);
+typedef double(*callback)(double);
 
-int is_number(const char* s) {
-    if (*s == '\0') return ERROR;
-
+ret_type_t is_number(const char* s) {
+    if (*s == '\0') return ERROR_NO_VALUE;
     while (*s == ' ') s++;
-
-    if (*s == '-') s++;
-
-    while (isdigit(*s)) s++;
-
+    int len = 0;
+    while (isdigit(*s)) {
+        len++;
+        s++;
+    }
     if (*s == '.') s++;
-
-    while (isdigit(*s)) s++;
-
+    while (isdigit(*s)) {
+        s++;
+        len++;
+    }
+    if (len > 10) {
+        return ERROR_TOO_LONG_STR;
+    }
     if (*s == '\0') return SUCCSESS;
-    return ERROR;
+    return ERROR_NOT_NUMBER;
 }
 
-long long faq(const long long n) {
-    long long res = 1;
-    if (n > 34) {
-        printf("mi ymerli\n");
+void HandlingError(int code) {
+    switch (code) {
+        case ERROR_NEGATIVE_VALUE:
+            printf("Negative value was entered.\n");
+            break;
+        case ERROR_NO_VALUE:
+            printf("No number was entered.\n");
+            break;
+        case ERROR_NOT_NUMBER:
+            printf("Value isn`t a number in the right number system.\n");
+            break;
+        case ERROR_TOO_LONG_STR:
+            printf("Too long string was entered.\n");
+            break;
+        case ERROR_NUMBER_OUT_OF_RANGE:
+            printf("Number out of range.\n");
+            break;
+        default:
+            break;
     }
-    for (long long i = 2; i <= n; i = i + 1) {
-        res *= i;
+}
+
+double faq(double n) {
+    double res = 0;
+    if (n == 0) {
+        return 1.0;
+    } else {
+        res = n * faq(n - 1);
+        return res;
     }
-    return res;
 }
 
 double comb(double up, double down) {
-    double res = 1;
-    if (up < (down - up)) {
-        up = down - up;
-    }
-    for (double i = up + 1; i < down + 1; i = i + 1) {
-        res *= i;
-    }
-    //printf("%lf  ", res);
-    for (double i = 2; i < (down - up) + 1; i = i + 1) {
-        res /= i;
-    }
-    //printf("%lf  %lf  %lf\n", down, up, res);
+    double res = faq(down) / (faq(up) * faq(down - up));
+    //printf("%lf\n", res);
     return res;
 }
 
+int is_prime(const int n) {
+    for (int i = 2; i * i <= n; i++)
+    {
+        if (n % i == 0) {
+            return 0;
+        }
+    }
+    return 1;
+}
 
 double Pow(const double x, const double n) {
     double res = x;
@@ -79,10 +110,9 @@ double EEqFunc(const double n) {
     return res;
 }
 
-
-double PiLimFunc(const int n) {
-    double res = pow((pow(2, n) * (double)faq(n)),4) / (double)(n * pow(faq(2 * n), 2));
-    printf("%d   %lf\n", n, res);
+double PiLimFunc(const double n) {
+    double res = pow((pow(2, n) * faq(n)),4) / (n * pow(faq(2 * n), 2));
+//    printf("%d   %lf\n", n, res);
     return res;
 }
 
@@ -103,7 +133,6 @@ double PiEqFunc(const double n) {
     return res;
 }
 
-
 double lnLimFunc(const double n) {
     double res = n * (pow(2, 1/n) - 1);
     return res;
@@ -114,11 +143,10 @@ double lnRowFunc(const double n) {
     return res;
 }
 
-//double lnEqFunc(const double n) {
-//    double res = ;
-//    return res;
-//}
-
+double lnEqFunc(const double n) {
+    double res = exp(n);
+    return res;
+}
 
 double SqrtLimFunc(const double n) {
     static double x_n;
@@ -138,24 +166,29 @@ double SqrtEqFunc(const double n) {
     return res;
 }
 
-
-double GamLimFunc(const double n) {
-    double res = 0;
-    double OneIter;
-    for (double k = 1; k <= n; k = k + 1) {
-        OneIter = (comb(k, n) / (double)k * log(faq((double)k)));
-//        printf("%lf  %lf   %lf\n", n, k, OneIter);
-        if ((long long)k % 2 == 0) {
-            res = res + OneIter;
-        } else {
-            res = res - OneIter;
-        }
+double GamLimFunc (const double n) {
+    double res = 0.0;
+    for (int k = 1; k <= n; k++) {
+        double up = (k % 2 == 0) ? 1 : -1;
+        res += (comb(k, n) * (up / k) * log(faq(k)));
     }
-//    printf("%lf\n", res);
+    //printf("%.20lf %lf\n", res, m);
     return res;
 }
 
-ret_type_t Mult(const double eps, callback MultFunc, double n) {
+double GamRowFunc(const double n) {
+    double res = 0;
+    res = 1.0 / pow(floor(sqrt(n)), 2) - (1 / n);
+    return res;
+}
+
+double GamEqFunc(const double n) {
+    double res;
+    res = exp(-n);
+    return res;
+}
+
+double Mult(const double eps, callback MultFunc, double n) {
     double PrevAns = MultFunc(n);
     n += 1;
     double CurAns = PrevAns * MultFunc(n);
@@ -165,11 +198,10 @@ ret_type_t Mult(const double eps, callback MultFunc, double n) {
         CurAns *= MultFunc(n);
         //printf("%fl        %fl\n", PrevAns, CurAns);
     }
-    printf("%lf\n", CurAns);
-    return SUCCSESS;
+    return CurAns;
 }
 
-ret_type_t Lim(const double eps, callback LimFunc) {
+double Lim(const double eps, callback LimFunc) {
     double n = 1;
     double PrevAns;
     double CurAns;
@@ -178,11 +210,10 @@ ret_type_t Lim(const double eps, callback LimFunc) {
         n += 1;
         CurAns = LimFunc(n);
     } while (fabs(PrevAns - CurAns) > eps);
-    printf("%lf\n", CurAns);
-    return SUCCSESS;
+    return CurAns;
 }
 
-ret_type_t Row(const double eps, callback RowFunc, double n) {
+double Row(const double eps, callback RowFunc, double n) {
     // double PrevAns = RowFunc(n);
     // n += 1;
     // double CurAns = PrevAns + RowFunc(n);
@@ -206,80 +237,102 @@ ret_type_t Row(const double eps, callback RowFunc, double n) {
         cur_delta = RowFunc(x);
 
     } while (fabs(fabs(cur_delta) - fabs(prev_delta)) > eps);
-    printf("%lf\n", summ);
-    return SUCCSESS;
+    return summ;
 }
 
-ret_type_t Equation(const double eps, callback FuncEq, const double EqRes,
+double Equation(const double eps, callback FuncEq, const double EqRes,
                     double LBorder, double RBorder) {
-    double m = 0;
+    double ans = 0;
     double CurAns = 0;
     if (FuncEq(RBorder) - FuncEq(LBorder) > 0) {
         do {
-            m = (LBorder + RBorder) / 2;
-            CurAns = FuncEq(m);
+            ans = (LBorder + RBorder) / 2;
+            CurAns = FuncEq(ans);
             if ((CurAns - EqRes) < eps) {
-                LBorder = m;
+                LBorder = ans;
             } else {
-                RBorder = m;
+                RBorder = ans;
             }
         } while (fabs(CurAns - EqRes) > eps);
     } else {
         do {
-            m = (LBorder + RBorder) / 2;
-            CurAns = FuncEq(m);
+            ans = (LBorder + RBorder) / 2;
+            CurAns = FuncEq(ans);
             if ((CurAns - EqRes) > eps) {
-                LBorder = m;
+                LBorder = ans;
             } else {
-                RBorder = m;
+                RBorder = ans;
             }
         } while (fabs(CurAns - EqRes) > eps);
     }
-
-    printf("%lf\n", m);
-    return SUCCSESS;
+    return ans;
 }
 
-ret_type_t EquationForPi(const double eps, callback FuncEquation) {
+double EquationForPi(const double eps, callback FuncEquation) {
     double PrevAns = 0;
     double CurAns = (1e4 + 1)/ 2;
     while (fabs(PrevAns - CurAns) > eps) {
         PrevAns = CurAns;
         CurAns = FuncEquation(CurAns);
     }
-    printf("%fl\n", CurAns);
-    return SUCCSESS;
+    return CurAns;
+}
+
+double ResFuncForGam(const double n) {
+    double res = 1;
+    for (double p = 2; p <= n; p = p + 1) {
+        if (is_prime((int)p)) {
+            res = res * (1 - 1.0 / p);
+        }
+    }
+    res = res * log(n);
+//    printf("%lf\n", res);
+    return res;
+}
+
+double GamEqRes(const double eps) {
+    double res = Lim(eps, ResFuncForGam);
+    return res;
 }
 
 int main(int argc, char* argv[]) {
-	if (argc != 2) return ERROR;
-
-    if (is_number(argv[1])) 
-    {
-        printf("Input Error");
-        return ERROR;
+	if (argc != 2) {
+        printf("Wrong number of arguments.");
+        return ERROR_WRONG_NUMB_OF_ARGS;
     }
-    double eps = strtod(argv[1], NULL);
-    printf("%lf\n", eps);
 
+    if (ret_type_t code = is_number(argv[1]))
+    {
+        HandlingError(code);
+        return code;
+    }
+    double eps = atof(argv[1]);
 
-//    Lim(eps, ELimFunc);
-//    Row(eps, ERowFunc, 0);
-//    Equation(eps, EEqFunc, 1, 1, 100);
+    double res_lim, res_row, res_eq;
 
-    Lim(eps, PiLimFunc);
-//    Row(eps, PiRowFunc, 1);
-//    Equation(eps, PiEqFunc, 0, 2, 4);
-//
-//    Lim(eps, lnLimFunc);
-//    Row(eps, lnRowFunc, 1);
-//    Equation(eps, lnEqFunc, 2, 0, 100);
-//
-//    Lim(eps, SqrtLimFunc);
-//    Mult(eps, SqrtMultFunc, 2);
-//    Equation(eps, SqrtEqFunc, 2, 1, 100);
-//
-//    Lim(eps, GamLimFunc);
+    res_lim = Lim(eps, ELimFunc);
+    res_row = Row(eps, ERowFunc, 0);
+    res_eq = Equation(eps, EEqFunc, 1, 1, 100);
+    printf("|%10lf|%10lf|%10lf|\n", res_lim, res_row, res_eq);
 
-    return 0;
+    res_lim = Lim(eps * 100, PiLimFunc);
+    res_row = Row(eps, PiRowFunc, 1);
+    res_eq = Equation(eps, PiEqFunc, 0, 2, 4);
+    printf("|%10lf|%10lf|%10lf|\n", res_lim, res_row, res_eq);
+
+    res_lim = Lim(eps, lnLimFunc);
+    res_row = Row(eps, lnRowFunc, 1);
+    res_eq = Equation(eps, lnEqFunc, 2, 0, 100);
+    printf("|%10lf|%10lf|%10lf|\n", res_lim, res_row, res_eq);
+
+    res_lim = Lim(eps, SqrtLimFunc);
+    res_row = Mult(eps, SqrtMultFunc, 2);
+    res_eq = Equation(eps, SqrtEqFunc, 2, 1, 100);
+    printf("|%10lf|%10lf|%10lf|\n", res_lim, res_row, res_eq);
+
+    res_lim = Lim(eps, GamLimFunc);
+    res_row = acos(-1) * acos(-1) / (-6.0) + Row(eps, GamRowFunc, 2);
+    res_eq = Equation(eps, GamEqFunc, GamEqRes(eps), 0, 100);
+    printf("|%10lf|%10lf|%10lf|\n", res_lim, res_row, res_eq);
+    return SUCCSESS;
 }

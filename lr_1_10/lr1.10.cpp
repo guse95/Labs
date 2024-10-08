@@ -122,7 +122,7 @@ int main() {
     int MaxVal = 0, CurVal;
     char argv[BUFSIZ];
     scanf("%s", argv);
-    while (argv != "Stop") {
+    while (strcmp(argv, "Stop") != 0) {
         if (ret_type_t code = isNumberInSsWithBase(base, argv)) {
             HandlingError(code);
             return code;
@@ -135,7 +135,7 @@ int main() {
         scanf("%s", argv);
     }
     if (cnt == 0) {
-        printf("Not enough arguments.");
+        printf("Not enough arguments.\n");
         return ERROR;
     }
     for (int i = 9; i <= 36; i += 9) {
