@@ -52,7 +52,7 @@ ret_type_t isNumberInSsWithBase(const int base, const char* s) {
         intLim /= base;
         maxLen++;
     }
-    printf("%d\n", maxLen);
+    //printf("%d\n", maxLen);
     while ((isdigit(*s) && (*s - '0' < base)) || (isalpha(*s) && (toupper(*s) < 'A' + base - 10))) {
         s++;
         if (len++ > maxLen) {
@@ -104,32 +104,39 @@ int FromSistToDes(const int base, char str[]){
     return res;
 }
 
-int main(int argc, char* argv[]) {
-    if (argc < 3) {
-        printf("Not enough arguments.");
-        return ERROR;
-    }
-    if (ret_type_t code = isNumberInSsWithBase(10, argv[1])) {
+int main() {
+    int cnt = 0;
+    char base_str[BUFSIZ];
+    scanf("%s", base_str);
+    printf("%s", base_str);
+    if (ret_type_t code = isNumberInSsWithBase(10, base_str)) {
         HandlingError(code);
         return code;
     }
-    int base = Atoi(argv[1]);
+    int base = Atoi(base_str);
     if (base < 2 || base > 36) {
         ret_type_t code = ERROR_NUMBER_OUT_OF_RANGE;
         HandlingError(code);
         return code;
     }
     int MaxVal = 0, CurVal;
-    for (int i = 2; i < argc; ++i) {
-        if (ret_type_t code = isNumberInSsWithBase(base, argv[i])) {
+    char argv[BUFSIZ];
+    scanf("%s", argv);
+    while (argv != "Stop") {
+        if (ret_type_t code = isNumberInSsWithBase(base, argv)) {
             HandlingError(code);
             return code;
         }
+        ++cnt;
 //        printf("%d\n", FromSistToDes(base, argv[i]));
-        if ((CurVal = FromSistToDes(base, argv[i])) > MaxVal) {
-
+        if ((CurVal = FromSistToDes(base, argv)) > MaxVal) {
             MaxVal = CurVal;
         }
+        scanf("%s", argv);
+    }
+    if (cnt == 0) {
+        printf("Not enough arguments.");
+        return ERROR;
     }
     for (int i = 9; i <= 36; i += 9) {
         FromDesToSist(i, MaxVal);
