@@ -51,23 +51,18 @@ int atoi(const char* s) {
     return res;
 }
 
-long long comb(long long up, long long down) {
-    long long res = 1;
-    if (up < (down - up)) {
-        up = down - up;
+double doublefaq(const int n) {
+    double res = 0;
+    if (n == 0 || n == 1) {
+        return 1.0;
+    } else {
+        res = n * doublefaq(n - 2);
+        return res;
     }
-    for (long long i = up + 1; i < down + 1; ++i) {
-        res *= i;
-    }
-    for (long long i = 2; i < (down - up) + 1; i += 1) {
-        res /= i;
-    }
-    printf("%lld  %lld  %lld\n", down, up, res);
-    return res;
 }
 
 int main(){
-    char str[] = "12345678987654";
-    printf("%d", pow(2, 31));
+
+    printf("%f", doublefaq(30));
 
 }

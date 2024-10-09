@@ -43,9 +43,9 @@ ret_type_t isNumberInSsWithBase(const int base, const char* s) {
     while (*s == ' ') {
         s++;
     }
-//    if (*s == '-') {
-//        return ERROR_NEGATIVE_VALUE;
-//    }
+    if (*s == '-') {
+        return ERROR_NEGATIVE_VALUE;
+    }
     int len = 0;
     int maxLen = 0, intLim = 100000000;
     while (intLim > 0) {
@@ -108,7 +108,6 @@ int main() {
     int cnt = 0;
     char base_str[BUFSIZ];
     scanf("%s", base_str);
-    printf("%s", base_str);
     if (ret_type_t code = isNumberInSsWithBase(10, base_str)) {
         HandlingError(code);
         return code;

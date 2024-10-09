@@ -9,7 +9,7 @@ enum ret_type_t {
     ERROR_NEGATIVE_VALUE,
     ERROR_NOT_NUMBER,
     ERROR_TOO_LONG_STR,
-    ERROR_NUMBER_OUT_OF_RANGE,
+    ERROR_EPS_OUT_OF_RANGE,
     ERROR_WRONG_NUMB_OF_ARGS
 };
 
@@ -49,8 +49,8 @@ void HandlingError(int code) {
         case ERROR_TOO_LONG_STR:
             printf("Too long string was entered.\n");
             break;
-        case ERROR_NUMBER_OUT_OF_RANGE:
-            printf("Number out of range.\n");
+        case ERROR_EPS_OUT_OF_RANGE:
+            printf("Epsilon out of range.\n");
             break;
         default:
             break;
@@ -188,14 +188,15 @@ double GamEqFunc(const double n) {
     return res;
 }
 
-double Mult(const double eps, callback MultFunc, double n) {
-    double PrevAns = MultFunc(n);
-    n += 1;
-    double CurAns = PrevAns * MultFunc(n);
+double Mult(const double eps, callback MultFunc, const double n) {
+    double x = n;
+    double PrevAns = MultFunc(x);
+    x += 1;
+    double CurAns = PrevAns * MultFunc(x);
     while (fabs(PrevAns - CurAns) > eps) {
         PrevAns = CurAns;
-        n += 1;
-        CurAns *= MultFunc(n);
+        x += 1;
+        CurAns *= MultFunc(x);
         //printf("%fl        %fl\n", PrevAns, CurAns);
     }
     return CurAns;
@@ -213,30 +214,32 @@ double Lim(const double eps, callback LimFunc) {
     return CurAns;
 }
 
-double Row(const double eps, callback RowFunc, double n) {
-    // double PrevAns = RowFunc(n);
-    // n += 1;
-    // double CurAns = PrevAns + RowFunc(n);
-    // while (fabs(PrevAns - CurAns) > eps) {
-    //     PrevAns = CurAns;
-    //     n += 1;
-    //     CurAns += RowFunc(n);
-    // }
-    // printf("%fl\n", CurAns);
+double Row(const double eps, callback RowFunc, const double n) {
+//    double x = n;
+//    double prev_delta = RowFunc(x);
+//    double summ = prev_delta;
+//    x += 1;
+//    double cur_delta = RowFunc(x);
+//
+//    do {
+//        summ += cur_delta;
+//        prev_delta = cur_delta;
+//        x += 1;
+//        cur_delta = RowFunc(x);
+//
+//    } while (fabs(fabs(cur_delta) - fabs(prev_delta)) > eps);
+//    return summ;
 
-    double x = n;
-    double prev_delta = RowFunc(x);
-    double summ = prev_delta;
-    x += 1;
-    double cur_delta = RowFunc(x);
+    int m = n;
+    double summ = RowFunc(m);
+    double cur_delta;
 
     do {
-        summ += cur_delta;
-        prev_delta = cur_delta;
-        x += 1;
-        cur_delta = RowFunc(x);
+        m += 1;
+        cur_delta = RowFunc(m);
+        summ = summ + cur_delta;
 
-    } while (fabs(fabs(cur_delta) - fabs(prev_delta)) > eps);
+    } while (fabs(cur_delta) > eps);
     return summ;
 }
 
@@ -268,16 +271,6 @@ double Equation(const double eps, callback FuncEq, const double EqRes,
     return ans;
 }
 
-double EquationForPi(const double eps, callback FuncEquation) {
-    double PrevAns = 0;
-    double CurAns = (1e4 + 1)/ 2;
-    while (fabs(PrevAns - CurAns) > eps) {
-        PrevAns = CurAns;
-        CurAns = FuncEquation(CurAns);
-    }
-    return CurAns;
-}
-
 double ResFuncForGam(const double n) {
     double res = 1;
     for (double p = 2; p <= n; p = p + 1) {
@@ -307,6 +300,11 @@ int main(int argc, char* argv[]) {
         return code;
     }
     double eps = atof(argv[1]);
+
+    if (eps > 0.2 || eps < 0.00001) {
+        HandlingError(ERROR_EPS_OUT_OF_RANGE);
+        return ERROR_EPS_OUT_OF_RANGE;
+    }
 
     double res_lim, res_row, res_eq;
 
