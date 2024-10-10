@@ -2,7 +2,6 @@
 #include <string.h>
 #include <math.h>
 #include <ctype.h>
-#include <stdlib.h>
 
 enum ret_type_t {
     SUCCSESS,

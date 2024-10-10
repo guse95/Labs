@@ -6,6 +6,7 @@
 enum ret_type_t {
     SUCCSESS,
     ERROR_NO_VALUE,
+    ERROR_ZERO_VAL,
     ERROR_NEGATIVE_VALUE,
     ERROR_NOT_NUMBER,
     ERROR_TOO_LONG_STR,
@@ -16,17 +17,23 @@ enum ret_type_t {
 typedef double(*callback)(double);
 
 ret_type_t is_number(const char* s) {
+    int flag = 0;
     if (*s == '\0') return ERROR_NO_VALUE;
     while (*s == ' ') s++;
     int len = 0;
     while (isdigit(*s)) {
+        if (*s != '0') flag = 1;
         len++;
         s++;
     }
     if (*s == '.') s++;
     while (isdigit(*s)) {
+        if (*s != '0') flag = 1;
         s++;
         len++;
+    }
+    if (!flag) {
+        return ERROR_ZERO_VAL;
     }
     if (len > 10) {
         return ERROR_TOO_LONG_STR;
@@ -51,6 +58,9 @@ void HandlingError(int code) {
             break;
         case ERROR_EPS_OUT_OF_RANGE:
             printf("Epsilon out of range.\n");
+            break;
+        case ERROR_ZERO_VAL:
+            printf("Epsilon is zero.\n");
             break;
         default:
             break;
@@ -215,32 +225,32 @@ double Lim(const double eps, callback LimFunc) {
 }
 
 double Row(const double eps, callback RowFunc, const double n) {
-//    double x = n;
-//    double prev_delta = RowFunc(x);
-//    double summ = prev_delta;
-//    x += 1;
-//    double cur_delta = RowFunc(x);
-//
-//    do {
-//        summ += cur_delta;
-//        prev_delta = cur_delta;
-//        x += 1;
-//        cur_delta = RowFunc(x);
-//
-//    } while (fabs(fabs(cur_delta) - fabs(prev_delta)) > eps);
-//    return summ;
-
-    int m = n;
-    double summ = RowFunc(m);
-    double cur_delta;
+    double x = n;
+    double prev_delta = RowFunc(x);
+    double summ = prev_delta;
+    x += 1;
+    double cur_delta = RowFunc(x);
 
     do {
-        m += 1;
-        cur_delta = RowFunc(m);
-        summ = summ + cur_delta;
+        summ += cur_delta;
+        prev_delta = cur_delta;
+        x += 1;
+        cur_delta = RowFunc(x);
 
-    } while (fabs(cur_delta) > eps);
+    } while (fabs(fabs(cur_delta) - fabs(prev_delta)) > eps);
     return summ;
+
+//    int m = n;
+//    double summ = RowFunc(m);
+//    double cur_delta;
+//
+//    do {
+//        m += 1;
+//        cur_delta = RowFunc(m);
+//        summ = summ + cur_delta;
+//
+//    } while (fabs(cur_delta) > eps);
+//    return summ;
 }
 
 double Equation(const double eps, callback FuncEq, const double EqRes,
@@ -305,12 +315,9 @@ int main(int argc, char* argv[]) {
         HandlingError(ERROR_EPS_OUT_OF_RANGE);
         return ERROR_EPS_OUT_OF_RANGE;
     }
-
-    double res_lim, res_row, res_eq;
-
-    res_lim = Lim(eps, ELimFunc);
-    res_row = Row(eps, ERowFunc, 0);
-    res_eq = Equation(eps, EEqFunc, 1, 1, 100);
+    double res_lim = Lim(eps, ELimFunc);
+    double res_row = Row(eps, ERowFunc, 0);
+    double res_eq = Equation(eps, EEqFunc, 1, 1, 100);
     printf("|%10lf|%10lf|%10lf|\n", res_lim, res_row, res_eq);
 
     res_lim = Lim(eps * 100, PiLimFunc);
@@ -328,7 +335,7 @@ int main(int argc, char* argv[]) {
     res_eq = Equation(eps, SqrtEqFunc, 2, 1, 100);
     printf("|%10lf|%10lf|%10lf|\n", res_lim, res_row, res_eq);
 
-    res_lim = Lim(eps, GamLimFunc);
+    res_lim = Lim(eps * 100, GamLimFunc);
     res_row = acos(-1) * acos(-1) / (-6.0) + Row(eps, GamRowFunc, 2);
     res_eq = Equation(eps, GamEqFunc, GamEqRes(eps), 0, 100);
     printf("|%10lf|%10lf|%10lf|\n", res_lim, res_row, res_eq);

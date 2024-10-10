@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <math.h>
 #include <ctype.h>
-#include <stdlib.h>
 
 enum ret_type_t {
     SUCCSESS,
     ERROR_NO_VALUE,
+    ERROR_ZERO_VAL,
     ERROR_NEGATIVE_VALUE,
     ERROR_NOT_NUMBER,
     ERROR_TOO_LONG_STR,
@@ -17,17 +17,23 @@ enum ret_type_t {
 typedef double(*callback)(double, int);
 
 ret_type_t is_number(const char* s) {
+    int flag = 0;
     if (*s == '\0') return ERROR_NO_VALUE;
     while (*s == ' ') s++;
     int len = 0;
     while (isdigit(*s)) {
+        if (*s != '0') flag = 1;
         len++;
         s++;
     }
     if (*s == '.') s++;
     while (isdigit(*s)) {
+        if (*s != '0') flag = 1;
         s++;
         len++;
+    }
+    if (!flag) {
+        return ERROR_ZERO_VAL;
     }
     if (len > 10) {
         return ERROR_TOO_LONG_STR;
@@ -45,7 +51,7 @@ void HandlingError(int code) {
             printf("No number was entered.\n");
             break;
         case ERROR_NOT_NUMBER:
-            printf("Value isn`t a number in the right number system.\n");
+            printf("Value isn`t a number.\n");
             break;
         case ERROR_TOO_LONG_STR:
             printf("Too long string was entered.\n");
@@ -55,6 +61,9 @@ void HandlingError(int code) {
             break;
         case ERROR_ARG_IS_TOO_BIG:
             printf("The function diverges.\n");
+            break;
+        case ERROR_ZERO_VAL:
+            printf("Value is zero.\n");
             break;
         default:
             break;
@@ -183,6 +192,9 @@ int main(int argc, char* argv[]) {
     }
     double x = atof(argv[2]);
 
+    HandlingError(Row(eps, Afunc, x, 0));
+    HandlingError(Row(eps, Bfunc, x, 0));
+    HandlingError(Row(eps, Cfunc, x, 0));
     HandlingError(Row(eps, Dfunc, x, 1));
     return SUCCSESS;
 }
