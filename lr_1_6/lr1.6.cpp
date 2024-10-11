@@ -144,10 +144,11 @@ int main(int argc, char* argv[]) {
         HandlingError(ERROR_EPS_OUT_OF_RANGE);
         return ERROR_EPS_OUT_OF_RANGE;
     }
+    callback funcs[] = {&Afunc, &Bfunc, &Cfunc, &Dfunc};
 
-    HandlingError(Integral(eps, Afunc));
-    HandlingError(Integral(eps, Bfunc));
-    HandlingError(Integral(eps, Cfunc));
-    HandlingError(Integral(eps, Dfunc));
+    for (callback func : funcs) {
+        HandlingError(Integral(eps, func));
+    }
+
     return SUCCSESS;
 }

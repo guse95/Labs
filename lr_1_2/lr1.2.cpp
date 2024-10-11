@@ -315,29 +315,31 @@ int main(int argc, char* argv[]) {
         HandlingError(ERROR_EPS_OUT_OF_RANGE);
         return ERROR_EPS_OUT_OF_RANGE;
     }
-    double res_lim = Lim(eps, ELimFunc);
-    double res_row = Row(eps, ERowFunc, 0);
-    double res_eq = Equation(eps, EEqFunc, 1, 1, 100);
-    printf("|%10lf|%10lf|%10lf|\n", res_lim, res_row, res_eq);
+    if (eps < 0.01) {
+        printf("If you enter an epsilon less than 0.001, some constants may not count.\n");
+    }
 
-    res_lim = Lim(eps * 100, PiLimFunc);
-    res_row = Row(eps, PiRowFunc, 1);
-    res_eq = Equation(eps, PiEqFunc, 0, 2, 4);
-    printf("|%10lf|%10lf|%10lf|\n", res_lim, res_row, res_eq);
+    callback LimFuncs[] = {&ELimFunc, &PiLimFunc, &lnLimFunc, &SqrtLimFunc, &GamLimFunc};
+    callback RowFuncs[] = {&ERowFunc, &PiRowFunc, &lnRowFunc, &SqrtMultFunc, &GamRowFunc};
+    callback EqFuncs[] = {&EEqFunc, &PiEqFunc, &lnEqFunc, &SqrtEqFunc, &GamEqFunc};
+    const double ns[] = {0, 1, 1, 2, 2};
+    const double EqReses[] = {1, 0, 2, 2, GamEqRes(eps)};
+    const double LBorders[] = {0, 2, 0, 0, 0};
+    const double RBorders[] = {100, 4, 100, 100, 100};
 
-    res_lim = Lim(eps, lnLimFunc);
-    res_row = Row(eps, lnRowFunc, 1);
-    res_eq = Equation(eps, lnEqFunc, 2, 0, 100);
-    printf("|%10lf|%10lf|%10lf|\n", res_lim, res_row, res_eq);
+    double res_lim, res_row, res_eq;
 
-    res_lim = Lim(eps, SqrtLimFunc);
-    res_row = Mult(eps, SqrtMultFunc, 2);
-    res_eq = Equation(eps, SqrtEqFunc, 2, 1, 100);
-    printf("|%10lf|%10lf|%10lf|\n", res_lim, res_row, res_eq);
-
-    res_lim = Lim(eps * 100, GamLimFunc);
-    res_row = acos(-1) * acos(-1) / (-6.0) + Row(eps, GamRowFunc, 2);
-    res_eq = Equation(eps, GamEqFunc, GamEqRes(eps), 0, 100);
-    printf("|%10lf|%10lf|%10lf|\n", res_lim, res_row, res_eq);
+    for (int i = 0; i < 5; ++i) {
+        res_lim = Lim(eps, LimFuncs[i]);
+        if (RowFuncs[i] == &SqrtMultFunc) {
+            res_row = Mult(eps, RowFuncs[i], ns[i]);
+        } else if (RowFuncs[i] == &GamRowFunc) {
+            res_row = acos(-1) * acos(-1) / (-6.0) + Row(eps, RowFuncs[i], ns[i]);
+        } else {
+            res_row = Row(eps, RowFuncs[i], ns[i]);
+        }
+        res_eq = Equation(eps, EqFuncs[i], EqReses[i], LBorders[i], RBorders[i]);
+        printf("|%10lf|%10lf|%10lf|\n", res_lim, res_row, res_eq);
+    }
     return SUCCSESS;
 }

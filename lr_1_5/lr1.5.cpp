@@ -192,9 +192,11 @@ int main(int argc, char* argv[]) {
     }
     double x = atof(argv[2]);
 
-    HandlingError(Row(eps, Afunc, x, 0));
-    HandlingError(Row(eps, Bfunc, x, 0));
-    HandlingError(Row(eps, Cfunc, x, 0));
-    HandlingError(Row(eps, Dfunc, x, 1));
+    callback funcs[] = {&Afunc, &Bfunc, &Cfunc, &Dfunc};
+    const int ns[] = {0, 0, 0, 1};
+
+    for (int i = 0; i < 4; ++i) {
+        HandlingError(Row(eps, funcs[i], x, ns[i]));
+    }
     return SUCCSESS;
 }
