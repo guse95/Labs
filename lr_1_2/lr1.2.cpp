@@ -20,6 +20,7 @@ ret_type_t is_number(const char* s) {
     int flag = 0;
     if (*s == '\0') return ERROR_NO_VALUE;
     while (*s == ' ') s++;
+    if (*s == '-') return ERROR_NEGATIVE_VALUE;
     int len = 0;
     while (isdigit(*s)) {
         if (*s != '0') flag = 1;
@@ -32,7 +33,7 @@ ret_type_t is_number(const char* s) {
         s++;
         len++;
     }
-    if (!flag) {
+    if (!flag && *s == '\0') {
         return ERROR_ZERO_VAL;
     }
     if (len > 10) {
@@ -51,7 +52,7 @@ void HandlingError(int code) {
             printf("No number was entered.\n");
             break;
         case ERROR_NOT_NUMBER:
-            printf("Value isn`t a number in the right number system.\n");
+            printf("Value isn`t a number.\n");
             break;
         case ERROR_TOO_LONG_STR:
             printf("Too long string was entered.\n");

@@ -6,7 +6,6 @@ enum ret_type_t {
     SUCCSESS,
     ERROR_NO_VALUE,
     ERROR_ZERO_VAL,
-    ERROR_NEGATIVE_VALUE,
     ERROR_NOT_NUMBER,
     ERROR_TOO_LONG_STR,
     ERROR_NUMBER_OUT_OF_RANGE,
@@ -32,7 +31,7 @@ ret_type_t is_number(const char* s) {
         s++;
         len++;
     }
-    if (!flag) {
+    if (!flag && *s == '\0') {
         return ERROR_ZERO_VAL;
     }
     if (len > 10) {
@@ -44,9 +43,6 @@ ret_type_t is_number(const char* s) {
 
 void HandlingError(int code) {
     switch (code) {
-        case ERROR_NEGATIVE_VALUE:
-            printf("Negative value was entered.\n");
-            break;
         case ERROR_NO_VALUE:
             printf("No number was entered.\n");
             break;
@@ -107,7 +103,7 @@ double Pow(const double x, const int n) {
     return res;
 }
 
-ret_type_t Row(const double eps, callback RowFunc, const double x, const int n) {
+ret_type_t Row(const double eps, callback RowFunc, const double x, const int n, const double start) {
 //    int m = n;
 //    double PrevAns = RowFunc(x, m);
 //    m += 1;
@@ -126,47 +122,49 @@ ret_type_t Row(const double eps, callback RowFunc, const double x, const int n) 
 //    return SUCCSESS;
 
     int m = n;
-    double summ = RowFunc(x, m);
-    double cur_delta;
+    double cur_delta = start, prev_step = 0, cur_step = 0;
+    // printf("Current delta is %f\n", cur_delta);
+    double summ = cur_delta;
 
     do {
         m += 1;
-        cur_delta = RowFunc(x, m);
+        prev_step = cur_step;
+        cur_step = RowFunc(m, x);
+        cur_delta = cur_delta * cur_step;
+        // printf("%lf\n", RowFunc(x, m));
         summ = summ + cur_delta;
+        if (isinf(summ) || isnan(summ)) {
+            return ERROR_ARG_IS_TOO_BIG;
+        }
 
     } while (fabs(cur_delta) > eps);
-    if (isinf(summ) || isnan(summ)) {
-        return ERROR_ARG_IS_TOO_BIG;
-    }
-    printf("%f\n", summ);
+    printf("%.20f\n", summ);
     return SUCCSESS;
 }
 
 double Afunc(const double x, const int n) {
     double res;
-    res = Pow(x, n) / faq(n);
-//    printf("%d  %f  %f  %f\n", n, Pow(x, n), faq(n), res);
+    res = x / (double)(n);
+    //printf("%lf\n", res);
     return  res;
 }
 
 double Bfunc(const double x, const int n) {
     double res;
-    res = Pow(x, 2 * n) / faq(2 * n);
-    if (n % 2 == 1) {
-        res = -res;
-    }
+    res = -(x * x / (2*n - 1) / (2*n));
     return res;
 }
 
 double Cfunc(const double x, const int n) {
     double res;
-    res = Pow(3, 3 * n) / faq(3 * n) * Pow(faq(n), 3) * Pow(x, 2 * n);
+    res = 9 * Pow(n, 3) * x * x /(3*n - 1) / (3*n - 2) / (n);
+    printf("%.20f\n", res);
     return res;
 }
 
 double Dfunc(const double x, const int n) {
     double res;
-    res = doublefaq(2 * n - 1) / doublefaq(2 * n) * Pow(x, 2 * n);
+    res = -(2 * n - 1) * x * x / (2 * n);
 //    printf("%f  %f  %f\n", doublefaq(2 * n - 1), Pow(x, 2 * n), doublefaq(2 * n));
     if (n % 2 == 1) {
         res = -res;
@@ -186,6 +184,11 @@ int main(int argc, char* argv[]) {
     }
     double eps = atof(argv[1]);
 
+    if (eps > 0.2) {
+        HandlingError(ERROR_NUMBER_OUT_OF_RANGE);
+        return ERROR_NUMBER_OUT_OF_RANGE;
+    }
+
     if (ret_type_t code = is_number(argv[2])) {
         HandlingError(code);
         return code;
@@ -194,9 +197,10 @@ int main(int argc, char* argv[]) {
 
     callback funcs[] = {&Afunc, &Bfunc, &Cfunc, &Dfunc};
     const int ns[] = {0, 0, 0, 1};
+    const double starts[] = {1, 1, 1, (-x * x / 2)};
 
     for (int i = 0; i < 4; ++i) {
-        HandlingError(Row(eps, funcs[i], x, ns[i]));
+        HandlingError(Row(eps, funcs[i], x, ns[i], starts[i]));
     }
     return SUCCSESS;
 }
