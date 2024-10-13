@@ -66,25 +66,25 @@ void HandlingError(int code) {
     }
 }
 
-double faq(const int n) {
-    double res = 0;
-    if (n == 0) {
-        return 1.0;
-    } else {
-        res = n * faq(n - 1);
-        return res;
-    }
-}
-
-double doublefaq(const int n) {
-    double res = 0;
-    if (n == 0 || n == 1) {
-        return 1.0;
-    } else {
-        res = n * doublefaq(n - 2);
-        return res;
-    }
-}
+//double faq(const int n) {
+//    double res = 0;
+//    if (n == 0) {
+//        return 1.0;
+//    } else {
+//        res = n * faq(n - 1);
+//        return res;
+//    }
+//}
+//
+//double doublefaq(const int n) {
+//    double res = 0;
+//    if (n == 0 || n == 1) {
+//        return 1.0;
+//    } else {
+//        res = n * doublefaq(n - 2);
+//        return res;
+//    }
+//}
 
 double Pow(const double x, const int n) {
     double res = 1;
@@ -104,41 +104,40 @@ double Pow(const double x, const int n) {
 }
 
 ret_type_t Row(const double eps, callback RowFunc, const double x, const int n, const double start) {
-//    int m = n;
-//    double PrevAns = RowFunc(x, m);
-//    m += 1;
-//    double CurAns = PrevAns + RowFunc(x, m);
-//    while (fabs(PrevAns - CurAns) > eps) {
-//        PrevAns = CurAns;
-//        m += 1;
-//        CurAns += RowFunc(x, m);
-//    }
-//    printf("%fl\n", CurAns);
-//    if (isinf(summ)) {
-//        printf("mi ymerli");
-//        return ERROR_ARG_IS_TOO_BIG;
-//    }
-//    printf("%f\n", summ);
-//    return SUCCSESS;
-
     int m = n;
-    double cur_delta = start, prev_step = 0, cur_step = 0;
-    // printf("Current delta is %f\n", cur_delta);
-    double summ = cur_delta;
+    double prev_delta;
+    double cur_delta = start;
+    double summ = 0;
 
     do {
+        summ += cur_delta;
+        prev_delta = cur_delta;
         m += 1;
-        prev_step = cur_step;
-        cur_step = RowFunc(m, x);
-        cur_delta = cur_delta * cur_step;
-        // printf("%lf\n", RowFunc(x, m));
-        summ = summ + cur_delta;
+        cur_delta = prev_delta * RowFunc(x, m);
         if (isinf(summ) || isnan(summ)) {
             return ERROR_ARG_IS_TOO_BIG;
         }
+        printf("%.20f  %.20f\n", RowFunc(x, m), cur_delta);
+    } while (fabs(fabs(cur_delta) - fabs(prev_delta)) > eps);
 
-    } while (fabs(cur_delta) > eps);
-    printf("%.20f\n", summ);
+//    int m = n;
+//    double cur_delta = start, prev_step = 0, cur_step = 0;
+//    // printf("Current delta is %f\n", cur_delta);
+//    double summ = cur_delta;
+//
+//    do {
+//        m += 1;
+//        prev_step = cur_step;
+//        cur_step = RowFunc(m, x);
+//        cur_delta = cur_delta * cur_step;
+//        // printf("%lf\n", RowFunc(x, m));
+//        summ = summ + cur_delta;
+//        if (isinf(summ) || isnan(summ)) {
+//            return ERROR_ARG_IS_TOO_BIG;
+//        }
+//
+//    } while (fabs(cur_delta) > eps);
+    printf("Answer ====> %.20f\n", summ);
     return SUCCSESS;
 }
 
@@ -157,14 +156,14 @@ double Bfunc(const double x, const int n) {
 
 double Cfunc(const double x, const int n) {
     double res;
-    res = 9 * Pow(n, 3) * x * x /(3*n - 1) / (3*n - 2) / (n);
-    printf("%.20f\n", res);
+    res = (((9 * Pow(n, 3) * x * x /(3*n - 1)) / (3*n - 2)) / n);
+//    printf("%.20f\n", res);
     return res;
 }
 
 double Dfunc(const double x, const int n) {
     double res;
-    res = -(2 * n - 1) * x * x / (2 * n);
+    res = (-(2 * n - 1) * x * x / (2 * n));
 //    printf("%f  %f  %f\n", doublefaq(2 * n - 1), Pow(x, 2 * n), doublefaq(2 * n));
     if (n % 2 == 1) {
         res = -res;
