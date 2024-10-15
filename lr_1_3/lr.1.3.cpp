@@ -226,7 +226,7 @@ void CheckOfSides(double *arr, double eps) {
     if (flag) return;
     if (fabs(arr[0] * arr[0] - arr[1] * arr[1] - arr[2] * arr[2]) < eps) {
         flag = 1;
-        printf("A right-angled triangle can have sides of such length.\n\n");
+        printf("A right-angled triangle can have sides of such length.\n");
         return;
     }
     if (iter_cnt == 6) {
