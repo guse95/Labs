@@ -16,27 +16,24 @@ enum ret_type_t {
 typedef double(*callback)(double, int);
 
 ret_type_t is_number(const char* s) {
-    int flag = 0;
+    int is_zero = 0;
     if (*s == '\0') return ERROR_NO_VALUE;
     while (*s == ' ') s++;
     int len = 0;
-    while (isdigit(*s)) {
-        if (*s != '0') flag = 1;
+    int point_was = 0;
+    while (isdigit(*s) || (*s == '.' && !point_was)) {
+        if (*s != '0') is_zero = 1;
+        if (*s != '.') point_was = +1;
         len++;
         s++;
+        if (len > 10) {
+            return ERROR_TOO_LONG_STR;
+        }
     }
-    if (*s == '.') s++;
-    while (isdigit(*s)) {
-        if (*s != '0') flag = 1;
-        s++;
-        len++;
-    }
-    if (!flag && *s == '\0') {
+    if (!is_zero && *s == '\0') {
         return ERROR_ZERO_VAL;
     }
-    if (len > 10) {
-        return ERROR_TOO_LONG_STR;
-    }
+
     if (*s == '\0') return SUCCSESS;
     return ERROR_NOT_NUMBER;
 }
