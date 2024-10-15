@@ -18,6 +18,7 @@ enum ret_type_t {
 };
 
 typedef ret_type_t(*callback)(int, char*[]);
+typedef void(*minicb)(double*, double);
 
 void HandlingError(int code) {
     switch (code) {
@@ -144,25 +145,30 @@ void ResOfEquation(double *arr, double eps) {
     printf("There is no solution to the quadratic equation.\n");
 }
 
-void permute(double *arr, int l, int r, double eps) {
+void ObertkaOfEq(double *arr, double eps) {
     static int x = 1;
+    printf("%d) Rotation: ", x);
+    for (int i = 0; i <= 2; i++) {
+        printf("%.10f ", arr[i]);
+    }
+    printf("\n");
+    ResOfEquation(arr, eps);
+    ++x;
+}
+
+void permute(double *arr, int l, int r, double eps, minicb ResFunc) {
     if (l == r) {
-        printf("%d) Rotation: ", x);
-        for (int i = 0; i <= r; i++) {
-            printf("%.10f ", arr[i]);
-        }
-        printf("\n");
-        ResOfEquation(arr, eps);
-        ++x;
+        ResFunc(arr, eps);
     } else {
         for (int i = l; i <= r; i++) {
             swap(&arr[l], &arr[i]);
-            permute(arr, l + 1, r, eps);
+            permute(arr, l + 1, r, eps, ResFunc);
             swap(&arr[l], &arr[i]);
         }
     }
 }
-double checker(int cnt, char* input[], double* kef) {
+
+ret_type_t checker(int cnt, char* input[], double* kef, double* eps) {
     if (cnt != 6) {
         return ERROR_WRONG_NUMBER_OF_ARGS;
     }
@@ -172,20 +178,24 @@ double checker(int cnt, char* input[], double* kef) {
             return code;
         }
     }
-    double eps = atof(input[2]);
-    if (eps == 0) {
+    *eps = atof(input[2]);
+    if (*eps == 0) {
         return ERROR_ZERO_VAL;
     }
     for (int i = 3; i < cnt; ++i) {
         kef[i - 3] = atof(input[i]);
     }
-    return eps;
+    return SUCCSESS;
 }
 
 ret_type_t funcForQ(int cnt, char* input[]) {
     double kef[3];
-    double eps = checker(cnt, input, kef);
-    permute(kef, 0, 2, eps);
+    double eps;
+    ret_type_t code;
+    if ((code = checker(cnt, input, kef, &eps))) {
+        return code;
+    }
+    permute(kef, 0, 2, eps, ObertkaOfEq);
 
     return SUCCSESS;
 }
@@ -210,11 +220,29 @@ ret_type_t funcForM(int cnt, char* input[]) {
     return SUCCSESS;
 }
 
+void CheckOfSides(double *arr, double eps) {
+    static int flag = 0, iter_cnt = 0;
+    ++iter_cnt;
+    if (flag) return;
+    if (fabs(arr[0] * arr[0] - arr[1] * arr[1] - arr[2] * arr[2]) < eps) {
+        flag = 1;
+        printf("A right-angled triangle can have sides of such length.\n\n");
+        return;
+    }
+    if (iter_cnt == 6) {
+        printf("A right-angled triangle cannot have sides of such length.\n");
+    }
+}
+
 ret_type_t funcForT(int cnt, char* input[]) {
     double kef[3];
-    double eps = checker(cnt, input, kef);
-
-
+    double eps;
+    ret_type_t code;
+    if ((code = checker(cnt, input, kef, &eps))) {
+        return code;
+    }
+    permute(kef, 0, 2, eps, CheckOfSides);
+    return SUCCSESS;
 }
 
 int main(int argc, char* argv[]) {
