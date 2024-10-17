@@ -18,6 +18,9 @@ C:/Users/Кря/CLionProjects/untitled/cmake-build-debug-coverage/lr_1_5/CMakeFi
 C:/Users/Кря/CLionProjects/untitled/cmake-build-debug-coverage/lr_1_6/CMakeFiles/lr_1_6.dir
 C:/Users/Кря/CLionProjects/untitled/cmake-build-debug-coverage/lr_1_6/CMakeFiles/edit_cache.dir
 C:/Users/Кря/CLionProjects/untitled/cmake-build-debug-coverage/lr_1_6/CMakeFiles/rebuild_cache.dir
+C:/Users/Кря/CLionProjects/untitled/cmake-build-debug-coverage/lr_1_7/CMakeFiles/lr_1_7.dir
+C:/Users/Кря/CLionProjects/untitled/cmake-build-debug-coverage/lr_1_7/CMakeFiles/edit_cache.dir
+C:/Users/Кря/CLionProjects/untitled/cmake-build-debug-coverage/lr_1_7/CMakeFiles/rebuild_cache.dir
 C:/Users/Кря/CLionProjects/untitled/cmake-build-debug-coverage/lr_1_10/CMakeFiles/lr_1_10.dir
 C:/Users/Кря/CLionProjects/untitled/cmake-build-debug-coverage/lr_1_10/CMakeFiles/edit_cache.dir
 C:/Users/Кря/CLionProjects/untitled/cmake-build-debug-coverage/lr_1_10/CMakeFiles/rebuild_cache.dir

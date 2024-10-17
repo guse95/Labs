@@ -78,6 +78,6 @@ double doublefaq(const int n) {
 
 int main(){
     double a = 2, b = 10;
-    printf("\n");
+    printf("%d\n", isalnum(EOF));
 
 }

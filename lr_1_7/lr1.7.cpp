@@ -54,7 +54,7 @@ ret_type_t path_checker(char* path) {
         return ERROR_NOT_PATH;
     }
     while (isalpha(*ptr) || isdigit(*ptr) || *ptr == '-'
-    || *ptr == '_' || *ptr == '.' || *ptr == '\\') {
+           || *ptr == '_' || *ptr == '.' || *ptr == '\\') {
         --ptr;
     }
     if (*ptr != ':' || !isupper(*(ptr - 1)) || *(ptr + 1) != '\\') {
@@ -108,61 +108,52 @@ ret_type_t WorkWithFile(char* in, char* out, callback func) {
     return SUCCESS;
 }
 
-void funcForD(FILE* infile, FILE* outfile) {
-    char cur_el;
-    while ((cur_el = fgetc(infile)) != EOF) {
-        if (!isdigit(cur_el)) {
-            fputc((char)cur_el, outfile);
-        }
-    }
-}
+void funcForR(FILE* infile1, FILE* infile2, FILE* outfile) {
 
-void funcForI(FILE* infile, FILE* outfile) {
-    char cur_el;
-    int cnt = 0;
-    while ((cur_el = fgetc(infile)) != EOF) {
-        if (isalpha(cur_el)) {
-            cnt++;
+    int word_number = 1;
+    FILE * curFile = infile1;
+    char cur_el = fgetc(curFile);
+    while (cur_el != EOF) {
+        while (!(isalnum(cur_el)) && cur_el != EOF) {
+            cur_el = fgetc(curFile);
         }
-        if (cur_el == '\n') {
-            fprintf(outfile, "%d\n", cnt);
-            cnt = 0;
+        if (cur_el == EOF) {
+            break;
         }
+        while (isalnum(cur_el)) {
+            fputc(cur_el, outfile);
+            cur_el = fgetc(curFile);
+        }
+        fputc(' ', outfile);
+        ++word_number;
+        curFile = (word_number % 2 == 1) ? infile1 : infile2;
     }
-    fprintf(outfile, "%d\n", cnt);
-}
-
-void funcForS(FILE* infile, FILE* outfile) {
-    char cur_el;
-    int cnt = 0;
-    while ((cur_el = fgetc(infile)) != EOF) {
-        if (!isalnum(cur_el) && cur_el != ' ') {
-            cnt++;
-        }
-        if (cur_el == '\n') {
-            fprintf(outfile, "%d\n", cnt);
-            cnt = 0;
-        }
+    if ((cur_el = fgetc(infile1)) != EOF) {
+        curFile = infile1;
+    } else {
+        cur_el = fgetc(infile2);
+        curFile = infile2;
     }
-    fprintf(outfile, "%d\n", cnt);
+    while (cur_el != EOF) {
+        while (!isalnum(cur_el) && cur_el != EOF) {
+            cur_el = fgetc(curFile);
+        }
+        while (isalnum(cur_el) && cur_el != ' ') {
+            fputc(cur_el, outfile);
+            cur_el = fgetc(curFile);
+        }
+        fputc(' ', outfile);
+    }
+    printf("SUCCESS.");
 }
 
 void funcForA(FILE* infile, FILE* outfile) {
-    char cur_el;
-    while ((cur_el = fgetc(infile)) != EOF) {
-        if (!isdigit(cur_el)) {
-            fprintf(outfile, "%X", cur_el);
-        } else {
-            fputc((char)cur_el, outfile);
-        }
-    }
+
 }
 
 int main(int argc, char* argv[]) {
 
-    const char* flags[] = { "-d", "/d", "-nd", "/nd","-i", "/i",  "-ni", "/ni",
-                            "-s", "/s", "-ns", "/ns", "-a", "/a","-na", "/na" };
-    callback cbs[] = { &funcForD, &funcForI, &funcForS, &funcForA };
+    const char* flags[] = { "-r", "/r", "-a", "/a" };
 
     int ret = findFlag(argv[1], flags, sizeof(flags) / sizeof(char*));
     if (ret == -1)
@@ -172,59 +163,72 @@ int main(int argc, char* argv[]) {
     }
     else
     {
-        int findCbsInt = ret / 4;
-        callback find = cbs[findCbsInt];
         if (ret_type_t code = path_checker(argv[2])) {
             HandlingError(code);
             return code;
         }
 
-        char* inputFileName = (char*)malloc((strlen(argv[2]) + 1));
-        if (inputFileName == NULL) {
+        char* inputFileName1 = (char*)malloc((strlen(argv[2]) + 1));
+        if (inputFileName1 == NULL) {
             HandlingError(MEMORY_ALLOCATION_ERROR);
             return MEMORY_ALLOCATION_ERROR;
         }
-        char* outputFileName;
-        strcpy(inputFileName, argv[2]);
+        strcpy(inputFileName1, argv[2]);
 
-        if (ret % 4 > 1) {
-            if (ret_type_t code = path_checker(argv[3])) {
+        char* outputFileName = (char*)malloc(strlen(argv[argc - 1]) + 1);
+        if (outputFileName == NULL) {
+            HandlingError(MEMORY_ALLOCATION_ERROR);
+            return MEMORY_ALLOCATION_ERROR;
+        }
+        strcpy(outputFileName, argv[argc - 1]);
+
+        FILE *infile1;
+        FILE *outfile;
+        infile1 = fopen(inputFileName1, "r");
+        if (infile1 == NULL) {
+            return FILE_OPENING_ERROR;
+        }
+        outfile = fopen(outputFileName, "w");
+        if (outfile == NULL) {
+            return FILE_OPENING_ERROR;
+        }
+        if (ret == 0) {
+            if (argc < 5) {
+                HandlingError(ERROR_WRONG_NUMBER_OF_ARGS);
+                return ERROR_WRONG_NUMBER_OF_ARGS;
+            }
+            ret_type_t code;
+            if ((code = path_checker(argv[3]))) {
                 HandlingError(code);
-                free(inputFileName);
+                free(inputFileName1);
                 return code;
             }
-            if (argc != 4) {
-                HandlingError(ERROR_WRONG_NUMBER_OF_ARGS);
-                return ERROR_WRONG_NUMBER_OF_ARGS;
-            }
-
-            outputFileName = (char*)malloc(strlen(argv[3]) + 1);
-            if (outputFileName == NULL) {
+            char* inputFileName2 = (char*)malloc(strlen(argv[3]) + 1);
+            if (inputFileName2 == NULL) {
                 HandlingError(MEMORY_ALLOCATION_ERROR);
                 return MEMORY_ALLOCATION_ERROR;
             }
-            strcpy(outputFileName, argv[3]);
+            strcpy(inputFileName2, argv[3]);
+            FILE* infile2;
+
+            infile2 = fopen(inputFileName2, "r");
+            if (infile2 == NULL) {
+                return FILE_OPENING_ERROR;
+            }
+            funcForR(infile1, infile2, outfile);
+            fclose(infile2);
+            free(inputFileName2);
         } else {
-            if (argc != 3) {
+            if (argc < 4) {
                 HandlingError(ERROR_WRONG_NUMBER_OF_ARGS);
                 return ERROR_WRONG_NUMBER_OF_ARGS;
             }
-            char prefix[] = "out_";
-            outputFileName = (char*)malloc(strlen(argv[2]) + strlen(prefix) + 1);
-            if (outputFileName == NULL) {
-                HandlingError(MEMORY_ALLOCATION_ERROR);
-                return MEMORY_ALLOCATION_ERROR;
-            }
-            Adding_prefix(prefix, outputFileName, inputFileName);
+            funcForA(infile1, outfile);
         }
-
-        ret_type_t code = WorkWithFile(inputFileName, outputFileName, find);
-        HandlingError(code);
-        free(inputFileName);
+        fclose(infile1);
+        fclose(outfile);
+        free(inputFileName1);
         free(outputFileName);
-        if (code) {
-            return -1;
-        }
     }
     return SUCCESS;
 }
