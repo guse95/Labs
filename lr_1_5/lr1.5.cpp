@@ -3,7 +3,7 @@
 #include <ctype.h>
 
 enum ret_type_t {
-    SUCCSESS,
+    SUCCESS,
     ERROR_NO_VALUE,
     ERROR_ZERO_VAL,
     ERROR_NOT_NUMBER,
@@ -23,18 +23,19 @@ ret_type_t is_number(const char* s) {
     int point_was = 0;
     while (isdigit(*s) || (*s == '.' && !point_was)) {
         if (*s != '0') is_zero = 1;
-        if (*s != '.') point_was = +1;
+        if (*s == '.') point_was = +1;
         len++;
         s++;
         if (len > 10) {
             return ERROR_TOO_LONG_STR;
         }
     }
+    printf("%c\n", *s);
     if (!is_zero && *s == '\0') {
         return ERROR_ZERO_VAL;
     }
 
-    if (*s == '\0') return SUCCSESS;
+    if (*s == '\0') return SUCCESS;
     return ERROR_NOT_NUMBER;
 }
 
@@ -102,40 +103,21 @@ double Pow(const double x, const int n) {
 
 ret_type_t Row(const double eps, callback RowFunc, const double x, const int n, const double start) {
     int m = n;
-    double prev_delta;
     double cur_delta = start;
-    double summ = 0;
-
+    double summ = cur_delta;
+    int iter_cnt = 0;
     do {
-        summ += cur_delta;
-        prev_delta = cur_delta;
         m += 1;
-        cur_delta = prev_delta * RowFunc(x, m);
-        if (isinf(summ) || isnan(summ)) {
+        cur_delta = cur_delta * RowFunc(x, m);
+        summ = summ + cur_delta;
+        if (iter_cnt > 10000) {
             return ERROR_ARG_IS_TOO_BIG;
         }
-        printf("%.20f  %.20f\n", RowFunc(x, m), cur_delta);
-    } while (fabs(fabs(cur_delta) - fabs(prev_delta)) > eps);
+        iter_cnt++;
 
-//    int m = n;
-//    double cur_delta = start, prev_step = 0, cur_step = 0;
-//    // printf("Current delta is %f\n", cur_delta);
-//    double summ = cur_delta;
-//
-//    do {
-//        m += 1;
-//        prev_step = cur_step;
-//        cur_step = RowFunc(m, x);
-//        cur_delta = cur_delta * cur_step;
-//        // printf("%lf\n", RowFunc(x, m));
-//        summ = summ + cur_delta;
-//        if (isinf(summ) || isnan(summ)) {
-//            return ERROR_ARG_IS_TOO_BIG;
-//        }
-//
-//    } while (fabs(cur_delta) > eps);
+    } while (fabs(cur_delta) > eps);
     printf("Answer ====> %.20f\n", summ);
-    return SUCCSESS;
+    return SUCCESS;
 }
 
 double Afunc(const double x, const int n) {
@@ -198,5 +180,5 @@ int main(int argc, char* argv[]) {
     for (int i = 0; i < 4; ++i) {
         HandlingError(Row(eps, funcs[i], x, ns[i], starts[i]));
     }
-    return SUCCSESS;
+    return SUCCESS;
 }

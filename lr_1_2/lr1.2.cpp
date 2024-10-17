@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 enum ret_type_t {
-    SUCCSESS,
+    SUCCESS,
     ERROR_NO_VALUE,
     ERROR_ZERO_VAL,
     ERROR_NEGATIVE_VALUE,
@@ -39,7 +39,7 @@ ret_type_t is_number(const char* s) {
     if (len > 10) {
         return ERROR_TOO_LONG_STR;
     }
-    if (*s == '\0') return SUCCSESS;
+    if (*s == '\0') return SUCCESS;
     return ERROR_NOT_NUMBER;
 }
 
@@ -342,5 +342,5 @@ int main(int argc, char* argv[]) {
         res_eq = Equation(eps, EqFuncs[i], EqReses[i], LBorders[i], RBorders[i]);
         printf("|%10lf|%10lf|%10lf|\n", res_lim, res_row, res_eq);
     }
-    return SUCCSESS;
+    return SUCCESS;
 }

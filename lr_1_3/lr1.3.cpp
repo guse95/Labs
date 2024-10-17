@@ -7,7 +7,7 @@
 
 
 enum ret_type_t {
-    SUCCSESS,
+    SUCCESS,
     ERROR_NO_VALUE,
     ERROR_ZERO_VAL,
     ERROR_NEGATIVE_VALUE,
@@ -87,7 +87,7 @@ ret_type_t is_int(const char* s) {
 
     if (*s == '\0') {
         if (!is_zero) return ERROR_ZERO_VAL;
-        return SUCCSESS;
+        return SUCCESS;
     }
     return ERROR_NOT_NUMBER;
 }
@@ -109,7 +109,7 @@ ret_type_t is_double(const char* s) {
             return ERROR_TOO_LONG_STR;
     }
 
-    if (*s == '\0') return SUCCSESS;
+    if (*s == '\0') return SUCCESS;
     return ERROR_NOT_NUMBER;
 }
 
@@ -185,7 +185,7 @@ ret_type_t checker(int cnt, char* input[], double* kef, double* eps) {
     for (int i = 3; i < cnt; ++i) {
         kef[i - 3] = atof(input[i]);
     }
-    return SUCCSESS;
+    return SUCCESS;
 }
 
 ret_type_t funcForQ(int cnt, char* input[]) {
@@ -197,7 +197,7 @@ ret_type_t funcForQ(int cnt, char* input[]) {
     }
     permute(kef, 0, 2, eps, ObertkaOfEq);
 
-    return SUCCSESS;
+    return SUCCESS;
 }
 
 ret_type_t funcForM(int cnt, char* input[]) {
@@ -217,7 +217,7 @@ ret_type_t funcForM(int cnt, char* input[]) {
     } else {
         printf("The first number is not divisible by the second.\n");
     }
-    return SUCCSESS;
+    return SUCCESS;
 }
 
 void CheckOfSides(double *arr, double eps) {
@@ -226,7 +226,7 @@ void CheckOfSides(double *arr, double eps) {
     if (flag) return;
     if (fabs(arr[0] * arr[0] - arr[1] * arr[1] - arr[2] * arr[2]) < eps) {
         flag = 1;
-        printf("A right-angled triangle can have sides of such length.\n\n");
+        printf("A right-angled triangle can have sides of such length.\n");
         return;
     }
     if (iter_cnt == 6) {
@@ -242,7 +242,7 @@ ret_type_t funcForT(int cnt, char* input[]) {
         return code;
     }
     permute(kef, 0, 2, eps, CheckOfSides);
-    return SUCCSESS;
+    return SUCCESS;
 }
 
 int main(int argc, char* argv[]) {

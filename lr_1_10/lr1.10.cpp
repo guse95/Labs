@@ -4,7 +4,7 @@
 #include <ctype.h>
 
 enum ret_type_t {
-    SUCCSESS,
+    SUCCESS,
     ERROR,
     ERROR_NO_VALUE,
     ERROR_TOO_LONG_STR,
@@ -60,7 +60,7 @@ ret_type_t isNumberInSsWithBase(const int base, const char* s) {
     }
 
     if (*s == '\0') {
-        return SUCCSESS;
+        return SUCCESS;
     }
     return ERROR_NOT_NUMBER;
 }
@@ -139,5 +139,5 @@ int main() {
     for (int i = 9; i <= 36; i += 9) {
         FromDesToSist(i, MaxVal);
     }
-    return SUCCSESS;
+    return SUCCESS;
 }

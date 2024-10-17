@@ -1,13 +1,15 @@
 #include <iostream>
 #include <stdio.h>
+#include <string.h>
 #include <math.h>
 #include <ctype.h>
 #include <stdlib.h>
+#include <stdarg.h>
 
 using namespace std;
 
 enum ret_type_t {
-    SUCCSESS,
+    SUCCESS,
     ERROR_NO_VALUE,
     ERROR_NEGATIVE_VALUE,
     ERROR_NOT_NUMBER,
@@ -31,7 +33,7 @@ ret_type_t is_number(const char* s) {
         if (len++ > 10) return ERROR_TOO_LONG_NUMBER;
     }
 
-    if (*s == '\0') return SUCCSESS;
+    if (*s == '\0') return SUCCESS;
     return ERROR_NOT_NUMBER;
 }
 
@@ -51,22 +53,17 @@ int atoi(const char* s) {
     return res;
 }
 
-void swap(double *a, double *b) {
-    double buf = *a;
-    *a = *b;
-    *b = buf;
-}
 
-double permute(double *arr, int l, int r) {
-    if (l == r) {
 
-    } else {
-        for (int i = l; i <= r; i++) {
-            swap(&arr[l], &arr[i]);
-            permute(arr, l + 1, r);
-            swap(&arr[l], &arr[i]);
-        }
+char* StrCat(char* str1, char* str2) {
+    char* ptr = str1 + strlen(str1);
+    printf("%d\n", *ptr);
+    while(*str2 != '\0') {
+        printf("%d\n", *str2);
+        *ptr++ = *str2++;
     }
+    *ptr = '\0';
+    return str1;
 }
 
 double doublefaq(const int n) {
@@ -81,11 +78,6 @@ double doublefaq(const int n) {
 
 int main(){
     double a = 2, b = 10;
-    double arr[] = {1, 2, 3};
-    permute(arr, 0, 2);
-    for (int i = 0; i <= 2; i++) {
-        printf("%d ", arr[i]);
-    }
     printf("\n");
 
 }

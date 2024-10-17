@@ -6,7 +6,7 @@
 
 
 enum ret_type_t {
-    SUCCSESS,
+    SUCCESS,
     ERROR_NO_VALUE,
     ERROR_NEGATIVE_VALUE,
     ERROR_NOT_NUMBER,
@@ -30,7 +30,7 @@ ret_type_t is_number(const char* s) {
         if (len++ > 9) return ERROR_TOO_LONG_STR;
     }
 
-    if (*s == '\0') return SUCCSESS;
+    if (*s == '\0') return SUCCESS;
     return ERROR_NOT_NUMBER;
 }
 
@@ -79,14 +79,14 @@ ret_type_t funcForH(char* argv) {
     if (x > 100)
     {
         printf("There are no such numbers.\n");
-        return SUCCSESS;
+        return SUCCESS;
     }
     while (ans <= 100)
     {
         printf("%d\n", ans);
         ans += x;
     }
-    return SUCCSESS;
+    return SUCCESS;
 }
 
 ret_type_t funcForP(char* argv) {
@@ -97,17 +97,17 @@ ret_type_t funcForP(char* argv) {
     if (x <= 1)
     {
         printf("X isn`t composite or simple.\n");
-        return SUCCSESS;
+        return SUCCESS;
     }
     for (int i = 2; i * i <= x; i++)
     {
         if (x % i == 0) {
             printf("X is composite.\n");
-            return SUCCSESS;
+            return SUCCESS;
         }
     }
     printf("X is simple.\n");
-    return SUCCSESS;
+    return SUCCESS;
 }
 
 ret_type_t funcForS(char* argv) {
@@ -125,7 +125,7 @@ ret_type_t funcForS(char* argv) {
         printf("%c ", *pb);
     printf("\n");
 
-    return SUCCSESS;
+    return SUCCESS;
 }
 
 ret_type_t funcForE(char* argv) {
@@ -142,7 +142,7 @@ ret_type_t funcForE(char* argv) {
         }
         printf("\n");
     }
-    return SUCCSESS;
+    return SUCCESS;
 }
 
 ret_type_t funcForA(char* argv) {
@@ -151,7 +151,7 @@ ret_type_t funcForA(char* argv) {
     if (x < 1) return ERROR_NEGATIVE_VALUE;
     long long summ = (x % 2 == 0) ? (x / 2) * (x + 1): ((x + 1) / 2) * x;
     printf("%lld\n", summ);
-    return SUCCSESS;
+    return SUCCESS;
 }
 
 ret_type_t funcForF(char* argv) {
@@ -169,7 +169,7 @@ ret_type_t funcForF(char* argv) {
         faq *= i;
     }
     printf("%lld\n", faq);
-    return SUCCSESS;
+    return SUCCESS;
 }
 
 int findFlag(char* curarg, const char** flags, int size) {

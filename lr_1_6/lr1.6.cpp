@@ -3,13 +3,14 @@
 #include <ctype.h>
 
 enum ret_type_t {
-    SUCCSESS,
+    SUCCESS,
     ERROR_NO_VALUE,
     ERROR_ZERO_VAL,
     ERROR_NEGATIVE_VALUE,
     ERROR_NOT_NUMBER,
     ERROR_TOO_LONG_STR,
     ERROR_WRONG_NUMB_OF_ARGS,
+    ERROR_ARG_IS_TOO_BIG,
     ERROR_EPS_OUT_OF_RANGE
 };
 
@@ -38,7 +39,7 @@ ret_type_t is_number(const char* s) {
     if (len > 8) {
         return ERROR_TOO_LONG_STR;
     }
-    if (*s == '\0') return SUCCSESS;
+    if (*s == '\0') return SUCCESS;
     return ERROR_NOT_NUMBER;
 }
 
@@ -49,6 +50,9 @@ void HandlingError(int code) {
             break;
         case ERROR_NO_VALUE:
             printf("No number was entered.\n");
+            break;
+        case ERROR_ARG_IS_TOO_BIG:
+            printf("The function diverges.\n");
             break;
         case ERROR_NOT_NUMBER:
             printf("Value isn`t a number.\n");
@@ -85,24 +89,28 @@ double Pow(const double x, const int n) {
 }
 
 ret_type_t Integral(const double eps, callback IntegrFunc) {
-    int n = 2;
+    int n = (int)(1/eps);
     double cur_summ = 0;
     double prev_summ;
-
-    do {
-        prev_summ = cur_summ;
-        cur_summ = 0;
-        for (int i = 1; i < n; ++i) {
-            cur_summ = cur_summ + IntegrFunc(i / (double)n);
-        }
-        cur_summ = cur_summ / (double)n;
-        ++n;
-    } while (fabs(cur_summ - prev_summ) > eps);
-//    if (isinf(summ) || isnan(summ)) {
+    cur_summ = 0;
+    for (int i = 1; i < n; ++i) {
+        cur_summ = cur_summ + IntegrFunc(i * eps);
+    }
+    cur_summ = cur_summ / (double)n;
+//    do {
+//        prev_summ = cur_summ;
+//        cur_summ = 0;
+//        for (int i = 1; i < n; ++i) {
+//            cur_summ = cur_summ + IntegrFunc(i / (double)n);
+//        }
+//        cur_summ = cur_summ / (double)n;
+//        ++n;
+//    } while (fabs(cur_summ - prev_summ) > eps);
+//    if (n > (1/eps)) {
 //        return ERROR_ARG_IS_TOO_BIG;
 //    }
     printf("%f\n", cur_summ);
-    return SUCCSESS;
+    return SUCCESS;
 }
 
 double Afunc(const double x) {
@@ -151,5 +159,5 @@ int main(int argc, char* argv[]) {
         HandlingError(Integral(eps, func));
     }
 
-    return SUCCSESS;
+    return SUCCESS;
 }

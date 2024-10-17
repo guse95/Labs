@@ -6,6 +6,12 @@ C:/Users/Кря/CLionProjects/untitled/cmake-build-debug/lr_1_1/CMakeFiles/rebui
 C:/Users/Кря/CLionProjects/untitled/cmake-build-debug/lr_1_2/CMakeFiles/lr_1_2.dir
 C:/Users/Кря/CLionProjects/untitled/cmake-build-debug/lr_1_2/CMakeFiles/edit_cache.dir
 C:/Users/Кря/CLionProjects/untitled/cmake-build-debug/lr_1_2/CMakeFiles/rebuild_cache.dir
+C:/Users/Кря/CLionProjects/untitled/cmake-build-debug/lr_1_3/CMakeFiles/lr_1_3.dir
+C:/Users/Кря/CLionProjects/untitled/cmake-build-debug/lr_1_3/CMakeFiles/edit_cache.dir
+C:/Users/Кря/CLionProjects/untitled/cmake-build-debug/lr_1_3/CMakeFiles/rebuild_cache.dir
+C:/Users/Кря/CLionProjects/untitled/cmake-build-debug/lr_1_4/CMakeFiles/lr_1_4.dir
+C:/Users/Кря/CLionProjects/untitled/cmake-build-debug/lr_1_4/CMakeFiles/edit_cache.dir
+C:/Users/Кря/CLionProjects/untitled/cmake-build-debug/lr_1_4/CMakeFiles/rebuild_cache.dir
 C:/Users/Кря/CLionProjects/untitled/cmake-build-debug/lr_1_5/CMakeFiles/lr_1_5.dir
 C:/Users/Кря/CLionProjects/untitled/cmake-build-debug/lr_1_5/CMakeFiles/edit_cache.dir
 C:/Users/Кря/CLionProjects/untitled/cmake-build-debug/lr_1_5/CMakeFiles/rebuild_cache.dir
