@@ -1,10 +1,7 @@
 #include <stdio.h>
 #include <string.h>
-#include <math.h>
 #include <ctype.h>
 #include <stdlib.h>
-#include <stdarg.h>
-#include <windows.h>
 
 
 enum ret_type_t {
@@ -72,40 +69,6 @@ int findFlag(char* curarg, const char** flags, int size) {
         }
     }
     return -1;
-}
-
-void Adding_prefix(char* prefix, char* outFile, char* inFile) {
-    char* ptr_pref = prefix;
-    char* ptr = inFile + strlen(inFile);
-    while (*ptr != '\\') {
-        --ptr;
-    }
-    ++ptr;
-    while (inFile != ptr) {
-        *outFile++ = *inFile++;
-    }
-    while (*ptr_pref != '\0') {
-        *outFile++ = *ptr_pref++;
-    }
-    while ((*outFile++ = *ptr++));
-}
-
-ret_type_t WorkWithFile(char* in, char* out, callback func) {
-    FILE *infile;
-    FILE *outfile;
-    infile = fopen(in, "r");
-    if (infile == NULL) {
-        return FILE_OPENING_ERROR;
-    }
-    outfile = fopen(out, "w");
-    if (outfile == NULL) {
-        return FILE_OPENING_ERROR;
-    }
-    func(infile, outfile);
-
-    fclose(infile);
-    fclose(outfile);
-    return SUCCESS;
 }
 
 void funcForR(FILE* infile1, FILE* infile2, FILE* outfile) {
