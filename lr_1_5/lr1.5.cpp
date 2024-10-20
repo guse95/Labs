@@ -15,26 +15,34 @@ enum ret_type_t {
 
 typedef double(*callback)(double, int);
 
-ret_type_t is_number(const char* s) {
+ret_type_t isnt_zero(const char* s) {
     int is_zero = 0;
+    while (*s == ' ') s++;
+    while (isdigit(*s) || (*s == '.')) {
+        if (*s != '0' && *s != '.') {
+            is_zero = 1;
+        }
+        ++s;
+    }
+    if (!is_zero && *s == '\0') {
+        return ERROR_ZERO_VAL;
+    }
+    return SUCCESS;
+}
+
+ret_type_t is_number(const char* s) {
     if (*s == '\0') return ERROR_NO_VALUE;
     while (*s == ' ') s++;
     int len = 0;
     int point_was = 0;
     while (isdigit(*s) || (*s == '.' && !point_was)) {
-        if (*s != '0') is_zero = 1;
-        if (*s == '.') point_was = +1;
+        if (*s == '.') point_was = 1;
         len++;
         s++;
         if (len > 10) {
             return ERROR_TOO_LONG_STR;
         }
     }
-    printf("%c\n", *s);
-    if (!is_zero && *s == '\0') {
-        return ERROR_ZERO_VAL;
-    }
-
     if (*s == '\0') return SUCCESS;
     return ERROR_NOT_NUMBER;
 }
@@ -57,32 +65,12 @@ void HandlingError(int code) {
             printf("The function diverges.\n");
             break;
         case ERROR_ZERO_VAL:
-            printf("Value is zero.\n");
+            printf("Epsilon is zero.\n");
             break;
         default:
             break;
     }
 }
-
-//double faq(const int n) {
-//    double res = 0;
-//    if (n == 0) {
-//        return 1.0;
-//    } else {
-//        res = n * faq(n - 1);
-//        return res;
-//    }
-//}
-//
-//double doublefaq(const int n) {
-//    double res = 0;
-//    if (n == 0 || n == 1) {
-//        return 1.0;
-//    } else {
-//        res = n * doublefaq(n - 2);
-//        return res;
-//    }
-//}
 
 double Pow(const double x, const int n) {
     double res = 1;
@@ -123,7 +111,6 @@ ret_type_t Row(const double eps, callback RowFunc, const double x, const int n, 
 double Afunc(const double x, const int n) {
     double res;
     res = x / (double)(n);
-    //printf("%lf\n", res);
     return  res;
 }
 
@@ -136,14 +123,12 @@ double Bfunc(const double x, const int n) {
 double Cfunc(const double x, const int n) {
     double res;
     res = (((9 * Pow(n, 3) * x * x /(3*n - 1)) / (3*n - 2)) / n);
-//    printf("%.20f\n", res);
     return res;
 }
 
 double Dfunc(const double x, const int n) {
     double res;
     res = (-(2 * n - 1) * x * x / (2 * n));
-//    printf("%f  %f  %f\n", doublefaq(2 * n - 1), Pow(x, 2 * n), doublefaq(2 * n));
     if (n % 2 == 1) {
         res = -res;
     }
@@ -155,8 +140,14 @@ int main(int argc, char* argv[]) {
         printf("Wrong number of arguments.");
         return ERROR_WRONG_NUMB_OF_ARGS;
     }
-
-    if (ret_type_t code = is_number(argv[1])) {
+    ret_type_t code;
+    for (int i = 1; i <= 2; ++i) {
+        if ((code = is_number(argv[i]))) {
+            HandlingError(code);
+            return code;
+        }
+    }
+    if ((code = isnt_zero(argv[1]))) {
         HandlingError(code);
         return code;
     }
@@ -167,7 +158,7 @@ int main(int argc, char* argv[]) {
         return ERROR_NUMBER_OUT_OF_RANGE;
     }
 
-    if (ret_type_t code = is_number(argv[2])) {
+    if ((code = is_number(argv[2]))) {
         HandlingError(code);
         return code;
     }
