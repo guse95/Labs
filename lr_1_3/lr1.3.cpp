@@ -10,6 +10,7 @@ enum ret_type_t {
     SUCCESS,
     ERROR_NO_VALUE,
     ERROR_ZERO_VAL,
+    ERROR_ZERO_SIDE,
     ERROR_NEGATIVE_VALUE,
     ERROR_NOT_NUMBER,
     ERROR_TOO_LONG_STR,
@@ -42,6 +43,9 @@ void HandlingError(int code) {
             break;
         case ERROR_ZERO_VAL:
             printf("Value is zero.\n");
+            break;
+        case ERROR_ZERO_SIDE:
+            printf("Side of triangle can`t be zero.\n");
             break;
         default:
             printf("ABORTED!!!");
@@ -194,6 +198,11 @@ ret_type_t funcForQ(int cnt, char* input[]) {
     ret_type_t code;
     if ((code = checker(cnt, input, kef, &eps))) {
         return code;
+    }
+    for (int i = 3; i < cnt; ++i) {
+        if (atoi(input[i]) == 0) {
+            return ERROR_ZERO_SIDE;
+        }
     }
     permute(kef, 0, 2, eps, ObertkaOfEq);
 

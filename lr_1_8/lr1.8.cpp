@@ -121,7 +121,7 @@ ret_type_t solve(FILE* infile, FILE* outfile) {
         if (pArr == NULL) {
             return MEMORY_ALLOCATION_ERROR;
         }
-        int i = 0, base = 0;
+        int i = 0, base = 2;
         int leading_zeros = 1;
         while (!(isalnum(cur_el)) && cur_el != EOF) {
             cur_el = fgetc(infile);
@@ -193,6 +193,12 @@ int main(int argc, char* argv[]) {
             return code;
         }
     }
+
+    if (strcmp(argv[2], argv[1]) == 0) {
+        printf("Input file is the same as the output file.\n");
+        return -1;
+    }
+
     char* inputFileName = (char*)malloc((strlen(argv[1]) + 1));
     if (inputFileName == NULL) {
         HandlingError(MEMORY_ALLOCATION_ERROR);

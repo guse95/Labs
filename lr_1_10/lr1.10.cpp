@@ -106,6 +106,7 @@ int FromSistToDes(const int base, char str[]){
 int main() {
     int cnt = 0;
     char base_str[BUFSIZ];
+    printf("Enter base number (from 2 to 36): ");
     scanf("%s", base_str);
     if (ret_type_t code = isNumberInSsWithBase(10, base_str)) {
         HandlingError(code);
@@ -119,6 +120,8 @@ int main() {
     }
     int MaxVal = 0, CurVal;
     char argv[BUFSIZ];
+    char ans[BUFSIZ];
+    printf("Enter number: ");
     scanf("%s", argv);
     while (strcmp(argv, "Stop") != 0) {
         if (ret_type_t code = isNumberInSsWithBase(base, argv)) {
@@ -128,6 +131,7 @@ int main() {
         ++cnt;
 //        printf("%d\n", FromSistToDes(base, argv[i]));
         if ((CurVal = FromSistToDes(base, argv)) > MaxVal) {
+            strcpy(ans, argv);
             MaxVal = CurVal;
         }
         scanf("%s", argv);
@@ -136,6 +140,7 @@ int main() {
         printf("Not enough arguments.\n");
         return ERROR;
     }
+    printf("%s\n", ans);
     for (int i = 9; i <= 36; i += 9) {
         FromDesToSist(i, MaxVal);
     }

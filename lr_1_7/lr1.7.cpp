@@ -174,11 +174,19 @@ int main(int argc, char* argv[]) {
             return ERROR_WRONG_NUMBER_OF_ARGS;
         }
 
-        for (int i = 2; i <= 3; ++i) {
-            if (ret_type_t code = path_checker(argv[i])) {
-                HandlingError(code);
-                return code;
-            }
+        if (ret_type_t code = path_checker(argv[2])) {
+            HandlingError(code);
+            return code;
+        }
+
+        if (ret_type_t code = path_checker(argv[argc - 1])) {
+            HandlingError(code);
+            return code;
+        }
+
+        if (strcmp(argv[2], argv[argc - 1]) == 0) {
+            printf("Input file is the same as the output file.\n");
+            return -1;
         }
 
         char* inputFileName1 = (char*)malloc((strlen(argv[2]) + 1));
@@ -231,6 +239,7 @@ int main(int argc, char* argv[]) {
                 free(outputFileName);
                 return code;
             }
+
             char* inputFileName2 = (char*)malloc(strlen(argv[3]) + 1);
             if (inputFileName2 == NULL) {
                 HandlingError(MEMORY_ALLOCATION_ERROR);

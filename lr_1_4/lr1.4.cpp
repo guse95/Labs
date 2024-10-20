@@ -203,6 +203,12 @@ int main(int argc, char* argv[]) {
                 HandlingError(MEMORY_ALLOCATION_ERROR);
                 return MEMORY_ALLOCATION_ERROR;
             }
+            if (strcmp(inputFileName, outputFileName) == 0) {
+                printf("Input file is the same as the output file.\n");
+                free(inputFileName);
+                free(outputFileName);
+                return -1;
+            }
             strcpy(outputFileName, argv[3]);
         } else {
             if (argc != 3) {
