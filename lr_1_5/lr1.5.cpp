@@ -7,6 +7,7 @@ enum ret_type_t {
     ERROR_NO_VALUE,
     ERROR_ZERO_VAL,
     ERROR_NOT_NUMBER,
+    ERROR_NEGATIVE_VALUE,
     ERROR_TOO_LONG_STR,
     ERROR_NUMBER_OUT_OF_RANGE,
     ERROR_WRONG_NUMB_OF_ARGS,
@@ -18,6 +19,9 @@ typedef double(*callback)(double, int);
 ret_type_t isnt_zero(const char* s) {
     int is_zero = 0;
     while (*s == ' ') s++;
+    if (*s == '-') {
+        return ERROR_NEGATIVE_VALUE;
+    }
     while (isdigit(*s) || (*s == '.')) {
         if (*s != '0' && *s != '.') {
             is_zero = 1;
@@ -35,7 +39,7 @@ ret_type_t is_number(const char* s) {
     while (*s == ' ') s++;
     int len = 0;
     int point_was = 0;
-    while (isdigit(*s) || (*s == '.' && !point_was)) {
+    while (isdigit(*s) || (*s == '.' && !point_was) || (*s == '-')) {
         if (*s == '.') point_was = 1;
         len++;
         s++;
@@ -53,13 +57,16 @@ void HandlingError(int code) {
             printf("No number was entered.\n");
             break;
         case ERROR_NOT_NUMBER:
-            printf("Value isn`t a number.\n");
+            printf("Value is not a number.\n");
+            break;
+        case ERROR_NEGATIVE_VALUE:
+            printf("Epsilon can not be negative.\n");
             break;
         case ERROR_TOO_LONG_STR:
             printf("Too long string was entered.\n");
             break;
         case ERROR_NUMBER_OUT_OF_RANGE:
-            printf("Number out of range.\n");
+            printf("Epsilon is too big.\n");
             break;
         case ERROR_ARG_IS_TOO_BIG:
             printf("The function diverges.\n");
@@ -102,7 +109,6 @@ ret_type_t Row(const double eps, callback RowFunc, const double x, const int n, 
             return ERROR_ARG_IS_TOO_BIG;
         }
         iter_cnt++;
-
     } while (fabs(cur_delta) > eps);
     printf("Answer ====> %.20f\n", summ);
     return SUCCESS;
@@ -137,7 +143,7 @@ double Dfunc(const double x, const int n) {
 
 int main(int argc, char* argv[]) {
     if (argc != 3) {
-        printf("Wrong number of arguments.");
+        printf("Wrong number of arguments.\n");
         return ERROR_WRONG_NUMB_OF_ARGS;
     }
     ret_type_t code;
