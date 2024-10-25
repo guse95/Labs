@@ -6,10 +6,7 @@
 
 enum ret_type_t {
     SUCCESS,
-    ERROR_NO_VALUE,
-    ERROR_ZERO_VAL,
     ERROR_NEGATIVE_VALUE,
-    ERROR_NOT_NUMBER,
     ERROR_TOO_LONG_STR,
     ERROR_ARGUMENR_OUT_OF_SS,
     ERROR_WRONG_REGISTR,
@@ -23,20 +20,11 @@ void HandlingError(int code) {
         case ERROR_NEGATIVE_VALUE:
             printf("Negative value was entered.\n");
             break;
-        case ERROR_NO_VALUE:
-            printf("No number was entered.\n");
-            break;
-        case ERROR_NOT_NUMBER:
-            printf("Value is not a number.\n");
-            break;
         case ERROR_TOO_LONG_STR:
             printf("Too long string was entered.\n");
             break;
         case ERROR_ARGUMENR_OUT_OF_SS:
             printf("Value is not a number in right SS.\n");
-            break;
-        case ERROR_ZERO_VAL:
-            printf("Value is zero.\n");
             break;
         case ERROR_WRONG_REGISTR:
             printf("Wrong register of number.\n");
