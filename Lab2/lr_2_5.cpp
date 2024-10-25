@@ -2,8 +2,6 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <stdarg.h>
-#include <math.h>
-#include <ctype.h>
 
 
 enum ret_type_t {
@@ -50,27 +48,6 @@ void HandlingError(int code) {
             printf("ABORTED!!!");
             break;
     }
-}
-
-ret_type_t is_double(const char* s) {
-    if (*s == '\0') return ERROR_NO_VALUE;
-
-    while (*s == ' ') s++;
-
-    if (*s == '-') s++;
-
-    int len = 0;
-    int point_was = 0;
-    while (isdigit(*s) || (*s == '.' && !point_was)) {
-        if (*s == '.')
-            point_was += 1;
-        s++;
-        if (len++ > 100)
-            return ERROR_TOO_LONG_STR;
-    }
-
-    if (*s == '\0') return SUCCESS;
-    return ERROR_NOT_NUMBER;
 }
 
 int my_strcmp(const char *str1, const char *str2) {
@@ -272,98 +249,100 @@ int overfprintf(FILE* file, const char* format, ...) {
     va_list args;
     va_start(args, format);
     while (*format != '\0') {
-        if (*format == '%') {
-            printf("%s\n", format);
-            int flag = findFlag(format, flags, standart, 10, 18);
-            ++format;
-            ret_type_t code;
-            printf("%d\n", flag);
-            switch (flag) {
-                case 0: {
-                    int arg = va_arg(args, int);
-                    if((code = funcForRo(file, arg))){
-                        HandlingError(code);
-                        return code;
-                    }
-                    break;
-                }
-                case 1: {
-                    unsigned int arg1 = va_arg(args, unsigned int);
-                    funcForZr(file, arg1);
-                    break;
-                }
-                case 2: {
-                    int arg = va_arg(args, int);
-                    int base = va_arg(args, int);
-                    funcForC(file, arg, base, 0);
-                    break;
-                }
-                case 3: {
-                    int arg = va_arg(args, int);
-                    int base = va_arg(args, int);
-                    funcForC(file, base, arg, 1);
-                    break;
-                }
-                case 4: {
-                    char* arg = va_arg(args, char*);
-                    int base = va_arg(args, int);
-                    if((code = funcForT(file, base, arg, 1))){
-                        HandlingError(code);
-                        return code;
-                    }
-                    break;
-                }
-                case 5: {
-                    char* arg = va_arg(args, char*);
-                    int base = va_arg(args, int);
-                    if((code = funcForT(file, base, arg, 0))){
-                        HandlingError(code);
-                        return code;
-                    }
-                    break;
-                }
-                case 6: {
-                    int arg = va_arg(args, int);
-                    funcForM(file, &arg, sizeof(int));
-                    break;
-                }
-                case 7: {
-                    unsigned int arg = va_arg(args, unsigned int);
-                    funcForM(file, &arg, sizeof(unsigned int));
-                    break;
-                }
-                case 8: {
-                    double arg = va_arg(args, double);
-                    funcForM(file, &arg, sizeof(double));
-                    break;
-                }
-                case 9: {
-                    float arg = va_arg(args, float);
-                    funcForM(file, &arg, sizeof(float));
-                    break;
-                }
-                case -1: {
-                    fprintf(file, "%c", *--format);
-                    fprintf(file, "%c", *++format);
-                    break;
-                }
-                default:
-                    if (flag > 9) {
-                        char* arg = va_arg(args, char*);
-                        printf("%c\n", *arg);
-                        fprintf(file, standart[flag - 10], arg);
-                        break;
-                    }
-                    printf("smth went wrong.\n");
-                    break;
-            }
-            ++format;
-        } else {
+        if (*format != '%' || *(format + 1) == '%') {
             printf("|%c|\n", *format);
             fprintf(file, "%c", *format);
+            ++format;
+            continue;
         }
+        printf("%s\n", format);
+        int flag = findFlag(format, flags, standart, 10, 18);
         ++format;
-
+        ret_type_t code;
+        printf("%d\n", flag);
+        switch (flag) {
+            case 0: {
+                int arg = va_arg(args, int);
+                if((code = funcForRo(file, arg))){
+                    HandlingError(code);
+                    return code;
+                }
+                break;
+            }
+            case 1: {
+                unsigned int arg1 = va_arg(args, unsigned int);
+                funcForZr(file, arg1);
+                break;
+            }
+            case 2: {
+                int arg = va_arg(args, int);
+                int base = va_arg(args, int);
+                funcForC(file, base, arg, 0);
+                break;
+            }
+            case 3: {
+                int arg = va_arg(args, int);
+                int base = va_arg(args, int);
+                funcForC(file, base, arg, 1);
+                break;
+            }
+            case 4: {
+                char* arg = va_arg(args, char*);
+                int base = va_arg(args, int);
+                if((code = funcForT(file, base, arg, 1))){
+                    HandlingError(code);
+                    return code;
+                }
+                break;
+            }
+            case 5: {
+                char* arg = va_arg(args, char*);
+                int base = va_arg(args, int);
+                if((code = funcForT(file, base, arg, 0))){
+                    HandlingError(code);
+                    return code;
+                }
+                break;
+            }
+            case 6: {
+                int arg = va_arg(args, int);
+                funcForM(file, &arg, sizeof(int));
+                break;
+            }
+            case 7: {
+                unsigned int arg = va_arg(args, unsigned int);
+                funcForM(file, &arg, sizeof(unsigned int));
+                break;
+            }
+            case 8: {
+                double arg = va_arg(args, double);
+                funcForM(file, &arg, sizeof(double));
+                break;
+            }
+            case 9: {
+                float arg = va_arg(args, float);
+                funcForM(file, &arg, sizeof(float));
+                break;
+            }
+            case -1: {
+                fprintf(file, "%c", *--format);
+                fprintf(file, "%c", *++format);
+                break;
+            }
+            default: {
+                if (flag > 9) {
+                    char *arg = va_arg(args, char*);
+                    printf("%d  %s  ", flag, standart[flag - 10]);
+                    fprintf(file, standart[flag - 10], arg);
+                    printf("%s\n", format - 1);
+                    --format;
+                    break;
+                }
+                printf("smth went wrong.\n");
+                break;
+            }
+        }
+        format += 2;
     }
     va_end(args);
     return SUCCESS;
@@ -377,7 +356,7 @@ int main() {
         return -1;
     }
 
-    overfprintf(file, "%d", 10);
+    overfprintf(file, "wmvnw %Zrmld ,dmmm%d   / / / /. .%%%Cv    |", 10, 52, 12345, 16);
 
     fclose(file);
 }
