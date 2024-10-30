@@ -77,7 +77,7 @@ double doublefaq(const int n) {
 }
 
 int main(){
-    double a = 2, b = 10;
-    printf("%");
+    char numb[] = "1.251\0111";
+    printf("%f\n", atof(numb));
 
 }

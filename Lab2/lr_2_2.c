@@ -32,6 +32,15 @@ double fast_pow(const double numb, int power) {
 
 int main() {
     double ans = avg_geom(3, 2.0, 4.0, 3.0);
+    printf("%.10lf\n", ans);
+    ans = avg_geom(3, 1.2, 5.2, 3.22);
+    printf("%.10lf\n", ans);
+    ans = avg_geom(3, 0.221, 4.53, 1.2345);
+    printf("%.10lf\n", ans);
     double res = fast_pow(3.14, 6);
+    printf("%.10lf\n", res);
+    res = fast_pow(1.2345, 33);
+    printf("%.10lf\n", res);
+    res = fast_pow(21.14, 3);
     printf("%.10lf", res);
 }
