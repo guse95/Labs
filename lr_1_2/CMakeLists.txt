@@ -1,1 +1,0 @@
-add_executable(lr_1_2 lr1.2.cpp)

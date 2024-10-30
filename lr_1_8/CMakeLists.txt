@@ -1,1 +1,0 @@
-add_executable(lr_1_8 lr1.8.cpp)
