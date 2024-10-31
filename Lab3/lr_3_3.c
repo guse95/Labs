@@ -6,6 +6,7 @@
 
 enum ret_type_t {
     SUCCESS,
+    ERROR_WRONG_NUMB_OF_ARGS,
     ERROR_NOT_STR,
     ERROR_NO_VALUE,
     ERROR_NOT_NUMBER,
@@ -24,7 +25,7 @@ void HandlingError(int code) {
             printf("Negative value was entered.\n");
             break;
         case ERROR_NO_VALUE:
-            printf("No number was entered.\n");
+            printf("Not number was entered.\n");
             break;
         case ERROR_NOT_NUMBER:
             printf("Value is not a number.\n");
@@ -143,16 +144,17 @@ unsigned int Atou(const char* s) {
 }
 
 int newEmployee(FILE *input, struct Employee* data) {
-    char cur = (char)fgetc(input);
+    char cur = '\0';
     char *lexeme = (char*) malloc(sizeof(char));
     int ind_in_lexeme = 0;
     int ind_of_data = 0;
-    if (cur == EOF) {
-        return FILE_ENDED;
-    }
     while (cur != EOF && cur != '\n') {
 //        printf("HUI\n");
-        if (cur != ' ') {
+        cur = (char)fgetc(input);
+        if (cur == EOF && ind_of_data != 3) {
+            return FILE_ENDED;
+        }
+        if (isalnum(cur)) {
 //            printf("%c ", cur);
             lexeme[ind_in_lexeme++] = cur;
 
@@ -166,8 +168,11 @@ int newEmployee(FILE *input, struct Employee* data) {
                 lexeme = ptr;
             }
         } else {
+            if (!ind_in_lexeme) {
+                continue;
+            }
             lexeme[ind_in_lexeme] = '\0';
-            printf("%s\n", lexeme);
+//            printf("|%s|\n", lexeme);
             int code;
 //            printf("%d\n", ind_of_data);
             switch (ind_of_data) {
@@ -208,48 +213,63 @@ int newEmployee(FILE *input, struct Employee* data) {
             ind_of_data++;
             ind_in_lexeme = 0;
         }
-        cur = (char)fgetc(input);
     }
     free(lexeme);
+    if (ind_of_data != 4) {
+        printf("Wrong number of arguments.");
+        return ERROR_WRONG_NUMB_OF_ARGS;
+    }
     return SUCCESS;
 }
 
-int cmpForD(const void* x1, const void* x2) {
-//    int res;
-//    if (x1->wage < x2->wage) {
-//        return 1;
-//    } else if (x1->wage < x2->wage) {
-//        return -1;
-//    } else {
-//        if (!(res = strcmp(x1->surname, x2->surname))) {
-//            return res;
-//        }
-//
-//        if (!(res = strcmp(x1->name, x2->name))) {
-//            return res;
-//        }
-//        if (x1->id < x2->id) {
-//            return 1;
-//        } else if (x1->id > x2->id) {
-//            return -1;
-//        }
-//        return 0;
-//    }
-    if ((x1 - x2) > 0) {
+int cmpForA(const void* y1, const void* y2) {
+    struct Employee* x1 = (struct Employee*)y1;
+    struct Employee* x2 = (struct Employee*)y2;
+    int res;
+    if (x1->wage < x2->wage) {
         return 1;
-    } else if (x1 == x2) {
+    } else if (x1->wage > x2->wage) {
+        return -1;
+    } else {
+        if (!(res = strcmp(x1->surname, x2->surname))) {
+            return res;
+        }
+
+        if (!(res = strcmp(x1->name, x2->name))) {
+            return res;
+        }
+        if (x1->id < x2->id) {
+            return 1;
+        } else if (x1->id > x2->id) {
+            return -1;
+        }
         return 0;
     }
-    return -1;
 }
 
-int cmpForA(const void* x1, const void* x2) {
-    if ((x1 - x2) < 0) {
+int cmpForD(const void* y1, const void* y2) {
+    struct Employee* x1 = (struct Employee*)y1;
+    struct Employee* x2 = (struct Employee*)y2;
+    int res;
+    if (x1->wage < x2->wage) {
+        return -1;
+    } else if (x1->wage > x2->wage) {
         return 1;
-    } else if (x1 == x2) {
+    } else {
+        if (!(res = strcmp(x1->surname, x2->surname))) {
+            return res;
+        }
+
+        if (!(res = strcmp(x1->name, x2->name))) {
+            return res;
+        }
+        if (x1->id < x2->id) {
+            return -1;
+        } else if (x1->id > x2->id) {
+            return 1;
+        }
         return 0;
     }
-    return -1;
 }
 
 int findFlag(char* curarg, const char** flags, int size) {
@@ -296,6 +316,10 @@ int main(int argc, char* argv[]) {
 
 //        printf("| ID: %u | Name: %s | Surname: %s | Wage: %.10f |\n", prom_data.id, prom_data.name, prom_data.surname, prom_data.wage);
         if (code) {
+            for (int i = 0; i < ind; ++i) {
+                free(data[i].name);
+                free(data[i].surname);
+            }
             free(data);
             HandlingError(code);
             return -1;
@@ -306,6 +330,10 @@ int main(int argc, char* argv[]) {
             struct Employee *ptr;
             ptr = (struct Employee *) realloc(data, data_size * sizeof(struct Employee));
             if (ptr == NULL) {
+                for (int i = 0; i < ind; ++i) {
+                    free(data[i].name);
+                    free(data[i].surname);
+                }
                 free(data);
                 HandlingError(MEMORY_ALLOCATION_ERROR);
                 return -1;
@@ -319,14 +347,27 @@ int main(int argc, char* argv[]) {
 
     const char *flags[] = { "-a", "/a", "-d", "/d"};
     int ret = findFlag(argv[2], flags, sizeof(flags) / sizeof(char*));
-//    if (ret < 2) {
-//        qsort(data, ind, sizeof(struct Employee), cmpForA);
-//    } else {
-//        qsort(data, ind, sizeof(struct Employee), cmpForD);
-//    }
+    if (ret == -1) {
+        printf("THIS FLAG DOES NOT EXIST %s\n", argv[2]);
+        return -1;
+    }
+    if (ret < 2) {
+        qsort(data, ind, sizeof(struct Employee), cmpForA);
+    } else {
+        qsort(data, ind, sizeof(struct Employee), cmpForD);
+    }
     for (int i = 0; i < ind; ++i) {
-        fprintf(output, "| ID: %u | Name: %s | Surname: %s | Wage: %.10f |\n", data[i].id, data[i].name, data[i].surname, data[i].wage);
+        fprintf(output, "| ID: %-5u | Name: %-15s | Surname: %-15s | Wage: %-21.10f |\n", data[i].id, data[i].name, data[i].surname, data[i].wage);
     }
 
+    printf("Answer in file: %s\n", argv[3]);
+
+    fclose(input);
+    fclose(output);
+
+    for (int i = 0; i < ind; ++i) {
+        free(data[i].name);
+        free(data[i].surname);
+    }
     free(data);
 }
