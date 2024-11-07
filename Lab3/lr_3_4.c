@@ -13,11 +13,10 @@ enum ret_type_t {
     ERROR_NOT_NUMBER,
     ERROR_TOO_LONG_STR,
     ERROR_NEGATIVE_VALUE,
-    ERROR_NOT_PATH,
-    FILE_OPENING_ERROR,
-    ERROR_SAME_IN_AND_OUT_FILES,
+    WRONG_SIZE_OF_INDEX,
+    WRONG_FORMAT,
+    ERROR_CANT_BE_TIME,
     MEMORY_ALLOCATION_ERROR,
-    FILE_ENDED
 };
 
 void HandlingError(int code) {
@@ -34,14 +33,14 @@ void HandlingError(int code) {
         case ERROR_TOO_LONG_STR:
             printf("Too long string was entered.\n");
             break;
-        case FILE_OPENING_ERROR:
-            printf("File opening error.\n");
+        case WRONG_SIZE_OF_INDEX:
+            printf("Wrong size of index.\n");
             break;
-        case ERROR_NOT_PATH:
-            printf("Value is not a path.\n");
+        case WRONG_FORMAT:
+            printf("Wrong format of data.\n");
             break;
-        case ERROR_SAME_IN_AND_OUT_FILES:
-            printf("Input and output files can not be equal.\n");
+        case ERROR_CANT_BE_TIME:
+            printf("String can not be time.\n");
             break;
         case MEMORY_ALLOCATION_ERROR:
             printf("Memory allocation error.\n");
@@ -157,31 +156,364 @@ struct Address {
     int ind[6];
 };
 
+int is_number(const char* s) {
+    if (*s == '\0') return ERROR_NO_VALUE;
+
+    while (*s == ' ') s++;
+
+    if (*s == '-') {
+        return ERROR_NEGATIVE_VALUE;
+    }
+
+    int len = 0;
+    while (isdigit(*s)) {
+        s++;
+        if (len++ > 18) return ERROR_TOO_LONG_STR;
+    }
+
+    if (*s == '\0') return SUCCESS;
+    return ERROR_NOT_NUMBER;
+}
+
+int is_float(const char* s) {
+    if (*s == '\0') return ERROR_NO_VALUE;
+
+    while (*s == ' ') s++;
+
+    if (*s == '-') {
+        return ERROR_NEGATIVE_VALUE;
+    }
+
+    int len = 0;
+    int point_was = 0;
+    while (isdigit(*s) || (*s == '.' && !point_was)) {
+        if (*s == '.')
+            point_was += 1;
+        s++;
+        if (len++ > 20)
+            return ERROR_TOO_LONG_STR;
+    }
+
+    if (*s == '\0') return SUCCESS;
+    return ERROR_NOT_NUMBER;
+}
+
+int is_str(const char* s) {
+    while (*s) {
+        if (!isalpha(*s)) {
+            return ERROR_NOT_STR;
+        }
+        s++;
+    }
+    return SUCCESS;
+}
+
+int is_time(const char* s) {
+    printf("%s\n", s);
+    if (!isdigit(*s++) || !isdigit(*s) || ((*(s - 1) - '0') * 10 + *s - '0') > 31) {
+        printf("%d\n", (*(s - 1) - '0') * 10 + *s - '0');
+        return ERROR_CANT_BE_TIME; }
+    ++s;
+    printf("%c", *s);
+    if (*s != ':') return WRONG_FORMAT;
+    ++s;
+    printf("%c", *s);
+    if (!isdigit(*s++) || !isdigit(*s) || ((*(s - 1) - '0') * 10 + *s - '0') > 12) return ERROR_CANT_BE_TIME;
+    ++s;
+    printf("%c", *s);
+    if (*s != ':') return WRONG_FORMAT;
+    ++s;
+    printf("%c", *s);
+    if (!isdigit(*s++) || !isdigit(*s++) ||!isdigit(*s++) || !isdigit(*s) || ((((*(s - 3) - '0') * 10 + *(s - 2) - '0') * 10 + *(s - 1) - '0') * 10 + *s - '0') > 2024) {
+        return ERROR_CANT_BE_TIME; }
+    printf("%d\n", ((((*(s - 3) - '0') * 10 + *(s - 2) - '0') * 10 + *(s - 1) - '0') * 10 + *s - '0'));
+
+    if (*++s != ' ') return WRONG_FORMAT;
+    ++s;
+    if (!isdigit(*s++) || !isdigit(*s) || ((*(s - 1) - '0') * 10 + *s - '0') > 24) return ERROR_CANT_BE_TIME;
+    if (*++s != ':') return WRONG_FORMAT;
+    ++s;
+    if (!isdigit(*s++) || !isdigit(*s) || ((*(s - 1) - '0') * 10 + *s - '0') > 60) return ERROR_CANT_BE_TIME;
+    if (*++s != ':') return WRONG_FORMAT;
+    ++s;
+    if (!isdigit(*s++) || !isdigit(*s) || ((*(s - 1) - '0') * 10 + *s - '0') > 60) return ERROR_CANT_BE_TIME;
+    if (*++s != '\0') return WRONG_FORMAT;
+    return SUCCESS;
+}
+
+unsigned int Atou(const char* s) {
+    while (*s == ' ') s++;
+    unsigned int res = 0;
+    while (*s != '\0') {
+        res = (res * 10) + (*s - '0');
+        s++;
+    }
+    return res;
+}
+
+int newAddress(struct Address* new, char* addr) {
+    char* ptrA = addr;
+    char* lexeme = (char*) malloc(sizeof(char));
+    int ind_of_data = 0;
+    int ind_in_lexeme = 0;
+
+    while (*ptrA) {
+        ++ptrA;
+        if (*ptrA == '\0' && ind_of_data != 5) {
+            return SUCCESS;
+        }
+        if (isalnum(*ptrA)) {
+//            printf("%c ", cur);
+            lexeme[ind_in_lexeme++] = *ptrA;
+
+            if (ind_in_lexeme >= strlen(lexeme)) {
+                char *ptr;
+                ptr = (char*) realloc(lexeme, 2 * strlen(lexeme) * sizeof(char));
+                if (ptr == NULL) {
+                    free(lexeme);
+                    return MEMORY_ALLOCATION_ERROR;
+                }
+                lexeme = ptr;
+            }
+        } else {
+            if (!ind_in_lexeme) {
+                continue;
+            }
+            lexeme[ind_in_lexeme] = '\0';
+//            printf("|%s|\n", lexeme);
+            int code;
+//            printf("%d\n", ind_of_data);
+            switch (ind_of_data) {
+                case 0:
+                    if ((code = is_str(lexeme))) {
+                        free(lexeme);
+                        return code;
+                    }
+                    toStr(&new->town, lexeme);
+                    break;
+                case 1:
+                    if ((code = is_str(lexeme))) {
+                        free(lexeme);
+                        return code;
+                    }
+                    toStr(&new->street, lexeme);
+                    break;
+                case 2:
+                    if ((code = is_number(lexeme))) {
+                        free(lexeme);
+                        return code;
+                    }
+                    new->house = Atou(lexeme);
+                    break;
+                case 3:
+                    if ((code = is_str(lexeme))) {
+                        free(lexeme);
+                        return code;
+                    }
+                    toStr(&new->corp, lexeme);
+                    break;
+                case 4:
+                    if ((code = is_number(lexeme))) {
+                        free(lexeme);
+                        return code;
+                    }
+                    new->flat = Atou(lexeme);
+                    break;
+                case 5:
+                    if ((code = is_number(lexeme)) || ind_in_lexeme != 6) {
+                        free(lexeme);
+                        return code;
+                    }
+                    for (int i = 0; i < 6; ++i) {
+                        new->ind[i] = lexeme[i] - '0';
+                        printf("|%d|\n", new->ind[i]);
+                    }
+                    break;
+                default:
+                    printf("Something went wrong!\n");
+                    break;
+            }
+            ind_of_data++;
+            ind_in_lexeme = 0;
+        }
+    }
+    free(lexeme);
+    if (ind_of_data != 6) {
+        printf("Wrong number of arguments.");
+        return ERROR_WRONG_NUMB_OF_ARGS;
+    }
+
+    return SUCCESS;
+}
+
 struct Mail {
     struct Address address;
     float weight;
-    int postInd[14];
-    struct String creature[19];
-    struct String handing[19];
+    struct String postInd;
+    struct String creature;
+    struct String handing;
 };
+
+int newMail(struct Mail* new) {
+    char cur = '\0';
+    char *lexeme = (char*) malloc(sizeof(char));
+    int ind_in_lexeme = 0;
+    int ind_of_data = 0;
+    int mx_size = 1;
+
+    printf("Enter the receiver's address:\n");
+    while (1) {
+        cur = (char)getchar();
+        printf("/%c/\n", cur);
+        printf("G%dG\n", ind_of_data);
+        if (ind_of_data == 5) {
+            break;
+        }
+        if (cur != '\n') {
+//            printf("%c ", cur);
+            lexeme[ind_in_lexeme++] = cur;
+
+            if (ind_in_lexeme >= strlen(lexeme)) {
+                mx_size *= 2;
+                char *ptr;
+                ptr = (char*) realloc(lexeme, mx_size * sizeof(char));
+                if (ptr == NULL) {
+                    free(lexeme);
+                    return MEMORY_ALLOCATION_ERROR;
+                }
+                lexeme = ptr;
+            }
+        } else {
+            if (!ind_in_lexeme) {
+                continue;
+            }
+            lexeme[ind_in_lexeme] = '\0';
+            printf("|%s|\n", lexeme);
+            printf("%d\n", ind_in_lexeme);
+            int code;
+            printf("G%dG\n", ind_of_data);
+            switch (ind_of_data) {
+                case 0:
+                    if ((code = newAddress(&new->address, lexeme))) {
+                        free(lexeme);
+                        return code;
+                    }
+                    printf("Enter the package weight:\n");
+                    break;
+                case 1:
+                    if ((code = is_float(lexeme))) {
+                        free(lexeme);
+                        return code;
+                    }
+                    new->weight = atof(lexeme);
+                    printf("Enter the post index:\n");
+                    break;
+                case 2:
+                    if (ind_in_lexeme != 14) {
+                        free(lexeme);
+                        return WRONG_SIZE_OF_INDEX;
+                    }
+                    for (int i = 0; i < 14; ++i) {
+                        if (!isdigit(lexeme[i])) {
+                            free(lexeme);
+                            return ERROR_NOT_NUMBER;
+                        }
+                    }
+                    toStr(&new->postInd, lexeme);
+                    printf("Enter the time of creation(in the format - DD:MM:YYYY hh:mm:ss):\n");
+                    break;
+                case 3:
+                    if ((code = is_time(lexeme))) {
+                        free(lexeme);
+                        return code;
+                    }
+                    toStr(&new->creature, lexeme);
+                    printf("Enter the time of delivery(in the format - DD:MM:YYYY hh:mm:ss):\n");
+                    break;
+                case 4:
+                    if ((code = is_time(lexeme))) {
+                        free(lexeme);
+                        return code;
+                    }
+                    toStr(&new->handing, lexeme);
+                    break;
+                default:
+                    printf("Something went wrong!\n");
+                    break;
+            }
+            ind_of_data++;
+            ind_in_lexeme = 0;
+        }
+    }
+    free(lexeme);
+//    if (ind_of_data != 5) {
+//        printf("Wrong number of arguments.");
+//        return ERROR_WRONG_NUMB_OF_ARGS;
+//    }
+
+    return SUCCESS;
+}
 
 struct Post {
-    struct Address postOffice;
+    struct Address *postOffice;
     struct Mail *mails;
+    int len;
 };
 
+int newPost(struct Post* new, char* address) {
+    new->len = 0;
+    new->mails = NULL;
+    newAddress(new->postOffice, address);
+    printf("Pozda\n");
+    return SUCCESS;
+}
+
+int addMail(struct Post * office, struct Mail new) {
+    static int cnt;
+    printf("HUI");
+    struct Mail * ptrM = office->mails;
+
+    if (!office->len) {
+        office->mails = (struct Mail*) malloc(sizeof(struct Mail));
+        cnt = 1;
+    } else {
+        if (office->len + 1 >= cnt) {
+            cnt *= 2;
+            struct Mail *ptr;
+            ptr = (struct Mail*) realloc(office->mails, cnt * sizeof(struct Mail));
+            if (ptr == NULL) {
+                free(office->mails);
+                return MEMORY_ALLOCATION_ERROR;
+            }
+            office->mails = ptr;
+        }
+    }
+    printf("%d  %d\n", office->len, cnt);
+    office->mails[office->len] = new;
+    office->len++;
+    return SUCCESS;
+}
 
 int main(int argc, char* argv[]) {
-    char *test = "weekend";
-    char *test2 = "weekend";
-    struct String str;
-    toStr(&str, test);
-    struct String strnew;
-    toStr(&strnew, test2);
-    StrCopy(&strnew, str);
-    printf("%d\n", StrEq(strnew, str));
-    StrConc(&strnew, strnew);
-    for (int i = 0; i < strnew.len; i++) {
-        printf("%c ", strnew.str[i]);
-    }
+//    char *test = "weekend";
+//    char *test2 = "weekend";
+//    struct String str;
+//    toStr(&str, test);
+//    struct String strnew;
+//    toStr(&strnew, test2);
+//    StrCopy(&strnew, str);
+//    printf("%d\n", StrEq(strnew, str));
+//    StrConc(&strnew, strnew);
+//    for (int i = 0; i < strnew.len; i++) {
+//        printf("%c ", strnew.str[i]);
+//    }
+    char* addres = {"hui zalupa 52 aa 12 123456"};
+    struct Post mama;
+    newPost(&mama, addres);
+    struct Mail hui;
+    newMail(&hui);
+    addMail(&mama, hui);
+    addMail(&mama, hui);
+    addMail(&mama, hui);
+//    printf("Code - %d\n", newAddress(&mama, addres));
 }
