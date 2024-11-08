@@ -59,7 +59,7 @@ struct Employee {
     unsigned int id;
     char* name;
     char* surname;
-    float wage;
+    char* wage;
 };
 
 int is_number(const char* s) {
@@ -160,7 +160,7 @@ int newEmployee(FILE *input, struct Employee* data) {
 
             if (ind_in_lexeme >= strlen(lexeme)) {
                 char *ptr;
-                ptr = (char*) realloc(lexeme, 2 * strlen(lexeme) * sizeof(char));
+                ptr = (char*) realloc(lexeme, 2 * (sizeof(lexeme) + 1) * sizeof(char));
                 if (ptr == NULL) {
                     free(lexeme);
                     return MEMORY_ALLOCATION_ERROR;
@@ -177,14 +177,14 @@ int newEmployee(FILE *input, struct Employee* data) {
 //            printf("%d\n", ind_of_data);
             switch (ind_of_data) {
                 case 0:
-                    if ((code = is_number(lexeme))) {
+                    if ((code = is_number(lexeme)) != SUCCESS) {
                         free(lexeme);
                         return code;
                     }
                     data->id = Atou(lexeme);
                     break;
                 case 1:
-                    if ((code = is_str(lexeme))) {
+                    if ((code = is_str(lexeme)) != SUCCESS) {
                         free(lexeme);
                         return code;
                     }
@@ -192,7 +192,7 @@ int newEmployee(FILE *input, struct Employee* data) {
                     strcpy(data->name, lexeme);
                     break;
                 case 2:
-                    if ((code = is_str(lexeme))) {
+                    if ((code = is_str(lexeme)) != SUCCESS) {
                         free(lexeme);
                         return code;
                     }
@@ -200,11 +200,12 @@ int newEmployee(FILE *input, struct Employee* data) {
                     strcpy(data->surname, lexeme);
                     break;
                 case 3:
-                    if ((code = is_float(lexeme))) {
+                    if ((code = is_float(lexeme)) != SUCCESS) {
                         free(lexeme);
                         return code;
                     }
-                    data->wage = atof(lexeme);
+                    data->wage = (char*) malloc(sizeof(char) * strlen(lexeme));
+                    strcpy(data->wage, lexeme);
                     break;
                 default:
                     printf("Something went wrong!\n");
@@ -222,20 +223,53 @@ int newEmployee(FILE *input, struct Employee* data) {
     return SUCCESS;
 }
 
+int wageCmp(char *str1, char *str2) {
+    char* ptr1 = str1;
+    char* ptr2 = str2;
+    int len1 = 0, len2 = 0;
+    while (*ptr1 != '.') {
+        ptr1++;
+        len1++;
+    }
+
+    while (*ptr2 != '.') {
+        ptr2++;
+        len2++;
+    }
+    if (len1 != len2) {
+        return (len1 > len2)? 1 : -1;
+    }
+
+    while (*str1 != '\0' && *str2 != '\0') {
+        if (*str1 != *str2) {
+            return *str1 > *str2;
+        }
+        str1++;
+        str2++;
+    }
+    if (*str1 != '\0') {
+        return 1;
+    }
+    if (*str2 != '\0') {
+        return -1;
+    }
+    return 0;
+}
+
 int cmpForD(const void* y1, const void* y2) {
     struct Employee* x1 = (struct Employee*)y1;
     struct Employee* x2 = (struct Employee*)y2;
     int res;
-    if (x1->wage < x2->wage) {
+    if (wageCmp(x1->wage, x2->wage) < 0) {
         return 1;
-    } else if (x1->wage > x2->wage) {
+    } else if (wageCmp(x1->wage, x2->wage) > 0) {
         return -1;
     } else {
         if ((res = strcmp(x1->surname, x2->surname)) != 0) {
             return res;
         }
 
-        if (!(res = strcmp(x1->name, x2->name))) {
+        if ((res = strcmp(x1->name, x2->name)) != 0) {
             return res;
         }
         if (x1->id < x2->id) {
@@ -251,16 +285,16 @@ int cmpForA(const void* y1, const void* y2) {
     struct Employee* x1 = (struct Employee*)y1;
     struct Employee* x2 = (struct Employee*)y2;
     int res;
-    if (x1->wage < x2->wage) {
+    if (wageCmp(x1->wage, x2->wage) < 0) {
         return -1;
-    } else if (x1->wage > x2->wage) {
+    } else if (wageCmp(x1->wage, x2->wage) > 0) {
         return 1;
     } else {
         if ((res = strcmp(x1->surname, x2->surname)) != 0) {
             return res;
         }
 
-        if (!(res = strcmp(x1->name, x2->name))) {
+        if ((res = strcmp(x1->name, x2->name)) != 0) {
             return res;
         }
         if (x1->id < x2->id) {
@@ -319,6 +353,7 @@ int main(int argc, char* argv[]) {
             for (int i = 0; i < ind; ++i) {
                 free(data[i].name);
                 free(data[i].surname);
+                free(data[i].wage);
             }
             free(data);
             HandlingError(code);
@@ -333,6 +368,7 @@ int main(int argc, char* argv[]) {
                 for (int i = 0; i < ind; ++i) {
                     free(data[i].name);
                     free(data[i].surname);
+                    free(data[i].wage);
                 }
                 free(data);
                 HandlingError(MEMORY_ALLOCATION_ERROR);
@@ -357,7 +393,7 @@ int main(int argc, char* argv[]) {
         qsort(data, ind, sizeof(struct Employee), cmpForD);
     }
     for (int i = 0; i < ind; ++i) {
-        fprintf(output, "| ID: %-5u | Name: %-15s | Surname: %-15s | Wage: %-21.10f |\n", data[i].id, data[i].name, data[i].surname, data[i].wage);
+        fprintf(output, "| ID: %-5u | Name: %-15s | Surname: %-15s | Wage: %-20s |\n", data[i].id, data[i].name, data[i].surname, data[i].wage);
     }
 
     printf("Answer in file: %s\n", argv[3]);
@@ -368,6 +404,7 @@ int main(int argc, char* argv[]) {
     for (int i = 0; i < ind; ++i) {
         free(data[i].name);
         free(data[i].surname);
+        free(data[i].wage);
     }
     free(data);
 }
