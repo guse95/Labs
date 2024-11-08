@@ -154,7 +154,7 @@ int newEmployee(FILE *input, struct Employee* data) {
         if (cur == EOF && ind_of_data != 3) {
             return FILE_ENDED;
         }
-        if (isalnum(cur)) {
+        if (cur != '\n' && cur != ' ' && cur != EOF) {
 //            printf("%c ", cur);
             lexeme[ind_in_lexeme++] = cur;
 
@@ -222,7 +222,7 @@ int newEmployee(FILE *input, struct Employee* data) {
     return SUCCESS;
 }
 
-int cmpForA(const void* y1, const void* y2) {
+int cmpForD(const void* y1, const void* y2) {
     struct Employee* x1 = (struct Employee*)y1;
     struct Employee* x2 = (struct Employee*)y2;
     int res;
@@ -231,7 +231,7 @@ int cmpForA(const void* y1, const void* y2) {
     } else if (x1->wage > x2->wage) {
         return -1;
     } else {
-        if (!(res = strcmp(x1->surname, x2->surname))) {
+        if ((res = strcmp(x1->surname, x2->surname)) != 0) {
             return res;
         }
 
@@ -247,7 +247,7 @@ int cmpForA(const void* y1, const void* y2) {
     }
 }
 
-int cmpForD(const void* y1, const void* y2) {
+int cmpForA(const void* y1, const void* y2) {
     struct Employee* x1 = (struct Employee*)y1;
     struct Employee* x2 = (struct Employee*)y2;
     int res;
@@ -256,7 +256,7 @@ int cmpForD(const void* y1, const void* y2) {
     } else if (x1->wage > x2->wage) {
         return 1;
     } else {
-        if (!(res = strcmp(x1->surname, x2->surname))) {
+        if ((res = strcmp(x1->surname, x2->surname)) != 0) {
             return res;
         }
 

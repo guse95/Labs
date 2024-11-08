@@ -77,7 +77,12 @@ double doublefaq(const int n) {
 }
 
 int main(){
-    char numb[] = "1.251\0111";
-    printf("%f\n", atof(numb));
+    char seconds[4096];
+    _strdate(seconds);
+    cout << seconds << endl;
+    _strtime(seconds);
+    cout << seconds << endl;
+
+
 
 }

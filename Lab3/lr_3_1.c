@@ -11,7 +11,7 @@ int LenOfNumber(int number) {
     return len + 2;
 }
 
-int pow_of_2(int base) {
+int PowOf2(int base) {
     int p = 0;
     while (base) {
         base >>= 1;
@@ -33,7 +33,7 @@ char *reverse(const char *str) {
     int len = strLen(str);
     char *reversed = (char*)malloc(len + 1);
     if (reversed == NULL) {
-        printf("Failed allocating memory failed\n");
+        printf("Memory allocation error.\n");
         return NULL;
     }
     for (int i = 0; i < len; i++) {
@@ -46,12 +46,30 @@ char *reverse(const char *str) {
 int OstMask(int pow) {
     int mask = 0;
     switch(pow) {
-        case 1: mask = 1;break;
-        case 2: mask = 3;break;
-        case 3: mask = 7;break;
-        case 4: mask = 15;break;
-        case 5: mask = 31;break;
-        default: mask = -1;break;
+        case 1: {
+            mask = 1;
+            break;
+        }
+        case 2: {
+            mask = 3;
+            break;
+        }
+        case 3: {
+            mask = 7;
+            break;
+        }
+        case 4: {
+            mask = 15;
+            break;
+        }
+        case 5: {
+            mask = 31;
+            break;
+        }
+        default: {
+            mask = -1;
+            break;
+        }
     }
     return mask;
 }
@@ -61,7 +79,7 @@ char *DecToBase(int base, int num) {
         char *error = "This base is not supported\0";
         return error;
     }
-    int pow = pow_of_2(base), len = LenOfNumber(num), mask = OstMask(pow);
+    int pow = PowOf2(base), len = LenOfNumber(num), mask = OstMask(pow);
     char *result = (char *)malloc(len);
     if (result == NULL) {
         printf("Error allocating memory\n");
@@ -79,8 +97,8 @@ char *DecToBase(int base, int num) {
     }
     result[ind] = '\0';
 
-    char* reversed = reverse(result);
-    return reversed;
+    char *ans = reverse(result);
+    return ans;
 }
 
 void HandlingFunction(int base, int num) {
