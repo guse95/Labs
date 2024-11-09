@@ -276,17 +276,23 @@ int newAddress(struct Address* new, char* addr) {
     char* lexeme = (char*) malloc(sizeof(char));
     int ind_of_data = 0;
     int ind_in_lexeme = 0;
+    int first = 1;
 
     while (*ptrA) {
-        ++ptrA;
+        if (first) {
+            first = 0;
+        } else {
+            ++ptrA;
+        }
+
         if (*ptrA == '\0' && ind_of_data != 5) {
             return SUCCESS;
         }
         if (isalnum(*ptrA)) {
-//            printf("%c ", cur);
+            printf("%c ",*ptrA);
             lexeme[ind_in_lexeme++] = *ptrA;
 
-            if (ind_in_lexeme >= strlen(lexeme)) {
+            if (ind_in_lexeme >= sizeof(lexeme)) {
                 char *ptr;
                 ptr = (char*) realloc(lexeme, 2 * ((int)sizeof(lexeme) + 1) * sizeof(char));
                 if (ptr == NULL) {
@@ -300,9 +306,10 @@ int newAddress(struct Address* new, char* addr) {
                 continue;
             }
             lexeme[ind_in_lexeme] = '\0';
-//            printf("|%s|\n", lexeme);
+//            printf("code: %d\n", ind_in_lexeme < sizeof(lexeme));
+            printf("|%s|\n", lexeme);
             int code;
-//            printf("%d\n", ind_of_data);
+            printf("%d\n", ind_of_data);
             switch (ind_of_data) {
                 case 0:
                     if ((code = is_str(lexeme)) != SUCCESS) {
@@ -368,6 +375,18 @@ int newAddress(struct Address* new, char* addr) {
     return SUCCESS;
 }
 
+
+void AddressClear(struct Address *adr) {
+    StrClear(&adr->town);
+    StrClear(&adr->street);
+    StrClear(&adr->corp);
+    adr->house = 0;
+    adr->flat = 0;
+    for(int i = 0; i < 6; i++) {
+        adr->ind[i] = 0;
+    }
+}
+
 struct Mail {
     struct Address address;
     float weight;
@@ -397,13 +416,12 @@ int newMail(struct Mail* new) {
 //        printf("/%c/\n", cur);
 //        printf("G%dG\n", ind_of_data);
         if (ind_of_data == 5) {
+            free(lexeme);
             break;
         }
         if (cur != '\n') {
 //            printf("%c ", cur);
-            lexeme[ind_in_lexeme++] = cur;
-
-            if (ind_in_lexeme >= strlen(lexeme)) {
+            if (ind_in_lexeme >= sizeof(lexeme)) {
                 char *ptr;
                 ptr = (char*) realloc(lexeme, 2 * (int)(sizeof(lexeme) + 1) * sizeof(char));
                 if (ptr == NULL) {
@@ -412,6 +430,7 @@ int newMail(struct Mail* new) {
                 }
                 lexeme = ptr;
             }
+            lexeme[ind_in_lexeme++] = cur;
         } else {
             if (!ind_in_lexeme) {
                 continue;
@@ -643,46 +662,63 @@ int main(int argc, char* argv[]) {
 //    }
 
 
+
+
+
+
+
     char* addres = {"hui zalupa 52 aa 12 123456"};
     struct Post head;
+
     newPost(&head, addres);
-
-    printf("Possible commands:\n"
-           "1 - Insert new Mail.\n"
-           "2 - Delete last Mail(newest).\n"
-           "3 - All delivered Mails\n"
-           "4 - Exit\n\n");
-
-    int flag = 1;
-    while (flag) {
-        char command[256];
-        printf("Enter command:\n");
-        scanf("%s", command);
-        int com = CheckCommand(command);
-        printf("Command: %d\n", com);
-        switch (com) {
-            case 1: {
-                struct Mail new;
-                newMail(&new);
-                addMail(&head, new);
-                break;
-            }
-            case 2: {
-                delLastMail(&head);
-                break;
-            }
-            case 3: {
-                allDelivered(&head);
-                break;
-            }
-            case 4: {
-                flag = 0;
-                break;
-            }
-            default: {
-                printf("Invalid Command.\n");
-                break;
-            }
-        }
-    }
+    printAddress(*head.postOffice);
+//    printf("Possible commands:\n"
+//           "1 - Insert new Mail.\n"
+//           "2 - Delete last Mail(newest).\n"
+//           "3 - All delivered Mails\n"
+//           "4 - Exit\n\n");
+//
+//    int flag = 1;
+//    while (flag) {
+//        char command[256];
+//        printf("Enter command:\n");
+//        scanf("%s", command);
+//        int com = CheckCommand(command);
+//        printf("Command: %d\n", com);
+//        switch (com) {
+//            case 1: {
+//                struct Mail new;
+//                newMail(&new);
+//                addMail(&head, new);
+//                break;
+//            }
+//            case 2: {
+//                delLastMail(&head);
+//                break;
+//            }
+//            case 3: {
+//                allDelivered(&head);
+//                break;
+//            }
+//            case 4: {
+//                flag = 0;
+//                break;
+//            }
+//            default: {
+//                printf("Invalid Command.\n");
+//                break;
+//            }
+//        }
+//    }
+//    if (head.mails != NULL) {
+//        for (int i = 0; i < (int)sizeof(head.mails); i++) {
+//            AddressClear(&head.mails[i].address);
+//            head.mails[i].weight = 0;
+//            StrClear(&head.mails[i].postInd);
+//            StrClear(&head.mails[i].creature);
+//            StrClear(&head.mails[i].handing);
+//        }
+//        free(head.mails);
+//    }
+//    AddressClear(head.postOffice);
 }

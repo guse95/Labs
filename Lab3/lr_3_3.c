@@ -12,7 +12,6 @@ enum ret_type_t {
     ERROR_NOT_NUMBER,
     ERROR_TOO_LONG_STR,
     ERROR_NEGATIVE_VALUE,
-    ERROR_NOT_PATH,
     FILE_OPENING_ERROR,
     ERROR_SAME_IN_AND_OUT_FILES,
     MEMORY_ALLOCATION_ERROR,
@@ -35,9 +34,6 @@ void HandlingError(int code) {
             break;
         case FILE_OPENING_ERROR:
             printf("File opening error.\n");
-            break;
-        case ERROR_NOT_PATH:
-            printf("Value is not a path.\n");
             break;
         case ERROR_SAME_IN_AND_OUT_FILES:
             printf("Input and output files can not be equal.\n");
@@ -110,25 +106,6 @@ int is_str(const char* s) {
             return ERROR_NOT_STR;
         }
         s++;
-    }
-    return SUCCESS;
-}
-
-int path_checker(char* path) {
-    char* ptr = path + strlen(path);
-    while (*ptr != '.') {
-        --ptr;
-    }
-    ++ptr;
-    if(strcmp(ptr, "txt") != 0) {
-        return ERROR_NOT_PATH;
-    }
-    while (isalpha(*ptr) || isdigit(*ptr) || *ptr == '-'
-           || *ptr == '_' || *ptr == '.' || *ptr == '\\') {
-        --ptr;
-    }
-    if (*ptr != ':' || !isupper(*(ptr - 1)) || *(ptr + 1) != '\\') {
-        return ERROR_NOT_PATH;
     }
     return SUCCESS;
 }
@@ -320,11 +297,6 @@ int findFlag(char* curarg, const char** flags, int size) {
 int main(int argc, char* argv[]) {
     if (argc != 4) {
         printf("Wrong number of arguments.\n");
-        return -1;
-    }
-
-    if (path_checker(argv[1]) || path_checker(argv[3])) {
-        HandlingError(ERROR_NOT_PATH);
         return -1;
     }
 

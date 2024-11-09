@@ -2,24 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-int toInt(const char* argv) {
-    int res = 0;
-    int i = 0;
-    int neg_flag = 0;
-    if (argv[0] == '-') {
-        neg_flag = 1;
-        i = 1;
-    }
-    while (argv[i] != '\0' && argv[i] != '\n') {
-        res = res * 10 + argv[i] - '0';
-        i++;
-    }
-    if (neg_flag) {
-        res *= -1;
-    }
-    //printf("%d\n", res);
-    return res;
-}
 
 struct Node {
     int BusNumber;
@@ -42,55 +24,54 @@ struct Node* Create(int BusNum, int stCoords, char* arrivalTime, char* departure
     return ptr;
 }
 
-void Insert(struct Node* pNode, struct Node* newNode) {
+int Atoi(const char* argv) {
+    int res = 0;
+    int i = 0;
+    int neg_flag = 0;
+    if (argv[0] == '-') {
+        neg_flag = 1;
+        i = 1;
+    }
+    while (argv[i] != '\0' && argv[i] != '\n') {
+        res = res * 10 + argv[i] - '0';
+        i++;
+    }
+    if (neg_flag) {
+        res *= -1;
+    }
+    //printf("%d\n", res);
+    return res;
+}
+
+void pushBehind(struct Node* pNode, struct Node* newNode) {
     newNode->next = pNode->next;
     pNode->next = newNode;
 }
 
-void PushFront(struct Node** pHead, struct Node* newNode) {
+void pushFront(struct Node** pHead, struct Node* newNode) {
     newNode->next = *pHead;
     *pHead = newNode;
 }
 
-void delete(struct Node* pNode) {
-    struct Node* ptr;
-    ptr = pNode->next;
-    pNode->next = ptr->next;
-    free(ptr);
-}
-
-// Главный список
-struct NodeMain {
+struct List {
     struct Node* BusHead;
-    struct NodeMain *next;
+    struct List *next;
 };
 
-struct NodeMain* CreateForMain(struct Node* BusHead) {
-    struct NodeMain* ptr = NULL;
-    ptr = (struct NodeMain*)malloc(sizeof(struct NodeMain));
+struct List* CreateForMain(struct Node* BusHead) {
+    struct List* ptr = NULL;
+    ptr = (struct List*)malloc(sizeof(struct List));
     ptr->BusHead = BusHead;
     ptr->next = NULL;
     return ptr;
 }
 
-void InsertInMain(struct NodeMain* pNode, struct NodeMain* newNode) {
+void pushList(struct List* pNode, struct List* newNode) {
     newNode->next = pNode->next;
     pNode->next = newNode;
 }
 
-void PushFrontInMain(struct NodeMain** pHead, struct NodeMain* newNode) {
-    newNode->next = *pHead;
-    *pHead = newNode;
-}
-
-void deleteFromMain(struct NodeMain* pNode) {
-    struct NodeMain* ptr;
-    ptr = pNode->next;
-    pNode->next = ptr->next;
-    free(ptr);
-}
-
-int ValidateCommand(char* command) {
+int CheckCommand(char* command) {
     char c = '0';
     for (int i = 0; i <= 9; ++i) {
         char st[2] = "0\0";
@@ -105,88 +86,87 @@ int ValidateCommand(char* command) {
     return -1;
 }
 
-void AmOfRoutes(struct NodeMain* MainHead, int flag) {
-    int BusNum, amount = 0, biggestBus = 0, biggestAm = -1, smallestBus = 0, smallestAm = 100000000;
+void PathCnt(struct List* Head, int flag) {
+    int bus_numb, cnt = 0, max_bus = 0, max_cnt = -1, min_bus = 0, min_cnt = 100000000;
 
-    struct NodeMain* ptr = MainHead;
+    struct List* ptr = Head;
     while (ptr != NULL) {
-        BusNum = ptr->BusHead->BusNumber;
+        bus_numb = ptr->BusHead->BusNumber;
         //printf("BusNum = %d\n", BusNum);
         struct Node* bus = ptr->BusHead;
         while (bus != NULL) {
             if (bus->marker == 2) {
-                amount++;
+                cnt++;
             }
             bus = bus->next;
         }
-        if (amount > biggestAm) {
-            biggestAm = amount;
-            biggestBus = BusNum;
+        if (cnt > max_cnt) {
+            max_cnt = cnt;
+            max_bus = bus_numb;
         }
-        if (amount < smallestAm) {
-            smallestAm = amount;
-            smallestBus = BusNum;
+        if (cnt < min_cnt) {
+            min_cnt = cnt;
+            min_bus = bus_numb;
         }
-        amount = 0;
+        cnt = 0;
         ptr = ptr->next;
     }
     if (flag) {
-        printf("Bus #%d traveled the most routes: %d\n\n", biggestBus, biggestAm);
+        printf("Bus #%d traveled the most routes: %d\n\n", max_bus, max_cnt);
     } else {
-        printf("Bus #%d traveled the least routes: %d\n\n", smallestBus, smallestAm);
+        printf("Bus #%d traveled the least routes: %d\n\n", min_bus, min_cnt);
     }
 }
 
-void Path(struct NodeMain* MainHead, int flag) {
-    int BusNum, amount = 0, biggestBus = 0, biggestAm = -1, smallestBus = 0, smallestAm = 100000000;
+void Path(struct List* MainHead, int flag) {
+    int bus_numb, len = 0, max_bus = 0, max_len = -1, min_bus = 0, min_len = 100000000;
 
-    struct NodeMain* ptr = MainHead;
+    struct List* ptr = MainHead;
     while (ptr != NULL) {
-        BusNum = ptr->BusHead->BusNumber;
+        bus_numb = ptr->BusHead->BusNumber;
         struct Node* bus = ptr->BusHead;
         while (bus != NULL) {
-            amount++;
+            len++;
             bus = bus->next;
         }
-        if (amount > biggestAm) {
-            biggestAm = amount;
-            biggestBus = BusNum;
+        if (len > max_len) {
+            max_len = len;
+            max_bus = bus_numb;
         }
-        if (amount < smallestAm) {
-            smallestAm = amount;
-            smallestBus = BusNum;
+        if (len < min_len) {
+            min_len = len;
+            min_bus = bus_numb;
         }
-        amount = 0;
+        len = 0;
         ptr = ptr->next;
     }
     if (flag) {
-        printf("Bus #%d traveled the biggest path: %d\n\n", biggestBus, biggestAm);
+        printf("Bus #%d traveled the biggest path: %d\n\n", max_bus, max_len);
     } else {
-        printf("Bus #%d traveled the smallest path: %d\n\n", smallestBus, smallestAm);
+        printf("Bus #%d traveled the smallest path: %d\n\n", min_bus, min_len);
     }
 }
 
-void RouteLength (struct NodeMain* MainHead, int flag) {
-    int BusNum, amount = 0, biggestBus = 0, biggestAm = -1, smallestBus = 0, smallestAm = 100000000;
-
-    struct NodeMain* ptr = MainHead;
+void PathLen (struct List* MainHead, int flag) {
+    int bus_numb, len = 0, max_bus = 0, max_len = -1, min_bus = 0, min_len = 100000000;
+    struct List* ptr = MainHead;
     while (ptr != NULL) {
-        BusNum = ptr->BusHead->BusNumber;
+        bus_numb = ptr->BusHead->BusNumber;
         struct Node* bus = ptr->BusHead;
         while (bus != NULL) {
             if (bus->marker == 2) {
-                amount++;
-                if (amount > biggestAm) {
-                    biggestAm = amount;
-                    biggestBus = BusNum;
+                len++;
+                if (len > max_len) {
+                    max_len = len;
+                    max_bus = bus_numb;
                 }
-                if (amount < smallestAm) {
-                    smallestAm = amount;
-                    smallestBus = BusNum;
+                if (len < min_len) {
+                    min_len = len;
+                    min_bus = bus_numb;
                 }
-                amount = 0;
+                len = 0;
             } else {
-                amount++;
+                len++;
             }
             bus = bus->next;
         }
@@ -194,14 +174,14 @@ void RouteLength (struct NodeMain* MainHead, int flag) {
         ptr = ptr->next;
     }
     if (flag) {
-        printf("Bus #%d traveled the longest route: %d\n\n", biggestBus, biggestAm);
+        printf("Bus #%d traveled the longest route: %d\n\n", max_bus, max_len);
     } else {
-        printf("Bus #%d traveled the shortest route: %d\n\n", smallestBus, smallestAm);
+        printf("Bus #%d traveled the shortest route: %d\n\n", min_bus, min_len);
     }
 }
 
-int GetDuration (struct Node* bus) {
-    int duration = 0, arrTime = 0, depTime = 0, razr = 1;
+int GetParkingTime (struct Node* bus) {
+    int parking_time = 0, arrTime = 0, depTime = 0, razr = 1;
 
     char *ar = bus->arrivalTime;
     while (*ar != '\n') {
@@ -250,42 +230,42 @@ int GetDuration (struct Node* bus) {
         razr *= 10;
         dp--;
     }
-    duration = depTime - arrTime;
-    return duration;
+    parking_time = depTime - arrTime;
+    return parking_time;
 }
 
-char *DurToString(int dur) {
-    char *durString = (char*)malloc(9 * sizeof(char));
-    if (durString == NULL) {
+char *SecToStr(int dur) {
+    char *ans = (char*)malloc(9 * sizeof(char));
+    if (ans == NULL) {
         return NULL;
     }
-    int hrs, min, sec;
-    hrs = dur / 3600;
+    int h, min, sec;
+    h = dur / 3600;
     min = (dur / 60) % 60;
     sec = dur % 60;
 
-    sprintf(durString, "%02d:%02d:%02d", hrs, min, sec);
-    return durString;
+    sprintf(ans, "%02d:%02d:%02d", h, min, sec);
+    return ans;
 }
 
-void StopDuration (struct NodeMain* MainHead, int flag) {
-    int BusNum, biggestBus = 0, biggestAm = -1, smallestBus = 0, smallestAm = 100000000, smallestSt = 0, biggestSt = 0;
+void maxParkingTime (struct List* MainHead, int flag) {
+    int bus_numb, len = 0, max_bus = 0, max_time = -1, min_bus = 0, min_time = 100000000, min_st = 0, max_st = 0;
 
-    struct NodeMain* ptr = MainHead;
+    struct List* ptr = MainHead;
     while (ptr != NULL) {
-        BusNum = ptr->BusHead->BusNumber;
+        bus_numb = ptr->BusHead->BusNumber;
         struct Node* bus = ptr->BusHead;
         while (bus != NULL) {
-            int dur = GetDuration(bus);
-            if (dur > biggestAm) {
-                biggestAm = dur;
-                biggestBus = BusNum;
-                biggestSt = bus->stationCoords;
+            int dur = GetParkingTime(bus);
+            if (dur > max_time) {
+                max_time = dur;
+                max_bus = bus_numb;
+                max_st = bus->stationCoords;
             }
-            if (dur < smallestAm) {
-                smallestAm = dur;
-                smallestBus = BusNum;
-                smallestSt = bus->stationCoords;
+            if (dur < min_time) {
+                min_time = dur;
+                min_bus = bus_numb;
+                min_st = bus->stationCoords;
             }
             bus = bus->next;
         }
@@ -293,18 +273,18 @@ void StopDuration (struct NodeMain* MainHead, int flag) {
     }
 
     if (flag) {
-        char *durString = DurToString(biggestAm);
-        printf("Bus #%d had longest stop for %s on <%d> station\n\n", biggestBus, durString, biggestSt);
+        char *durString = SecToStr(max_time);
+        printf("Bus #%d had longest stop for %s on <%d> station\n\n", max_bus, durString, max_st);
         free(durString);
     } else {
-        char *durString = DurToString(smallestAm);
-        printf("Bus #%d had shortest stop for %s on <%d> station\n\n", smallestBus, durString, smallestSt);
+        char *durString = SecToStr(min_time);
+        printf("Bus #%d had shortest stop for %s on <%d> station\n\n", min_bus, durString, min_st);
         free(durString);
     }
 }
 
-void Print(struct NodeMain* MainHead) {
-    struct NodeMain* ptr = MainHead;
+void Print(struct List* Head) {
+    struct List* ptr = Head;
     while (ptr != NULL) {
         printf("------------- <%d> Bus Route -----------\n", ptr->BusHead->BusNumber);
         struct Node* p = ptr->BusHead;
@@ -321,7 +301,7 @@ int main(int argc, char *argv[]) {
         printf("You must provide files.");
         return -1;
     }
-    struct NodeMain* MainHead = NULL;
+    struct List* Head = NULL;
 
     for (int i = 1; i < argc; i++) {
 
@@ -333,49 +313,49 @@ int main(int argc, char *argv[]) {
 
         char stCoords[256];
         fgets(stCoords, sizeof(stCoords), file);
-        int stationCoords = toInt(stCoords);
+        int stationCoords = Atoi(stCoords);
 
         char line[256];
         while (1) {
-            char *arrivalTime = (char*)malloc(sizeof(char) * 256);
-            char *departureTime = (char*)malloc(sizeof(char) * 256);
+            char *arrTime = (char*)malloc(sizeof(char) * 32);
+            char *depTime = (char*)malloc(sizeof(char) * 32);
 
             if (fgets(line, sizeof(line), file) == NULL) {
                 break;
             }
-            int busNum = toInt(line);
+            int busNum = Atoi(line);
 
             fgets(line, sizeof(line), file);
-            strcpy(arrivalTime, line);
+            strcpy(arrTime, line);
 
             fgets(line, sizeof(line), file);
-            strcpy(departureTime, line);
+            strcpy(depTime, line);
 
             fgets(line, sizeof(line), file);
-            int marker = toInt(line);
+            int marker = Atoi(line);
 
-            struct Node* busStoppedNode = Create(busNum, stationCoords, arrivalTime, departureTime, marker);
-            if (MainHead == NULL) {
+            struct Node* busStoppedNode = Create(busNum, stationCoords, arrTime, depTime, marker);
+            if (Head == NULL) {
                 struct Node* busHead = busStoppedNode;
-                struct NodeMain* Bus = CreateForMain(busHead);
-                MainHead = Bus;
+                struct List* Bus = CreateForMain(busHead);
+                Head = Bus;
             } else {
                 int thisBus = 0;
-                struct NodeMain* ptr = MainHead;
+                struct List* ptr = Head;
                 while (ptr != NULL) {
                     if (ptr->BusHead->BusNumber == busNum) {
                         thisBus = 1;
-                        if (strcmp(arrivalTime, ptr->BusHead->arrivalTime) < 0) {
-                            PushFront(&ptr->BusHead, busStoppedNode);
+                        if (strcmp(arrTime, ptr->BusHead->arrivalTime) < 0) {
+                            pushFront(&ptr->BusHead, busStoppedNode);
                         } else {
                             struct Node* busPtr = ptr->BusHead;
                             while (busPtr->next != NULL) {
-                                if (strcmp(arrivalTime, busPtr->next->arrivalTime) < 0) {
+                                if (strcmp(arrTime, busPtr->next->arrivalTime) < 0) {
                                     break;
                                 }
                                 busPtr = busPtr->next;
                             }
-                            Insert(busPtr, busStoppedNode);
+                            pushBehind(busPtr, busStoppedNode);
                         }
 
                     }
@@ -383,7 +363,7 @@ int main(int argc, char *argv[]) {
                 }
                 if (!thisBus) {
                     struct Node* busHead = busStoppedNode;
-                    InsertInMain(MainHead, CreateForMain(busHead));
+                    pushList(Head, CreateForMain(busHead));
                 }
             }
         }
@@ -403,36 +383,65 @@ int main(int argc, char *argv[]) {
     int flag = 1;
     while (flag) {
         char command[256];
-        printf("Enter command: ");
-        scanf("%s", &command);
-        int com = ValidateCommand(command);
+        printf("Enter command:\n");
+        scanf("%s", command);
+        int com = CheckCommand(command);
         printf("Command: %d\n", com);
         switch (com) {
-            case -1: printf("Invalid Command\n"); break;
-            case 0: Print(MainHead); break;
-            case 1: AmOfRoutes(MainHead, 1); break;
-            case 2: AmOfRoutes(MainHead, 0); break;
-            case 3: Path(MainHead, 1); break;
-            case 4: Path(MainHead, 0); break;
-            case 5: RouteLength(MainHead, 1); break;
-            case 6: RouteLength(MainHead, 0); break;
-            case 7: StopDuration(MainHead, 1); break;
-            case 8: StopDuration(MainHead, 0); break;
-            case 9: flag = 0; break;
-            default: printf("No way\n");break;
+            case 0: {
+                Print(Head);
+                break;
+            }
+            case 1: {
+                PathCnt(Head, 1);
+                break;
+            }
+            case 2: {
+                PathCnt(Head, 0);
+                break;
+            }
+            case 3: {
+                Path(Head, 1);
+                break;
+            }
+            case 4: {
+                Path(Head, 0);
+                break;
+            }
+            case 5: {
+                PathLen(Head, 1);
+                break;
+            }
+            case 6: {
+                PathLen(Head, 0);
+                break;
+            }
+            case 7: {
+                maxParkingTime(Head, 1);
+                break;
+            }
+            case 8: {
+                maxParkingTime(Head, 0);
+                break;
+            }
+            case 9: {
+                flag = 0;
+                break;
+            }
+            default: printf("No such command.\n");break;
         }
     }
 
-    while (MainHead != NULL) {
-        struct NodeMain* p = MainHead->next;
+    while (Head != NULL) {
+        struct List* p = Head->next;
         struct Node* busHead = p->BusHead;
         while (busHead != NULL) {
             struct Node* next = busHead->next;
             free(busHead);
             busHead = next;
         }
-        free(MainHead);
-        MainHead = p;
+        free(Head);
+        Head = p;
     }
 
     return 0;
