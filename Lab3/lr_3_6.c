@@ -432,16 +432,18 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    while (Head != NULL) {
-        struct List* p = Head->next;
-        struct Node* busHead = p->BusHead;
-        while (busHead != NULL) {
-            struct Node* next = busHead->next;
-            free(busHead);
-            busHead = next;
+    if (Head != NULL){
+        while (Head->next != NULL) {
+            struct List *p = Head->next;
+            struct Node *busHead = p->BusHead;
+            while (busHead != NULL) {
+                struct Node *next = busHead->next;
+                free(busHead);
+                busHead = next;
+            }
+            free(Head);
+            Head = p;
         }
-        free(Head);
-        Head = p;
     }
 
     return 0;

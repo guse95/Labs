@@ -135,7 +135,7 @@ int newEmployee(FILE *input, struct Employee* data) {
 //            printf("%c ", cur);
             lexeme[ind_in_lexeme++] = cur;
 
-            if (ind_in_lexeme >= strlen(lexeme)) {
+            if (ind_in_lexeme >= sizeof(lexeme)) {
                 char *ptr;
                 ptr = (char*) realloc(lexeme, 2 * (sizeof(lexeme) + 1) * sizeof(char));
                 if (ptr == NULL) {
