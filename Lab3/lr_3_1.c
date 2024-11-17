@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
+
+
 
 int LenOfNumber(int number) {
     int len = 0;
@@ -74,12 +77,12 @@ int OstMask(int pow) {
     return mask;
 }
 
-char *DecToBase(int base, int num) {
+char *DecToSist(int base, int num) {
     if (base != 2 && base != 4 && base != 8 && base != 16 && base != 32) {
         char *error = "This base is not supported\0";
         return error;
     }
-    int pow = PowOf2(base), len = LenOfNumber(num), mask = OstMask(pow);
+    int Pow = PowOf2(base), len = LenOfNumber(num), mask = (int)pow(2, Pow) - 1;
     char *result = (char *)malloc(len);
     if (result == NULL) {
         printf("Error allocating memory\n");
@@ -89,7 +92,7 @@ char *DecToBase(int base, int num) {
     int ind = 0, div_ost;
     while (num > 1) {
         div_ost = num & mask;
-        num >>= pow;
+        num >>= Pow;
         result[ind++] = (div_ost > 9) ? (div_ost + 'a' - 10) : (div_ost + '0');
     }
     if (num == 1) {
@@ -102,7 +105,7 @@ char *DecToBase(int base, int num) {
 }
 
 void HandlingFunction(int base, int num) {
-    char *res = DecToBase(base, num);
+    char *res = DecToSist(base, num);
     if (strcmp(res, "This base is not supported\0") == 0) {
         printf("This base is not supported: %d.\n", base);
         return;

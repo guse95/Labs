@@ -123,6 +123,9 @@ unsigned int Atou(const char* s) {
 int newEmployee(FILE *input, struct Employee* data) {
     char cur = '\0';
     char *lexeme = (char*) malloc(sizeof(char));
+    if (lexeme == NULL) {
+        return MEMORY_ALLOCATION_ERROR;
+    }
     int ind_in_lexeme = 0;
     int ind_of_data = 0;
     while (cur != EOF && cur != '\n') {

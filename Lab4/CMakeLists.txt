@@ -1,0 +1,1 @@
+add_executable(lr_4_1 lr_4_1.c)

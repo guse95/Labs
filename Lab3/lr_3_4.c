@@ -54,7 +54,100 @@ void HandlingError(int code) {
     }
 }
 
-typedef int(*callback)(char*);
+int is_number(const char* s) {
+    if (*s == '\0') return ERROR_NO_VALUE;
+
+    while (*s == ' ') s++;
+
+    if (*s == '-') {
+        return ERROR_NEGATIVE_VALUE;
+    }
+
+    int len = 0;
+    while (isdigit(*s)) {
+        s++;
+        if (len++ > 18) return ERROR_TOO_LONG_STR;
+    }
+
+    if (*s == '\0') return SUCCESS;
+    return ERROR_NOT_NUMBER;
+}
+
+int is_float(const char* s) {
+    if (*s == '\0') return ERROR_NO_VALUE;
+
+    while (*s == ' ') s++;
+
+    if (*s == '-') {
+        return ERROR_NEGATIVE_VALUE;
+    }
+
+    int len = 0;
+    int point_was = 0;
+    while (isdigit(*s) || (*s == '.' && !point_was)) {
+        if (*s == '.')
+            point_was += 1;
+        s++;
+        if (len++ > 20)
+            return ERROR_TOO_LONG_STR;
+    }
+
+    if (*s == '\0') return SUCCESS;
+    return ERROR_NOT_NUMBER;
+}
+
+int is_str(const char* s) {
+    while (*s) {
+        if (!isalpha(*s)) {
+            return ERROR_NOT_STR;
+        }
+        s++;
+    }
+    return SUCCESS;
+}
+
+int is_time(const char* s) {
+//    printf("%s\n", s);
+    if (!isdigit(*s++) || !isdigit(*s) || ((*(s - 1) - '0') * 10 + *s - '0') > 31) {
+//        printf("%d\n", (*(s - 1) - '0') * 10 + *s - '0');
+        return ERROR_CANT_BE_TIME; }
+    ++s;
+//    printf("%c", *s);
+    if (*s != ':') return WRONG_FORMAT;
+    ++s;
+//    printf("%c", *s);
+    if (!isdigit(*s++) || !isdigit(*s) || ((*(s - 1) - '0') * 10 + *s - '0') > 12) return ERROR_CANT_BE_TIME;
+    ++s;
+//    printf("%c", *s);
+    if (*s != ':') return WRONG_FORMAT;
+    ++s;
+//    printf("%c", *s);
+    if (!isdigit(*s++) || !isdigit(*s++) ||!isdigit(*s++) || !isdigit(*s) || ((((*(s - 3) - '0') * 10 + *(s - 2) - '0') * 10 + *(s - 1) - '0') * 10 + *s - '0') > 2024) {
+        return ERROR_CANT_BE_TIME; }
+//    printf("%d\n", ((((*(s - 3) - '0') * 10 + *(s - 2) - '0') * 10 + *(s - 1) - '0') * 10 + *s - '0'));
+
+    if (*++s != ' ') return WRONG_FORMAT;
+    ++s;
+    if (!isdigit(*s++) || !isdigit(*s) || ((*(s - 1) - '0') * 10 + *s - '0') > 24) return ERROR_CANT_BE_TIME;
+    if (*++s != ':') return WRONG_FORMAT;
+    ++s;
+    if (!isdigit(*s++) || !isdigit(*s) || ((*(s - 1) - '0') * 10 + *s - '0') > 60) return ERROR_CANT_BE_TIME;
+    if (*++s != ':') return WRONG_FORMAT;
+    ++s;
+    if (!isdigit(*s++) || !isdigit(*s) || ((*(s - 1) - '0') * 10 + *s - '0') > 60) return ERROR_CANT_BE_TIME;
+    if (*++s != '\0') return WRONG_FORMAT;
+    return SUCCESS;
+}
+
+unsigned int Atou(const char* s) {
+    while (*s == ' ') s++;
+    unsigned int res = 0;
+    while (*s != '\0') {
+        res = (res * 10) + (*s - '0');
+        s++;
+    }
+    return res;
+}
 
 struct String {
     int len;
@@ -176,104 +269,12 @@ void printAddress(struct Address adr) {
     printf("\n");
 }
 
-int is_number(const char* s) {
-    if (*s == '\0') return ERROR_NO_VALUE;
-
-    while (*s == ' ') s++;
-
-    if (*s == '-') {
-        return ERROR_NEGATIVE_VALUE;
-    }
-
-    int len = 0;
-    while (isdigit(*s)) {
-        s++;
-        if (len++ > 18) return ERROR_TOO_LONG_STR;
-    }
-
-    if (*s == '\0') return SUCCESS;
-    return ERROR_NOT_NUMBER;
-}
-
-int is_float(const char* s) {
-    if (*s == '\0') return ERROR_NO_VALUE;
-
-    while (*s == ' ') s++;
-
-    if (*s == '-') {
-        return ERROR_NEGATIVE_VALUE;
-    }
-
-    int len = 0;
-    int point_was = 0;
-    while (isdigit(*s) || (*s == '.' && !point_was)) {
-        if (*s == '.')
-            point_was += 1;
-        s++;
-        if (len++ > 20)
-            return ERROR_TOO_LONG_STR;
-    }
-
-    if (*s == '\0') return SUCCESS;
-    return ERROR_NOT_NUMBER;
-}
-
-int is_str(const char* s) {
-    while (*s) {
-        if (!isalpha(*s)) {
-            return ERROR_NOT_STR;
-        }
-        s++;
-    }
-    return SUCCESS;
-}
-
-int is_time(const char* s) {
-//    printf("%s\n", s);
-    if (!isdigit(*s++) || !isdigit(*s) || ((*(s - 1) - '0') * 10 + *s - '0') > 31) {
-//        printf("%d\n", (*(s - 1) - '0') * 10 + *s - '0');
-        return ERROR_CANT_BE_TIME; }
-    ++s;
-//    printf("%c", *s);
-    if (*s != ':') return WRONG_FORMAT;
-    ++s;
-//    printf("%c", *s);
-    if (!isdigit(*s++) || !isdigit(*s) || ((*(s - 1) - '0') * 10 + *s - '0') > 12) return ERROR_CANT_BE_TIME;
-    ++s;
-//    printf("%c", *s);
-    if (*s != ':') return WRONG_FORMAT;
-    ++s;
-//    printf("%c", *s);
-    if (!isdigit(*s++) || !isdigit(*s++) ||!isdigit(*s++) || !isdigit(*s) || ((((*(s - 3) - '0') * 10 + *(s - 2) - '0') * 10 + *(s - 1) - '0') * 10 + *s - '0') > 2024) {
-        return ERROR_CANT_BE_TIME; }
-//    printf("%d\n", ((((*(s - 3) - '0') * 10 + *(s - 2) - '0') * 10 + *(s - 1) - '0') * 10 + *s - '0'));
-
-    if (*++s != ' ') return WRONG_FORMAT;
-    ++s;
-    if (!isdigit(*s++) || !isdigit(*s) || ((*(s - 1) - '0') * 10 + *s - '0') > 24) return ERROR_CANT_BE_TIME;
-    if (*++s != ':') return WRONG_FORMAT;
-    ++s;
-    if (!isdigit(*s++) || !isdigit(*s) || ((*(s - 1) - '0') * 10 + *s - '0') > 60) return ERROR_CANT_BE_TIME;
-    if (*++s != ':') return WRONG_FORMAT;
-    ++s;
-    if (!isdigit(*s++) || !isdigit(*s) || ((*(s - 1) - '0') * 10 + *s - '0') > 60) return ERROR_CANT_BE_TIME;
-    if (*++s != '\0') return WRONG_FORMAT;
-    return SUCCESS;
-}
-
-unsigned int Atou(const char* s) {
-    while (*s == ' ') s++;
-    unsigned int res = 0;
-    while (*s != '\0') {
-        res = (res * 10) + (*s - '0');
-        s++;
-    }
-    return res;
-}
-
 int newAddress(struct Address* new, char* addr) {
     char* ptrA = addr;
-    char* lexeme = (char*) malloc(sizeof(char));
+    char* lexeme = (char*) malloc( sizeof(char));
+    if (lexeme == NULL) {
+        return MEMORY_ALLOCATION_ERROR;
+    }
     int ind_of_data = 0;
     int ind_in_lexeme = 0;
     int first = 1;
@@ -288,13 +289,12 @@ int newAddress(struct Address* new, char* addr) {
         if (*ptrA == '\0' && ind_of_data != 5) {
             return SUCCESS;
         }
-        if (isalnum(*ptrA)) {
+        if (*ptrA != ' ' && *ptrA != '\n' && *ptrA != '\0') {
             printf("%c ",*ptrA);
             lexeme[ind_in_lexeme++] = *ptrA;
-
             if (ind_in_lexeme >= sizeof(lexeme)) {
                 char *ptr;
-                ptr = (char*) realloc(lexeme, 2 * ((int)sizeof(lexeme) + 1) * sizeof(char));
+                ptr = (char*) realloc(lexeme, (2 * (int)sizeof(lexeme) + 1) * sizeof(char));
                 if (ptr == NULL) {
                     free(lexeme);
                     return MEMORY_ALLOCATION_ERROR;
@@ -385,6 +385,7 @@ void AddressClear(struct Address *adr) {
     for(int i = 0; i < 6; i++) {
         adr->ind[i] = 0;
     }
+    free(adr);
 }
 
 struct Mail {
@@ -395,18 +396,22 @@ struct Mail {
     struct String handing;
 };
 
-void printMail(struct Mail mail) {
+void printMail(struct Mail *mail) {
     printf("Mail:\n");
-    printAddress(mail.address);
-    printf("Weight: %f\n", mail.weight);
-    printf("Post index: %s\n", mail.postInd.str);
-    printf("Time of creature: %s\n", mail.creature.str);
-    printf("Time of handling: %s\n", mail.handing.str);
+    printAddress(mail->address);
+    printf("Weight: %f\n", mail->weight);
+    printf("Post index: %s\n", mail->postInd.str);
+    printf("Time of creature: %s\n", mail->creature.str);
+    printf("Time of handling: %s\n", mail->handing.str);
 }
 
 int newMail(struct Mail* new) {
     char cur = '\0';
-    char *lexeme = (char*) malloc(sizeof(char));
+    char *lexeme = (char*) malloc(2 * sizeof(char));
+//    if (lexeme == NULL) {
+//        return MEMORY_ALLOCATION_ERROR;
+//    }
+    int lexeme_size = 1;
     int ind_in_lexeme = 0;
     int ind_of_data = 0;
 
@@ -416,40 +421,41 @@ int newMail(struct Mail* new) {
 //        printf("/%c/\n", cur);
 //        printf("G%dG\n", ind_of_data);
         if (ind_of_data == 5) {
-            free(lexeme);
             break;
         }
         if (cur != '\n') {
-//            printf("%c ", cur);
-            if (ind_in_lexeme >= sizeof(lexeme)) {
+            printf("/%c/ ", cur);
+            lexeme[ind_in_lexeme++] = cur;
+
+            if (ind_in_lexeme >= lexeme_size) {
+                lexeme_size *= 2;
                 char *ptr;
-                ptr = (char*) realloc(lexeme, 2 * (int)(sizeof(lexeme) + 1) * sizeof(char));
+                ptr = (char*) realloc(lexeme,  lexeme_size * sizeof(char));
                 if (ptr == NULL) {
                     free(lexeme);
                     return MEMORY_ALLOCATION_ERROR;
                 }
                 lexeme = ptr;
             }
-            lexeme[ind_in_lexeme++] = cur;
         } else {
             if (!ind_in_lexeme) {
                 continue;
             }
             lexeme[ind_in_lexeme] = '\0';
-//            printf("|%s|\n", lexeme);
-//            printf("%d\n", ind_in_lexeme);
+            printf("|%s|\n", lexeme);
+            printf("%d\n", ind_in_lexeme);
             int code;
 //            printf("G%dG\n", ind_of_data);
             switch (ind_of_data) {
                 case 0:
-                    if ((code = newAddress(&new->address, lexeme))) {
+                    if ((code = newAddress(&new->address, lexeme)) != SUCCESS) {
                         free(lexeme);
                         return code;
                     }
                     printf("Enter the package weight:\n");
                     break;
                 case 1:
-                    if ((code = is_float(lexeme))) {
+                    if ((code = is_float(lexeme)) != SUCCESS) {
                         free(lexeme);
                         return code;
                     }
@@ -471,7 +477,7 @@ int newMail(struct Mail* new) {
                     printf("Enter the time of creation(in the format - DD:MM:YYYY hh:mm:ss):\n");
                     break;
                 case 3:
-                    if ((code = is_time(lexeme))) {
+                    if ((code = is_time(lexeme)) != SUCCESS) {
                         free(lexeme);
                         return code;
                     }
@@ -479,7 +485,7 @@ int newMail(struct Mail* new) {
                     printf("Enter the time of delivery(in the format - DD:MM:YYYY hh:mm:ss):\n");
                     break;
                 case 4:
-                    if ((code = is_time(lexeme))) {
+                    if ((code = is_time(lexeme)) != SUCCESS) {
                         free(lexeme);
                         return code;
                     }
@@ -505,13 +511,17 @@ int newMail(struct Mail* new) {
 
 struct Post {
     struct Address *postOffice;
-    struct Mail *mails;
+    struct Mail **mails;
     int len;
 };
 
 int newPost(struct Post* new, char* address) {
     new->len = 0;
     new->mails = NULL;
+    new->postOffice = (struct Address*) malloc(sizeof(struct Address));
+    if (new->postOffice == NULL) {
+        return MEMORY_ALLOCATION_ERROR;
+    }
     newAddress(new->postOffice, address);
 //    printf("Pozda\n");
     return SUCCESS;
@@ -528,18 +538,21 @@ int cmpMails(const void* y1, const void* y2) {
     return StrCmp(x1->postInd, x2->postInd);
 }
 
-int addMail(struct Post * office, struct Mail new) {
+int addMail(struct Post * office, struct Mail* new) {
     static int cnt;
-    struct Mail * ptrM = office->mails;
+    struct Mail ** ptrM = office->mails;
 
     if (!office->len) {
-        office->mails = (struct Mail*) malloc(sizeof(struct Mail));
+        office->mails = (struct Mail**) malloc(sizeof(struct Mail*));
+        if (office->mails == NULL) {
+            return MEMORY_ALLOCATION_ERROR;
+        }
         cnt = 1;
     } else {
         if (office->len + 1 >= cnt) {
             cnt *= 2;
-            struct Mail *ptr;
-            ptr = (struct Mail*) realloc(office->mails, cnt * sizeof(struct Mail));
+            struct Mail **ptr;
+            ptr = (struct Mail**) realloc(office->mails, cnt * sizeof(struct Mail*));
             if (ptr == NULL) {
                 free(office->mails);
                 return MEMORY_ALLOCATION_ERROR;
@@ -590,40 +603,26 @@ int cmpTime(const void* y1, const void* y2) {
 }
 
 int allDelivered(struct Post * office) {
-    char date[12];
-    char time[9];
-    char prom = '\0';
-    _strtime(time);
-    _strdate(date);
-    prom = date[0];
-    date[0] = date[3];
-    date[3] = prom;
-    prom = date[1];
-    date[1] = date[4];
-    date[4] = prom;
-    date[2] = ':';
-    date[5] = ':';
-    date[8] = date[6];
-    date[9] = date[7];
-    date[6] = '2';
-    date[7] = '0';
-    date[10] = ' ';
-    date[11] = '\0';
+    char date[20];
+
+    time_t rawtime;
+    struct tm * timeinfo;
+
+    time ( &rawtime );
+    timeinfo = localtime ( &rawtime );
+
+    strftime (date,20,"%d:%m:%Y %X",timeinfo);
+    printf("data: |%s|", date);
 
     struct String full_date;
-    struct String cur_time;
-
-    toStr(&cur_time, time);
 
     toStr(&full_date, date);
-
-    StrConc(&full_date, cur_time);
 //    printf("|%s|\n", full_date.str);
 
     qsort(office->mails, office->len, sizeof(struct Mail), cmpTime);
     int cnt = 1;
     for (int i = 0; i < office->len; ++i) {
-        if (StrCmp(full_date, office->mails[i].handing) >= 0) {
+        if (StrCmp(full_date, office->mails[i]->handing) >= 0) {
             printf("%d. ", cnt);
             printMail(office->mails[i]);
             printf("\n");
@@ -661,64 +660,58 @@ int main(int argc, char* argv[]) {
 //        printf("%c ", strnew.str[i]);
 //    }
 
-
-
-
-
-
-
     char* addres = {"hui zalupa 52 aa 12 123456"};
     struct Post head;
 
     newPost(&head, addres);
     printAddress(*head.postOffice);
-//    printf("Possible commands:\n"
-//           "1 - Insert new Mail.\n"
-//           "2 - Delete last Mail(newest).\n"
-//           "3 - All delivered Mails\n"
-//           "4 - Exit\n\n");
-//
-//    int flag = 1;
-//    while (flag) {
-//        char command[256];
-//        printf("Enter command:\n");
-//        scanf("%s", command);
-//        int com = CheckCommand(command);
-//        printf("Command: %d\n", com);
-//        switch (com) {
-//            case 1: {
-//                struct Mail new;
-//                newMail(&new);
-//                addMail(&head, new);
-//                break;
-//            }
-//            case 2: {
-//                delLastMail(&head);
-//                break;
-//            }
-//            case 3: {
-//                allDelivered(&head);
-//                break;
-//            }
-//            case 4: {
-//                flag = 0;
-//                break;
-//            }
-//            default: {
-//                printf("Invalid Command.\n");
-//                break;
-//            }
-//        }
-//    }
-//    if (head.mails != NULL) {
-//        for (int i = 0; i < (int)sizeof(head.mails); i++) {
-//            AddressClear(&head.mails[i].address);
-//            head.mails[i].weight = 0;
-//            StrClear(&head.mails[i].postInd);
-//            StrClear(&head.mails[i].creature);
-//            StrClear(&head.mails[i].handing);
-//        }
-//        free(head.mails);
-//    }
-//    AddressClear(head.postOffice);
+    printf("Possible commands:\n"
+           "1 - Insert new Mail.\n"
+           "2 - Delete last Mail(newest).\n"
+           "3 - All delivered Mails\n"
+           "4 - Exit\n\n");
+
+    int flag = 1;
+    while (flag) {
+        char command[256];
+        printf("Enter command:\n");
+        scanf("%s", command);
+        int com = CheckCommand(command);
+        printf("Command: %d\n", com);
+        switch (com) {
+            case 1: {
+                struct Mail new;
+                newMail(&new);
+                addMail(&head, &new);
+                break;
+            }
+            case 2: {
+                delLastMail(&head);
+                break;
+            }
+            case 3: {
+                allDelivered(&head);
+                break;
+            }
+            case 4: {
+                flag = 0;
+                break;
+            }
+            default: {
+                printf("Invalid Command.\n");
+                break;
+            }
+        }
+    }
+    if (head.mails != NULL) {
+        for (int i = 0; i < (int)sizeof(head.mails); i++) {
+            AddressClear(&head.mails[i]->address);
+            head.mails[i]->weight = 0;
+            StrClear(&head.mails[i]->postInd);
+            StrClear(&head.mails[i]->creature);
+            StrClear(&head.mails[i]->handing);
+        }
+        free(head.mails);
+    }
+    AddressClear(head.postOffice);
 }

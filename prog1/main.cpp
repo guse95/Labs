@@ -77,12 +77,12 @@ double doublefaq(const int n) {
 }
 
 int main(){
-    char seconds[4096];
-    _strdate(seconds);
-    cout << seconds << endl;
-    _strtime(seconds);
-    cout << seconds << endl;
+    int a = -1;
+//    int mask = 256 - 1;
+    for (int i = 0; i < (sizeof(int) * 8); ++i) {
+        std::cout << ((a>>i) & 1) << ' ';
+    }
+    std::cout << (-32>>1) << std::endl;
 
-
-
+    return 0;
 }
