@@ -1,5 +1,5 @@
 #include <iostream>
-#include <string>
+#include <utility>
 
 
 int increment(int i) {
@@ -73,7 +73,7 @@ public:
         num = add(num, a.num);
         return *this;
     }
-    binary_int operator+ (binary_int& a) {
+    binary_int operator+ (binary_int& a) const {
         int ans;
         ans = add(num, a.num);
         return binary_int{ans};
@@ -82,7 +82,7 @@ public:
         num = dif(num, a.num);
         return *this;
     }
-    binary_int operator- (binary_int& a) {
+    binary_int operator- (binary_int& a) const {
         int ans;
         ans = dif(num, a.num);
         return binary_int{ans};
@@ -91,7 +91,7 @@ public:
         num = mult(num, a.num);
         return *this;
     }
-    binary_int operator* (binary_int& a) {
+    binary_int operator* (binary_int& a) const {
         int ans;
         ans = mult(num, a.num);
         return binary_int{ans};
@@ -106,12 +106,12 @@ public:
         return *this;
     }
 
-    binary_int operator>> (int a) {
+    binary_int operator>> (int a) const {
         int ans;
         ans = num >> a;
         return binary_int{ans};
     }
-    binary_int operator<< (int a) {
+    binary_int operator<< (int a) const {
         int ans;
         ans = num << a;
         return binary_int{ans};
@@ -122,7 +122,7 @@ public:
         return *this;
     }
     friend std::ostream& operator << (std::ostream &out, const binary_int& a);
-    friend void split(binary_int obg, binary_int* ans1, binary_int* ans2);
+    friend std::pair<binary_int, binary_int> split(const binary_int& obg);
 
 
 private:
@@ -156,28 +156,29 @@ std::ostream& operator << (std::ostream &out, const binary_int& a) {
 
 
 
-void split(binary_int obg, binary_int* low, binary_int* top) {
-    *low = binary_int{0};
-    *top = binary_int{0};
+std::pair<binary_int, binary_int> split(const binary_int& obg) {
+    binary_int low(0);
+    binary_int top(0);
     int len = PowOf2(obg.num);
     int half = (len & 1) ? add(len>>1, 1): len>>1;
 
     for (int i = 0; i < half; i = increment(i)) {
-        *low += binary_int{((obg.num>>i) & 1) << i};
+        low += binary_int{((obg.num>>i) & 1) << i};
     }
     for (int i = half; i <= len; i = increment(i)) {
-        *top += binary_int{((obg.num>>i) & 1) << i};
+        top += binary_int{((obg.num>>i) & 1) << i};
     }
-//    std::cout << *top << ' ' << *low << '\n';
+    return {top, low};
 }
 
 int main() {
     binary_int a(13);
-    binary_int b(-1234);
+    binary_int b(52);
 //    std::cout << b << '\n';
     binary_int c;
 //    c = b >> 1;
-    split(b, &a, &c);
-    std::cout << c << ' ' << a;
+    std::pair<binary_int, binary_int> ama = split(b);
 
+    std::cout << ama.first << ' ' << ama.second;
+//    std::cout << c << ' ' << a;
 }
