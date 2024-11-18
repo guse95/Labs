@@ -86,6 +86,13 @@ public:
     }
 
     double argument() const {
+        if (real == 0) {
+            if (imag == 0) {
+                std::cout << "The argument for the null vector is not defined.\n";
+                return -1;
+            }
+            return ((imag < 0) ? -1 : 1) * asin(1);
+        }
         double arg = atan(imag / real);
         return arg;
     }
