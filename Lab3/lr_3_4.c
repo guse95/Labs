@@ -154,16 +154,20 @@ struct String {
     char* str;
 };
 
+void StrClear(struct String *str) {
+    if (str != NULL && str->str != NULL) {
+        free(str->str);
+        str->len = 0;
+    }
+}
+
 int toStr(struct String *newStr, char * ptr) {
     newStr->len = 0;
     char* s = ptr;
-//    printf("string: <%s>\n", ptr);
-//    printf("string: <%s>\n", s);
     while (*s) {
         s++;
         newStr->len++;
     }
-//    printf("len: <%d>\n", newStr->len);
     newStr->str = (char*) malloc((newStr->len + 1) * sizeof(char));
     if (newStr->str == NULL) {
         printf("Memory allocation error.\n");
@@ -176,19 +180,14 @@ int toStr(struct String *newStr, char * ptr) {
     return SUCCESS;
 }
 
-void StrClear(struct String *str) {
-    free(str->str);
-    str->len = 0;
-}
-
 int StrCmp(struct String str1, struct String str2) {
     if (str1.len != str2.len) {
 //        printf("%d  %d\n", str1.len, str2.len);
-        return (str1.len > str2.len) ? 1 : -1;
+        return ((str1.len > str2.len) ? 1 : -1);
     }
     for (int i = 0; i < str1.len; i++) {
         if (str1.str[i] != str2.str[i]) {
-            return (str1.str[i] > str2.str[i]) ? 1 : -1;
+            return ((str1.str[i] > str2.str[i]) ? 1 : -1);
         }
     }
     return 0;
@@ -214,6 +213,7 @@ int StrCopy (struct String* new, struct String old) {
         printf("Memory allocation error.\n");
         return MEMORY_ALLOCATION_ERROR;
     }
+
     for (int i = 0; i < new->len; i++) {
         new->str[i] = old.str[i];
     }
@@ -270,6 +270,10 @@ void printAddress(struct Address adr) {
 }
 
 int newAddress(struct Address* new, char* addr) {
+    new->town.str = NULL;
+    new->street.str = NULL;
+    new->corp.str = NULL;
+
     char* ptrA = addr;
     char* lexeme = (char*) malloc( sizeof(char));
     if (lexeme == NULL) {
@@ -278,8 +282,10 @@ int newAddress(struct Address* new, char* addr) {
     int ind_of_data = 0;
     int ind_in_lexeme = 0;
     int first = 1;
+    int lexeme_size = 1;
 
     while (*ptrA) {
+
         if (first) {
             first = 0;
         } else {
@@ -290,11 +296,14 @@ int newAddress(struct Address* new, char* addr) {
             return SUCCESS;
         }
         if (*ptrA != ' ' && *ptrA != '\n' && *ptrA != '\0') {
+
             printf("%c ",*ptrA);
+
             lexeme[ind_in_lexeme++] = *ptrA;
-            if (ind_in_lexeme >= sizeof(lexeme)) {
+            if (ind_in_lexeme >= lexeme_size - 1) {
                 char *ptr;
-                ptr = (char*) realloc(lexeme, (2 * (int)sizeof(lexeme) + 1) * sizeof(char));
+                lexeme_size *= 2;
+                ptr = (char*) realloc(lexeme, lexeme_size * sizeof(char));
                 if (ptr == NULL) {
                     free(lexeme);
                     return MEMORY_ALLOCATION_ERROR;
@@ -316,6 +325,7 @@ int newAddress(struct Address* new, char* addr) {
                         free(lexeme);
                         return code;
                     }
+                    new->town.str = NULL;
                     toStr(&new->town, lexeme);
                     break;
                 case 1:
@@ -323,6 +333,7 @@ int newAddress(struct Address* new, char* addr) {
                         free(lexeme);
                         return code;
                     }
+                    new->street.str = NULL;
                     toStr(&new->street, lexeme);
                     break;
                 case 2:
@@ -406,12 +417,15 @@ void printMail(struct Mail *mail) {
 }
 
 int newMail(struct Mail* new) {
+    new->creature.str = NULL;
+    new->handing.str = NULL;
+    new->postInd.str = NULL;
     char cur = '\0';
-    char *lexeme = (char*) malloc(2 * sizeof(char));
-//    if (lexeme == NULL) {
-//        return MEMORY_ALLOCATION_ERROR;
-//    }
     int lexeme_size = 1;
+    char *lexeme = (char*) malloc(sizeof(char));
+    if (lexeme == NULL) {
+        return MEMORY_ALLOCATION_ERROR;
+    }
     int ind_in_lexeme = 0;
     int ind_of_data = 0;
 
@@ -427,10 +441,9 @@ int newMail(struct Mail* new) {
             printf("/%c/ ", cur);
             lexeme[ind_in_lexeme++] = cur;
 
-            if (ind_in_lexeme >= lexeme_size) {
+            if (ind_in_lexeme >= lexeme_size - 1) {
                 lexeme_size *= 2;
-                char *ptr;
-                ptr = (char*) realloc(lexeme,  lexeme_size * sizeof(char));
+                char* ptr = (char*) realloc(lexeme,  lexeme_size * sizeof(char));
                 if (ptr == NULL) {
                     free(lexeme);
                     return MEMORY_ALLOCATION_ERROR;
@@ -501,10 +514,10 @@ int newMail(struct Mail* new) {
         }
     }
     free(lexeme);
-//    if (ind_of_data != 5) {
-//        printf("Wrong number of arguments.");
-//        return ERROR_WRONG_NUMB_OF_ARGS;
-//    }
+    if (ind_of_data != 5) {
+        printf("Wrong number of arguments.");
+        return ERROR_WRONG_NUMB_OF_ARGS;
+    }
 
     return SUCCESS;
 }
@@ -528,28 +541,27 @@ int newPost(struct Post* new, char* address) {
 }
 
 int cmpMails(const void* y1, const void* y2) {
-    struct Mail* x1 = (struct Mail*)y1;
-    struct Mail* x2 = (struct Mail*)y2;
+    struct Mail** x1 = (struct Mail**)y1;
+    struct Mail** x2 = (struct Mail**)y2;
     for (int i =0; i < 6; ++i) {
-        if (x1->address.ind[i] != x2->address.ind[i]) {
-            return x1->address.ind[i] > x2->address.ind[i];
+        if ((*x1)->address.ind[i] != (*x2)->address.ind[i]) {
+            return (((*x1)->address.ind[i] > (*x2)->address.ind[i]) ? 1 : -1);
         }
     }
-    return StrCmp(x1->postInd, x2->postInd);
+    return StrCmp((*x1)->postInd, (*x2)->postInd);
 }
 
 int addMail(struct Post * office, struct Mail* new) {
-    static int cnt;
-    struct Mail ** ptrM = office->mails;
+    static int cnt = 0;
 
-    if (!office->len) {
+    if (office->mails == NULL) {
         office->mails = (struct Mail**) malloc(sizeof(struct Mail*));
         if (office->mails == NULL) {
             return MEMORY_ALLOCATION_ERROR;
         }
         cnt = 1;
     } else {
-        if (office->len + 1 >= cnt) {
+        if (office->len >= cnt - 1) {
             cnt *= 2;
             struct Mail **ptr;
             ptr = (struct Mail**) realloc(office->mails, cnt * sizeof(struct Mail*));
@@ -563,7 +575,7 @@ int addMail(struct Post * office, struct Mail* new) {
 //    printf("%d  %d\n", office->len, cnt);
     office->mails[office->len] = new;
     office->len++;
-    qsort(office->mails, office->len, sizeof(struct Mail), cmpMails);
+    qsort(office->mails, office->len, sizeof(struct Mail*), cmpMails);
     return SUCCESS;
 }
 
@@ -577,29 +589,29 @@ int delLastMail(struct Post * office) {
 }
 
 int cmpTime(const void* y1, const void* y2) {
-    struct Mail* x1 = (struct Mail*)y1;
-    struct Mail* x2 = (struct Mail*)y2;
+    struct Mail** x1 = (struct Mail**)y1;
+    struct Mail** x2 = (struct Mail**)y2;
     for (int i = 6; i <= 9; ++i) {
-        if (x1->creature.str[i] != x2->creature.str[i]) {
-            return x1->creature.str[i] < x2->creature.str[i];
+        if ((*x1)->creature.str[i] != (*x2)->creature.str[i]) {
+            return (((*x1)->creature.str[i] != (*x2)->creature.str[i]) ? 1 : -1);
         }
     }
     for (int i = 3; i <= 4; ++i) {
-        if (x1->creature.str[i] != x2->creature.str[i]) {
-            return x1->creature.str[i] < x2->creature.str[i];
+        if ((*x1)->creature.str[i] != (*x2)->creature.str[i]) {
+            return (((*x1)->creature.str[i] != (*x2)->creature.str[i])? 1 : -1);
         }
     }
     for (int i = 0; i <= 1; ++i) {
-        if (x1->creature.str[i] != x2->creature.str[i]) {
-            return x1->creature.str[i] < x2->creature.str[i];
+        if ((*x1)->creature.str[i] != (*x2)->creature.str[i]) {
+            return (((*x1)->creature.str[i] != (*x2)->creature.str[i])? 1 : -1);
         }
     }
-    for (int i = 11; i < x1->creature.len; ++i) {
-        if (x1->creature.str[i] != x2->creature.str[i]) {
-            return x1->creature.str[i] < x2->creature.str[i];
+    for (int i = 11; i < (*x1)->creature.len; ++i) {
+        if ((*x1)->creature.str[i] != (*x2)->creature.str[i]) {
+            return (((*x1)->creature.str[i] != (*x2)->creature.str[i])? 1 : -1);
         }
     }
-    return StrCmp(x1->postInd, x2->postInd);
+    return StrCmp((*x1)->postInd, (*x2)->postInd);
 }
 
 int allDelivered(struct Post * office) {
@@ -612,20 +624,21 @@ int allDelivered(struct Post * office) {
     timeinfo = localtime ( &rawtime );
 
     strftime (date,20,"%d:%m:%Y %X",timeinfo);
-    printf("data: |%s|", date);
+    printf("data: |%s|\n", date);
 
     struct String full_date;
 
     toStr(&full_date, date);
-//    printf("|%s|\n", full_date.str);
+    printf("|%s|\n", full_date.str);
 
-    qsort(office->mails, office->len, sizeof(struct Mail), cmpTime);
+    qsort(office->mails, office->len, sizeof(struct Mail*), cmpTime);
     int cnt = 1;
     for (int i = 0; i < office->len; ++i) {
         if (StrCmp(full_date, office->mails[i]->handing) >= 0) {
             printf("%d. ", cnt);
             printMail(office->mails[i]);
             printf("\n");
+            ++cnt;
         }
     }
 
@@ -662,7 +675,7 @@ int main(int argc, char* argv[]) {
 
     char* addres = {"hui zalupa 52 aa 12 123456"};
     struct Post head;
-
+// 21:11:2024 16:25:14
     newPost(&head, addres);
     printAddress(*head.postOffice);
     printf("Possible commands:\n"
@@ -672,17 +685,24 @@ int main(int argc, char* argv[]) {
            "4 - Exit\n\n");
 
     int flag = 1;
-    while (flag) {
+    while (flag == 1) {
         char command[256];
         printf("Enter command:\n");
         scanf("%s", command);
         int com = CheckCommand(command);
         printf("Command: %d\n", com);
+        int code;
         switch (com) {
             case 1: {
                 struct Mail new;
-                newMail(&new);
-                addMail(&head, &new);
+                if ((code = newMail(&new)) != SUCCESS) {
+                    HandlingError(code);
+                    flag = code;
+                }
+                if ((code = addMail(&head, &new)) != SUCCESS) {
+                    HandlingError(code);
+                    flag = code;
+                }
                 break;
             }
             case 2: {
@@ -714,4 +734,5 @@ int main(int argc, char* argv[]) {
         free(head.mails);
     }
     AddressClear(head.postOffice);
+    return flag;
 }
