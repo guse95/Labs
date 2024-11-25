@@ -17,10 +17,7 @@ public:
         imag = old.imag;
     }
 
-    ~complex() {
-        real = 0;
-        imag = 0;
-    }
+    ~complex() = default;
 
     complex operator+ (complex& a) const {
         double r, i;

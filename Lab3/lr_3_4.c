@@ -190,7 +190,7 @@ int StrCmp(struct String str1, struct String str2) {
             return ((str1.str[i] > str2.str[i]) ? 1 : -1);
         }
     }
-    return 0;
+    return SUCCESS;
 }
 
 int StrEq(struct String str1, struct String str2) {
@@ -205,9 +205,12 @@ int StrEq(struct String str1, struct String str2) {
     return 1;
 }
 
-int StrCopy (struct String* new, struct String old) {
+int StrCopy (struct String* new, const struct String* old) {
+    if (new == old) {
+        return SUCCESS;
+    }
     StrClear(new);
-    new->len = old.len;
+    new->len = old->len;
     new->str = (char*) malloc((new->len + 1) * sizeof(char));
     if (new->str == NULL) {
         printf("Memory allocation error.\n");
@@ -215,21 +218,24 @@ int StrCopy (struct String* new, struct String old) {
     }
 
     for (int i = 0; i < new->len; i++) {
-        new->str[i] = old.str[i];
+        new->str[i] = old->str[i];
     }
     new->str[new->len] = '\0';
     return SUCCESS;
 }
 
-int StrCopyToNew (struct String *new, struct String old) {
-    new->len = old.len;
+int StrCopyToNew (struct String *new, struct String* old) {
+    if (new == old) {
+        return SUCCESS;
+    }
+    new->len = old->len;
     new->str = (char*) malloc((new->len + 1) * sizeof(char));
     if (new->str == NULL) {
         printf("Memory allocation error.\n");
         return MEMORY_ALLOCATION_ERROR;
     }
     for (int i = 0; i < new->len; i++) {
-        new->str[i] = old.str[i];
+        new->str[i] = old->str[i];
     }
     new->str[new->len] = '\0';
     return SUCCESS;
@@ -267,6 +273,43 @@ void printAddress(struct Address adr) {
         printf("%d", adr.ind[i]);
     }
     printf("\n");
+}
+
+void AddressClear(struct Address *adr) {
+    if (adr != NULL) {
+        StrClear(&adr->town);
+        StrClear(&adr->street);
+        StrClear(&adr->corp);
+        adr->house = 0;
+        adr->flat = 0;
+        for (int i = 0; i < 6; i++) {
+            adr->ind[i] = 0;
+        }
+        free(adr);
+    }
+}
+
+int AddressCopy(struct Address* to, struct Address* from) {
+    if (to == from) {
+        return SUCCESS;
+    }
+    AddressClear(to);
+    to = (struct Address*)malloc(sizeof(struct Address));
+    if (to == NULL) {
+        return MEMORY_ALLOCATION_ERROR;
+    }
+    if (from == NULL) {
+        return MEMORY_ALLOCATION_ERROR;
+    }
+    StrCopyToNew(&to->town, &from->town);
+    StrCopyToNew(&to->street, &from->street);
+    StrCopyToNew(&to->corp, &from->corp);
+    to->house = from->house;
+    to->flat = from->flat;
+    for (int i = 0; i < 6; ++i) {
+        to->ind[i] =  from->ind[i];
+    }
+    return SUCCESS;
 }
 
 int newAddress(struct Address* new, char* addr) {
@@ -387,18 +430,6 @@ int newAddress(struct Address* new, char* addr) {
 }
 
 
-void AddressClear(struct Address *adr) {
-    StrClear(&adr->town);
-    StrClear(&adr->street);
-    StrClear(&adr->corp);
-    adr->house = 0;
-    adr->flat = 0;
-    for(int i = 0; i < 6; i++) {
-        adr->ind[i] = 0;
-    }
-    free(adr);
-}
-
 struct Mail {
     struct Address address;
     float weight;
@@ -414,6 +445,25 @@ void printMail(struct Mail *mail) {
     printf("Post index: %s\n", mail->postInd.str);
     printf("Time of creature: %s\n", mail->creature.str);
     printf("Time of handling: %s\n", mail->handing.str);
+}
+
+int MailCopy(struct Mail* to, struct Mail* from) {
+    if (to == from) {
+        return SUCCESS;
+    }
+    Mai
+    if (to == NULL) {
+        to = (struct Mail*) malloc(sizeof(struct Mail));
+        if (to == NULL) {
+            return MEMORY_ALLOCATION_ERROR;
+        }
+    }
+    AddressCopy(&to->address, &from->address);
+    to->weight = from->weight;
+    StrCopy(&to->postInd, &from->postInd);
+    StrCopy(&to->creature, &from->creature);
+    StrCopy(&to->handing, &from->handing);
+    return SUCCESS;
 }
 
 int newMail(struct Mail* new) {
@@ -573,7 +623,7 @@ int addMail(struct Post * office, struct Mail* new) {
         }
     }
 //    printf("%d  %d\n", office->len, cnt);
-    office->mails[office->len] = new;
+    MailCopy(office->mails[office->len], new);
     office->len++;
     qsort(office->mails, office->len, sizeof(struct Mail*), cmpMails);
     return SUCCESS;
