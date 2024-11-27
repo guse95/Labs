@@ -127,7 +127,7 @@ public:
     }
 
     void displayInfo() override {
-//        Product::displayInfo();
+        Product::displayInfo();
         std::cout << "Warranty period: " << warrantyPeriod << '\n';
         std::cout << "Power rating: " << powerRating << '\n';
     }
@@ -169,42 +169,58 @@ private:
     bool flammability;
 };
 
-union Prod {
-    PerishableProduct p;
-    ElectronicProduct e;
-    BuildingMaterial b;
-};
-
-struct node {
-    int type;
-    Prod data
-};
-
-
 class Warehouse : public PerishableProduct, public ElectronicProduct, public BuildingMaterial {
 public:
-    Warehouse() {
-        array = {};
-        capacity = 1;
-        cur_len = 0;
+
+    Warehouse& operator+= (PerishableProduct& a) {
+        array.push_back(std::make_shared<PerishableProduct>(a));
+        return *this;
     }
-
-
-    Warehouse& operator+= (const PerishableProduct& a) {
-        array.push_back(node{1, a})
+    Warehouse& operator+= (ElectronicProduct& a) {
+        array.push_back(std::make_shared<ElectronicProduct>(a));
+        return *this;
+    }
+    Warehouse& operator+= (BuildingMaterial& a) {
+        array.push_back(std::make_shared<BuildingMaterial>(a));
+        return *this;
+    }
+    Warehouse& operator-= (unsigned int id) {
+        int size = (int)array.size();
+        for (int i = 0; i < size; ++i) {
+            if (id == array[i].get()->id)
+        }
+        array.erase(array.begin() + id);
         return *this;
     }
 
+//    std::vector<PerishableProduct> getExpiringProducts(unsigned int days) {
+//        std::vector<PerishableProduct> dead;
+//        for (const std::shared_ptr<Product>& el : array) {
+//            if (el.unique().)
+//        }
+//    }
+
+    void displayInventory() {
+        for (const std::shared_ptr<Product>& el : array) {
+            el->displayInfo();
+        }
+    }
+
 private:
-    std::vector<node> array;
-    int capacity;
-    int cur_len;
+    std::vector<std::shared_ptr<Product>> array;
 };
 
 
 int main() {
     time_t now = time(nullptr);
     PerishableProduct a = PerishableProduct{"hui", 2, 1.2, 120, 5, now};
-
-    std::cout << now;
+    ElectronicProduct b = ElectronicProduct{"rozetka", 2, 0.2, 50, 5, 30,220};
+//    a.displayInfo();
+    Warehouse sklad;
+    sklad += a;
+    sklad += b;
+    sklad.displayInventory();
+    std::cout << "////////////////";
+    sklad -= 0;
+//    std::cout << now;
 }

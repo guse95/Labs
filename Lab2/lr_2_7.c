@@ -5,7 +5,7 @@ enum {
     SUCCESS,
     ERROR_EPS_OUT_OF_RANGE,
     ERROR_BORDERS_INVALID
-} ret_type_t;
+};
 
 typedef double(*callback)(double);
 
