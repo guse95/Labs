@@ -169,6 +169,22 @@ void ClearTable(struct Chain ***HashTable, int HashSize) {
     free(*HashTable);
 }
 
+void Adding_prefix(char* prefix, char* outFile, char* inFile) {
+    char* ptr_pref = prefix;
+    char* ptr = inFile + strlen(inFile);
+    while (*ptr != '\\') {
+        --ptr;
+    }
+    ++ptr;
+    while (inFile != ptr) {
+        *outFile++ = *inFile++;
+    }
+    while (*ptr_pref != '\0') {
+        *outFile++ = *ptr_pref++;
+    }
+    while ((*outFile++ = *ptr++));
+}
+
 int main(int argc, char *argv[]) {
     if (argc != 2) {
         printf("You forgot to point the file.\n");
@@ -180,10 +196,15 @@ int main(int argc, char *argv[]) {
         printf("Error opening file <%s>.\n", argv[1]);
         return OPENING_ERROR;
     }
+    char prefix[] = "out_";
+    char * out_file = (char *) malloc(strlen(argv[1]) + strlen(prefix) + 1);
+    Adding_prefix(prefix, out_file, argv[1]);
 
-    FILE *out = fopen("D:\\changed.txt", "w");
+    FILE *out = fopen(out_file, "w");
     if (out == NULL) {
         printf("Error opening output file.\n");
+        free(out_file);
+        fclose(file);
         return OPENING_ERROR;
     }
 
@@ -191,6 +212,9 @@ int main(int argc, char *argv[]) {
     struct Chain **HashTable = newTable(HashSize);
     if (HashTable == NULL) {
         printf("Error creating Hashtable.\n");
+        free(out_file);
+        fclose(file);
+        fclose(out);
         return ERROR_CREATING_TABLE;
     }
 
@@ -213,6 +237,7 @@ int main(int argc, char *argv[]) {
                 char *value = (char *)malloc(len);
                 if (def_name == NULL || value == NULL) {
                     ClearTable(&HashTable, HashSize);
+                    free(out_file);
                     fclose(file);
                     fclose(out);
                     printf("Memory allocation error.\n");
@@ -238,6 +263,7 @@ int main(int argc, char *argv[]) {
                 struct Chain *cur_chain = newChain(def_name, value, len);
                 if (cur_chain == NULL) {
                     ClearTable(&HashTable, HashSize);
+                    free(out_file);
                     fclose(file);
                     fclose(out);
                     printf("Error chain creating.\n");
@@ -251,6 +277,7 @@ int main(int argc, char *argv[]) {
                     struct Chain **ptr = newTable(HashSize);
                     if (ptr == NULL) {
                         ClearTable(&HashTable, HashSize);
+                        free(out_file);
                         fclose(file);
                         fclose(out);
                         printf("Error resizing table.\n");
@@ -321,6 +348,7 @@ int main(int argc, char *argv[]) {
 
 
     ClearTable(&HashTable, HashSize);
+    free(out_file);
     fclose(file);
     fclose(out);
 

@@ -16,9 +16,7 @@ class logical_values_array {
 public:
 
     logical_values_array() : value(0) {}
-    explicit logical_values_array(unsigned int val) : value(0) {
-        value = val;
-    }
+    explicit logical_values_array(const unsigned int val = 0) : value(val) {}
 
     logical_values_array inversion() const{
         return logical_values_array(~value);

@@ -7,12 +7,12 @@ public:
 
     complex() : real(0), imag(0) {}
 
-    complex(double r, double i) : real(0), imag(0) {
+    complex(const double r, const double i) : real(0), imag(0) {
         real = r;
         imag = i;
     }
 
-    complex(complex &old) {
+    complex(const complex &old) {
         real = old.real;
         imag = old.imag;
     }

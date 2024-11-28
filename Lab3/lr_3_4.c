@@ -266,11 +266,11 @@ struct Address {
     int ind[6];
 };
 
-void printAddress(struct Address adr) {
+void printAddress(struct Address* adr) {
     printf("Address: %s, %s, %u, %s, %u, ",
-           adr.town.str, adr.street.str, adr.house, adr.corp.str, adr.flat);
+           adr->town.str, adr->street.str, adr->house, adr->corp.str, adr->flat);
     for (int i = 0; i < 6; i++) {
-        printf("%d", adr.ind[i]);
+        printf("%d", adr->ind[i]);
     }
     printf("\n");
 }
@@ -280,26 +280,21 @@ void AddressClear(struct Address *adr) {
         StrClear(&adr->town);
         StrClear(&adr->street);
         StrClear(&adr->corp);
-        adr->house = 0;
-        adr->flat = 0;
-        for (int i = 0; i < 6; i++) {
-            adr->ind[i] = 0;
-        }
         free(adr);
     }
 }
 
 int AddressCopy(struct Address* to, struct Address* from) {
-    if (to == from) {
-        return SUCCESS;
-    }
-    AddressClear(to);
-    to = (struct Address*)malloc(sizeof(struct Address));
-    if (to == NULL) {
-        return MEMORY_ALLOCATION_ERROR;
-    }
+//    if (to == from) {
+//        return SUCCESS;
+//    }
+//    AddressClear(to);
+//    to = (struct Address*)malloc(sizeof(struct Address));
+//    if (to == NULL) {
+//        return MEMORY_ALLOCATION_ERROR;
+//    }
     if (from == NULL) {
-        return MEMORY_ALLOCATION_ERROR;
+        return ERROR_NO_VALUE;
     }
     StrCopyToNew(&to->town, &from->town);
     StrCopyToNew(&to->street, &from->street);
@@ -313,10 +308,12 @@ int AddressCopy(struct Address* to, struct Address* from) {
 }
 
 int newAddress(struct Address* new, char* addr) {
-    new->town.str = NULL;
-    new->street.str = NULL;
-    new->corp.str = NULL;
-
+//    new->town.str = NULL;
+//    new->street.str = NULL;
+//    new->corp.str = NULL;
+    if (new == NULL) {
+        return ERROR_NO_VALUE;
+    }
     char* ptrA = addr;
     char* lexeme = (char*) malloc( sizeof(char));
     if (lexeme == NULL) {
@@ -431,7 +428,7 @@ int newAddress(struct Address* new, char* addr) {
 
 
 struct Mail {
-    struct Address address;
+    struct Address* address;
     float weight;
     struct String postInd;
     struct String creature;
@@ -447,29 +444,49 @@ void printMail(struct Mail *mail) {
     printf("Time of handling: %s\n", mail->handing.str);
 }
 
-int MailCopy(struct Mail* to, struct Mail* from) {
-    if (to == from) {
-        return SUCCESS;
+void MailClear (struct Mail* mail) {
+    if (mail != NULL) {
+        AddressClear(mail->address);
+        StrClear(&mail->postInd);
+        StrClear(&mail->creature);
+        StrClear(&mail->handing);
     }
-    Mai
-    if (to == NULL) {
-        to = (struct Mail*) malloc(sizeof(struct Mail));
-        if (to == NULL) {
-            return MEMORY_ALLOCATION_ERROR;
-        }
-    }
-    AddressCopy(&to->address, &from->address);
-    to->weight = from->weight;
-    StrCopy(&to->postInd, &from->postInd);
-    StrCopy(&to->creature, &from->creature);
-    StrCopy(&to->handing, &from->handing);
-    return SUCCESS;
+    free(mail);
 }
 
+//int MailCopy(struct Mail* to, struct Mail* from) {
+//    if (from == NULL) {
+//        return ERROR_NO_VALUE;
+//    }
+//    if (to == from) {
+//        return SUCCESS;
+//    }
+//    MailClear(to);
+//
+//    to = (struct Mail*) malloc(sizeof(struct Mail));
+//    if (to == NULL) {
+//        return MEMORY_ALLOCATION_ERROR;
+//    }
+//    to->address = (struct Address*)malloc(sizeof(struct Address));
+//    if (to->address == NULL) {
+//        free(to);
+//        return MEMORY_ALLOCATION_ERROR;
+//    }
+//    AddressCopy(to->address, from->address);
+//    to->weight = from->weight;
+//    StrCopy(&to->postInd, &from->postInd);
+//    StrCopy(&to->creature, &from->creature);
+//    StrCopy(&to->handing, &from->handing);
+//    return SUCCESS;
+//}
+
 int newMail(struct Mail* new) {
-    new->creature.str = NULL;
-    new->handing.str = NULL;
-    new->postInd.str = NULL;
+//    new->creature.str = NULL;
+//    new->handing.str = NULL;
+//    new->postInd.str = NULL;
+    if (new == NULL) {
+        return ERROR_NO_VALUE;
+    }
     char cur = '\0';
     int lexeme_size = 1;
     char *lexeme = (char*) malloc(sizeof(char));
@@ -511,7 +528,12 @@ int newMail(struct Mail* new) {
 //            printf("G%dG\n", ind_of_data);
             switch (ind_of_data) {
                 case 0:
-                    if ((code = newAddress(&new->address, lexeme)) != SUCCESS) {
+                    new->address = (struct Address*) malloc(sizeof(struct Address));
+                    if (new->address == NULL) {
+                        free(lexeme);
+                        return MEMORY_ALLOCATION_ERROR;
+                    }
+                    if ((code = newAddress(new->address, lexeme)) != SUCCESS) {
                         free(lexeme);
                         return code;
                     }
@@ -564,10 +586,10 @@ int newMail(struct Mail* new) {
         }
     }
     free(lexeme);
-    if (ind_of_data != 5) {
-        printf("Wrong number of arguments.");
-        return ERROR_WRONG_NUMB_OF_ARGS;
-    }
+//    if (ind_of_data != 5) {
+//        printf("Wrong number of arguments.");
+//        return ERROR_WRONG_NUMB_OF_ARGS;
+//    }
 
     return SUCCESS;
 }
@@ -590,12 +612,28 @@ int newPost(struct Post* new, char* address) {
     return SUCCESS;
 }
 
+void PostClear (struct Post* post) {
+    if (post->mails != NULL) {
+        for (int i = 0; i < (int)sizeof(post->mails); i++) {
+            MailClear(post->mails[i]);
+//            AddressClear(head.mails[i]->address);
+//            head.mails[i]->weight = 0;
+//            StrClear(&head.mails[i]->postInd);
+//            StrClear(&head.mails[i]->creature);
+//            StrClear(&head.mails[i]->handing);
+        }
+        free(post->mails);
+    }
+    AddressClear(post->postOffice);
+    free(post);
+}
+
 int cmpMails(const void* y1, const void* y2) {
     struct Mail** x1 = (struct Mail**)y1;
     struct Mail** x2 = (struct Mail**)y2;
     for (int i =0; i < 6; ++i) {
-        if ((*x1)->address.ind[i] != (*x2)->address.ind[i]) {
-            return (((*x1)->address.ind[i] > (*x2)->address.ind[i]) ? 1 : -1);
+        if ((*x1)->address->ind[i] != (*x2)->address->ind[i]) {
+            return (((*x1)->address->ind[i] > (*x2)->address->ind[i]) ? 1 : -1);
         }
     }
     return StrCmp((*x1)->postInd, (*x2)->postInd);
@@ -616,23 +654,25 @@ int addMail(struct Post * office, struct Mail* new) {
             struct Mail **ptr;
             ptr = (struct Mail**) realloc(office->mails, cnt * sizeof(struct Mail*));
             if (ptr == NULL) {
-                free(office->mails);
                 return MEMORY_ALLOCATION_ERROR;
             }
             office->mails = ptr;
         }
     }
 //    printf("%d  %d\n", office->len, cnt);
-    MailCopy(office->mails[office->len], new);
+//    MailCopy(office->mails[office->len], new);
+    office->mails[office->len] = new;
     office->len++;
     qsort(office->mails, office->len, sizeof(struct Mail*), cmpMails);
     return SUCCESS;
 }
 
 int delLastMail(struct Post * office) {
+    qsort(office->mails, office->len, sizeof(struct Mail*), cmpMails);
     if (office->len == 0) {
         printf("There is no Mails, you can not delete.\n");
     } else {
+        MailClear(office->mails[office->len - 1]);
         office->len--;
     }
     return SUCCESS;
@@ -691,6 +731,7 @@ int allDelivered(struct Post * office) {
             ++cnt;
         }
     }
+    StrClear(&full_date);
 
     return SUCCESS;
 }
@@ -724,10 +765,19 @@ int main(int argc, char* argv[]) {
 //    }
 
     char* addres = {"hui zalupa 52 aa 12 123456"};
-    struct Post head;
-// 21:11:2024 16:25:14
-    newPost(&head, addres);
-    printAddress(*head.postOffice);
+    struct Post* head = (struct Post*) malloc(sizeof(struct Post));
+    if (head == NULL) {
+        printf("Malloc failed.\n");
+        return MEMORY_ALLOCATION_ERROR;
+    }
+    head->postOffice = (struct Address*) malloc(sizeof(struct Address));
+    if (head->postOffice == NULL) {
+        printf("Malloc failed.\n");
+        return MEMORY_ALLOCATION_ERROR;
+    }
+// 28:11:2024 18:25:14
+    newPost(head, addres);
+    printAddress(head->postOffice);
     printf("Possible commands:\n"
            "1 - Insert new Mail.\n"
            "2 - Delete last Mail(newest).\n"
@@ -744,23 +794,29 @@ int main(int argc, char* argv[]) {
         int code;
         switch (com) {
             case 1: {
-                struct Mail new;
-                if ((code = newMail(&new)) != SUCCESS) {
+                struct Mail* new = (struct Mail*) malloc(sizeof(struct Mail));
+                if (new == NULL) {
+                    printf("Malloc failed.\n");
+                    PostClear(head);
+                    return MEMORY_ALLOCATION_ERROR;
+                }
+                if ((code = newMail(new)) != SUCCESS) {
                     HandlingError(code);
                     flag = code;
                 }
-                if ((code = addMail(&head, &new)) != SUCCESS) {
+                if ((code = addMail(head, new)) != SUCCESS) {
                     HandlingError(code);
                     flag = code;
                 }
+                free(new);
                 break;
             }
             case 2: {
-                delLastMail(&head);
+                delLastMail(head);
                 break;
             }
             case 3: {
-                allDelivered(&head);
+                allDelivered(head);
                 break;
             }
             case 4: {
@@ -773,16 +829,6 @@ int main(int argc, char* argv[]) {
             }
         }
     }
-    if (head.mails != NULL) {
-        for (int i = 0; i < (int)sizeof(head.mails); i++) {
-            AddressClear(&head.mails[i]->address);
-            head.mails[i]->weight = 0;
-            StrClear(&head.mails[i]->postInd);
-            StrClear(&head.mails[i]->creature);
-            StrClear(&head.mails[i]->handing);
-        }
-        free(head.mails);
-    }
-    AddressClear(head.postOffice);
+    PostClear(head);
     return flag;
 }

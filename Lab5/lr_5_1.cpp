@@ -51,8 +51,8 @@ int mult(int a, int b) {
 class binary_int {
 
 public:
-    binary_int() { this->num = 0; }
-    explicit binary_int(int val) : num(val) {}
+    binary_int() { num = 0; }
+    explicit binary_int(const int val) : num(val) {}
     binary_int(const binary_int& old) { num = old.num; }
     ~binary_int () = default;
 

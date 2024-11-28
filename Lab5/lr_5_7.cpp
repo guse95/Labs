@@ -18,24 +18,22 @@ public:
         price = Price;
         storage_life = Time;
     }
-    Product(Product& old) {
+    Product(const Product& old) {
         title = old.title;
         id = old.id;
         weight = old.weight;
         price = old.price;
         storage_life = old.storage_life;
     }
-    ~Product () {
-        title = "";
-        id = 0;
-        weight = 0;
-        price = 0;
-        storage_life = 0;
-    }
+    virtual ~Product () = default;
 
     virtual float calculateStorageFree() {
         float cost = weight;
         return cost;
+    }
+
+    unsigned int getId() const {
+        return id;
     }
 
     virtual void displayInfo() {
@@ -46,14 +44,7 @@ public:
         std::cout << "Storage life: " << storage_life << '\n';
     }
 
-    Product& operator= (const Product& a) {
-        title = a.title;
-        id = a.id;
-        weight = a.weight;
-        price = a.price;
-        storage_life = a.storage_life;
-        return *this;
-    }
+    Product& operator= (const Product& a) = default;
 
 private:
     std::string title;
@@ -75,7 +66,7 @@ public:
     PerishableProduct(PerishableProduct& old)  : Product(old) {
         expirationDate = old.expirationDate;
     }
-    ~PerishableProduct () = default;
+    ~PerishableProduct () override = default;
 
     PerishableProduct& operator= (const PerishableProduct& a) {
         Product::operator= (a);
@@ -96,6 +87,11 @@ public:
         return cost;
     }
 
+    unsigned int deadline() const {
+        time_t now = time(nullptr);
+        unsigned int ans = (unsigned int)(expirationDate - now) / 3600 / 24;
+        return ans;
+    }
 
 private:
     time_t expirationDate;
@@ -117,7 +113,7 @@ public:
         warrantyPeriod = old.warrantyPeriod;
         powerRating = old.powerRating;
     }
-    ~ElectronicProduct () = default;
+    ~ElectronicProduct () override = default;
 
     ElectronicProduct& operator= (const ElectronicProduct& a) {
         Product::operator= (a);
@@ -149,7 +145,7 @@ public:
     BuildingMaterial(BuildingMaterial& old)  : Product(old) {
         flammability = old.flammability;
     }
-    ~BuildingMaterial () = default;
+    ~BuildingMaterial () override = default;
 
     BuildingMaterial& operator= (const BuildingMaterial& a) {
         Product::operator= (a);
@@ -169,40 +165,48 @@ private:
     bool flammability;
 };
 
-class Warehouse : public PerishableProduct, public ElectronicProduct, public BuildingMaterial {
+class Warehouse  {
 public:
 
-    Warehouse& operator+= (PerishableProduct& a) {
-        array.push_back(std::make_shared<PerishableProduct>(a));
+    Warehouse& operator+= (Product& a) {
+        array.push_back(std::make_shared<Product>(a));
         return *this;
     }
-    Warehouse& operator+= (ElectronicProduct& a) {
-        array.push_back(std::make_shared<ElectronicProduct>(a));
-        return *this;
-    }
-    Warehouse& operator+= (BuildingMaterial& a) {
-        array.push_back(std::make_shared<BuildingMaterial>(a));
-        return *this;
-    }
+
     Warehouse& operator-= (unsigned int id) {
         int size = (int)array.size();
         for (int i = 0; i < size; ++i) {
-            if (id == array[i].get()->id)
+            if (array[i]->getId() == id) {
+                array.erase(array.begin() + id);
+                break;
+            }
         }
-        array.erase(array.begin() + id);
         return *this;
     }
 
-//    std::vector<PerishableProduct> getExpiringProducts(unsigned int days) {
-//        std::vector<PerishableProduct> dead;
-//        for (const std::shared_ptr<Product>& el : array) {
-//            if (el.unique().)
-//        }
-//    }
+    std::vector<std::shared_ptr<Product>> getExpiringProducts(unsigned int days) {
+        std::vector<std::shared_ptr<Product>> dead;
+        for (const std::shared_ptr<Product>& el : array) {
+            std::shared_ptr<PerishableProduct> product = std::dynamic_pointer_cast<PerishableProduct>(el);
+            if (product && (product->deadline() <= days)) {
+                dead.push_back(product);
+            }
+        }
+        return dead;
+    }
 
     void displayInventory() {
-        for (const std::shared_ptr<Product>& el : array) {
-            el->displayInfo();
+        for (const auto& el : array) {
+            if (auto perishable = std::dynamic_pointer_cast<PerishableProduct>(el)) {
+                perishable->displayInfo();
+            } else if (auto electronic = std::dynamic_pointer_cast<ElectronicProduct>(el)) {
+                electronic->displayInfo();
+            } else if (auto buildingMaterial = std::dynamic_pointer_cast<BuildingMaterial>(el)) {
+                buildingMaterial->displayInfo();
+            } else {
+                el->displayInfo();
+            }
+            std::cout << '\n';
         }
     }
 
@@ -214,7 +218,7 @@ private:
 int main() {
     time_t now = time(nullptr);
     PerishableProduct a = PerishableProduct{"hui", 2, 1.2, 120, 5, now};
-    ElectronicProduct b = ElectronicProduct{"rozetka", 2, 0.2, 50, 5, 30,220};
+    ElectronicProduct b = ElectronicProduct{"rozetka", 3, 0.2, 50, 5, 30,220};
 //    a.displayInfo();
     Warehouse sklad;
     sklad += a;
