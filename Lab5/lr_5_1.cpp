@@ -14,7 +14,8 @@ int increment(int i) {
 
 int add(int a, int b) {
     int mind = 0, ans = 0;
-    for (int i = 0; i < 32; i = increment(i)) {
+    int len = sizeof(int) << 3;
+    for (int i = 0; i < len; i = increment(i)) {
         int dig1 = ((a & (1 << (i))) >> (i));
         int dig2 = ((b & (1 << (i))) >> (i));
 
@@ -50,12 +51,10 @@ int mult(int a, int b) {
 class binary_int {
 
 public:
-
-
     binary_int() { this->num = 0; }
     explicit binary_int(int val) : num(val) {}
-    binary_int(binary_int& old) { num = old.num; }
-    ~binary_int () { num = 0; }
+    binary_int(const binary_int& old) { num = old.num; }
+    ~binary_int () = default;
 
     binary_int& operator- () {
         num = add(~num, 1);
@@ -65,36 +64,46 @@ public:
         num = increment(num);
         return *this;
     }
+    binary_int operator++ (int) {
+        binary_int tmp = *this;
+        num = increment(num);
+        return tmp;
+    }
     binary_int& operator-- () {
         num = dif(num, 1);
         return *this;
+    }
+    binary_int operator-- (int) {
+        binary_int tmp = *this;
+        num = dif(num, 1);
+        return tmp;
     }
     binary_int& operator+= (const binary_int& a) {
         num = add(num, a.num);
         return *this;
     }
     binary_int operator+ (binary_int& a) const {
-        int ans;
-        ans = add(num, a.num);
-        return binary_int{ans};
+        binary_int ans = binary_int{num};
+        ans += a;
+        return ans;
     }
     binary_int& operator-= (const binary_int& a) {
         num = dif(num, a.num);
         return *this;
     }
     binary_int operator- (binary_int& a) const {
-        int ans;
-        ans = dif(num, a.num);
-        return binary_int{ans};
+        binary_int ans = binary_int{num};
+        ans -= a;
+        return ans;
     }
     binary_int& operator*= (const binary_int& a) {
         num = mult(num, a.num);
         return *this;
     }
     binary_int operator* (binary_int& a) const {
-        int ans;
-        ans = mult(num, a.num);
-        return binary_int{ans};
+        binary_int ans = binary_int{num};
+        ans *= a;
+        return ans;
     }
 
     binary_int& operator<<= (int a) {
@@ -107,14 +116,14 @@ public:
     }
 
     binary_int operator>> (int a) const {
-        int ans;
-        ans = num >> a;
-        return binary_int{ans};
+        binary_int ans = binary_int{num};
+        ans >>= a;
+        return ans;
     }
     binary_int operator<< (int a) const {
-        int ans;
-        ans = num << a;
-        return binary_int{ans};
+        binary_int ans = binary_int{num};
+        ans <<= a;
+        return ans;
     }
 
     binary_int& operator= (const binary_int& a) {
@@ -133,7 +142,7 @@ private:
 int PowOf2(int base) {
     int p = 0;
     if (base < 0) {
-        return 32;
+        return sizeof(int) << 3;
     }
     if (base == 0) return 1;
     while (base) {
@@ -176,9 +185,11 @@ int main() {
     binary_int b(52);
 //    std::cout << b << '\n';
     binary_int c;
-//    c = b >> 1;
-    std::pair<binary_int, binary_int> ama = split(b);
+    c = b - a;
+    std::cout << b-- << ' ' << a << " = " << c << '\n';
+    std::cout << b;
+//    std::pair<binary_int, binary_int> ama = split(b);
 
-    std::cout << ama.first << ' ' << ama.second;
+//    std::cout << ama.first << ' ' << ama.second;
 //    std::cout << c << ' ' << a;
 }
