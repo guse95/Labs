@@ -122,6 +122,7 @@ void CopyTable(struct Chain *** HashTable, struct Chain *** p, int HashSize) {
             }
         }
     }
+    free(*HashTable);
 }
 
 void PrintTable(struct Chain *** HashTable, int HashSize) {
