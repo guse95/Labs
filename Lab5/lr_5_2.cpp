@@ -29,18 +29,18 @@ void HandlingError(int code) {
     }
 }
 
+bool isSameFiles(const std::string& file1, const std::string& file2) {
+    try {
+        return std::filesystem::equivalent(file1, file2);
+    } catch (const std::filesystem::filesystem_error& e) {
+        return false;
+    }
+}
+
 class encoder {
 public:
 
     explicit encoder(const std::vector<std::byte>& k) : key(k) {}
-
-    bool isSameFiles(const std::string& file1, const std::string& file2) {
-        try {
-            return std::filesystem::equivalent(file1, file2);
-        } catch (const std::filesystem::filesystem_error& e) {
-            return false;
-        }
-    }
 
     int encode(const std::string& inputFile, const std::string& outputFile, bool opType) {
 
