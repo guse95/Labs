@@ -48,12 +48,11 @@ public:
             return ERROR_SAME_FILES;
         }
 
-        std::cout << inputFile << '\n';
         std::ifstream in(inputFile, std::ios::binary);
         if (!in) {
             return FILE_OPENING_ERROR;
         }
-        std::cout << "hui\n";
+
         std::ofstream out(outputFile, std::ios::binary);
         if (!out) {
             return FILE_OPENING_ERROR;
@@ -112,4 +111,5 @@ int main() {
         HandlingError(code);
         return code;
     }
+    std::cout << "SUCCESS";
 }
