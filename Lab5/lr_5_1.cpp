@@ -78,31 +78,31 @@ public:
         num = dif(num, 1);
         return tmp;
     }
-    binary_int& operator+= (const binary_int& a) {
-        num = add(num, a.num);
+    binary_int& operator+= (const binary_int& other) {
+        num = add(num, other.num);
         return *this;
     }
-    binary_int operator+ (binary_int& a) const {
+    binary_int operator+ (binary_int& other) const {
         binary_int ans = binary_int{num};
-        ans += a;
+        ans += other;
         return ans;
     }
-    binary_int& operator-= (const binary_int& a) {
-        num = dif(num, a.num);
+    binary_int& operator-= (const binary_int& other) {
+        num = dif(num, other.num);
         return *this;
     }
-    binary_int operator- (binary_int& a) const {
+    binary_int operator- (binary_int& other) const {
         binary_int ans = binary_int{num};
-        ans -= a;
+        ans -= other;
         return ans;
     }
-    binary_int& operator*= (const binary_int& a) {
-        num = mult(num, a.num);
+    binary_int& operator*= (const binary_int& other) {
+        num = mult(num, other.num);
         return *this;
     }
-    binary_int operator* (binary_int& a) const {
+    binary_int operator* (binary_int& other) const {
         binary_int ans = binary_int{num};
-        ans *= a;
+        ans *= other;
         return ans;
     }
 
@@ -126,8 +126,8 @@ public:
         return ans;
     }
 
-    binary_int& operator= (const binary_int& a) {
-        num = a.num;
+    binary_int& operator= (const binary_int& other) {
+        num = other.num;
         return *this;
     }
     friend std::ostream& operator << (std::ostream &out, const binary_int& a);

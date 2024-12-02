@@ -1,9 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include <cstddef>
 #include <string>
-#include <sys/stat.h>
 #include <filesystem>
 
 enum ret_type_t {
