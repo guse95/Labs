@@ -41,18 +41,22 @@ public:
     explicit encoder(const std::vector<std::byte>& k) : key(k) {}
 
     int encode(const std::string& inputFile, const std::string& outputFile, bool opType) const {
-
         if (isSameFiles(inputFile, outputFile)) {
             return ERROR_SAME_FILES;
         }
 
         std::ifstream in(inputFile, std::ios::binary);
-        if (!in) {
+        in.open(inputFile, std::ios::binary);
+        if (!in.is_open()) {
+            std::cout << inputFile << '\n';
+            std::cerr << "File openning error: " << inputFile << ", code: " << errno << '\n';
             return FILE_OPENING_ERROR;
         }
 
         std::ofstream out(outputFile, std::ios::binary);
+        out.open(outputFile, std::ios::binary);
         if (!out) {
+            // std::cout << outputFile << '\n';
             return FILE_OPENING_ERROR;
         }
 
@@ -98,13 +102,13 @@ int main() {
     std::vector<std::byte> key = {std::byte(0x51), std::byte(0x23), std::byte(0x45), std::byte(0x6A), std::byte(0x89), std::byte(0xAB), std::byte(0x5D), std::byte(0xEF)};
     encoder encoder(key);
 
-    int code = encoder.encode("D:\\in.txt", "D:\\encoded.txt", true);
+    int code = encoder.encode("in.txt", "encoded.txt", true);
     if (code) {
         HandlingError(code);
         return code;
     }
 
-    code = encoder.encode("D:\\encoded.txt", "D:\\decoded.txt", true);
+    code = encoder.encode("encoded.txt", "decoded.txt", true);
     if (code) {
         HandlingError(code);
         return code;

@@ -163,8 +163,6 @@ std::ostream& operator << (std::ostream &out, const binary_int& a) {
     return out;
 }
 
-
-
 std::pair<binary_int, binary_int> split(const binary_int& obg) {
     binary_int low(0);
     binary_int top(0);
