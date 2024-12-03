@@ -40,7 +40,7 @@ public:
 
     explicit encoder(const std::vector<std::byte>& k) : key(k) {}
 
-    int encode(const std::string& inputFile, const std::string& outputFile, bool opType) {
+    int encode(const std::string& inputFile, const std::string& outputFile, bool opType) const {
 
         if (isSameFiles(inputFile, outputFile)) {
             return ERROR_SAME_FILES;
@@ -79,7 +79,7 @@ public:
             swap(S[i], S[j]);
             k = std::to_integer<int>(S[(std::to_integer<int>(S[i]) + std::to_integer<int>(S[j])) % 256]);
 
-            byte ^= k;
+            byte ^= static_cast<char>(k);
 
             out.put(byte);
         }

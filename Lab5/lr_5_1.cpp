@@ -82,7 +82,7 @@ public:
         num = add(num, other.num);
         return *this;
     }
-    binary_int operator+ (binary_int& other) const {
+    binary_int operator+ (const binary_int& other) const {
         binary_int ans = binary_int{num};
         ans += other;
         return ans;
@@ -91,7 +91,7 @@ public:
         num = dif(num, other.num);
         return *this;
     }
-    binary_int operator- (binary_int& other) const {
+    binary_int operator- (const binary_int& other) const {
         binary_int ans = binary_int{num};
         ans -= other;
         return ans;
@@ -100,27 +100,27 @@ public:
         num = mult(num, other.num);
         return *this;
     }
-    binary_int operator* (binary_int& other) const {
+    binary_int operator* (const binary_int& other) const {
         binary_int ans = binary_int{num};
         ans *= other;
         return ans;
     }
 
-    binary_int& operator<<= (int a) {
+    binary_int& operator<<= (const int a) {
         num <<= a;
         return *this;
     }
-    binary_int& operator>>= (int a) {
+    binary_int& operator>>= (const int a) {
         num >>= a;
         return *this;
     }
 
-    binary_int operator>> (int a) const {
+    binary_int operator>> (const int a) const {
         binary_int ans = binary_int{num};
         ans >>= a;
         return ans;
     }
-    binary_int operator<< (int a) const {
+    binary_int operator<< (const int a) const {
         binary_int ans = binary_int{num};
         ans <<= a;
         return ans;
@@ -155,7 +155,7 @@ int PowOf2(int base) {
 }
 
 std::ostream& operator << (std::ostream &out, const binary_int& a) {
-    int len = dif(PowOf2(a.num), 1);
+    const int len = dif(PowOf2(a.num), 1);
 //    std::cout << len << '\n';
     for (int i = len; i >= 0; i = dif(i, 1)) {
         out << ((a.num>>i) & 1);
@@ -168,8 +168,8 @@ std::ostream& operator << (std::ostream &out, const binary_int& a) {
 std::pair<binary_int, binary_int> split(const binary_int& obg) {
     binary_int low(0);
     binary_int top(0);
-    int len = PowOf2(obg.num);
-    int half = (len & 1) ? add(len>>1, 1): len>>1;
+    const int len = PowOf2(obg.num);
+    const int half = (len & 1) ? add(len>>1, 1): len>>1;
 
     for (int i = 0; i < half; i = increment(i)) {
         low += binary_int{((obg.num>>i) & 1) << i};
