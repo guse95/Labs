@@ -81,6 +81,11 @@ public:
 
     Vector(std::initializer_list<double> vals) : Vector(vals.begin(), vals.end()) {}
 
+    Vector(const Vector &other) : _size(other._size), _capacity(other._capacity) {
+        _data = new double[_capacity];
+        std::copy(other._data, other._data + other._size, _data);
+    }
+
     ~Vector() {
         delete[] _data;
     }
@@ -216,6 +221,18 @@ public:
     bool operator==(const Vector& other) const {
         return (_size == other._size) && std::equal(_data, _data + _size, other._data);
     }
+
+    Vector& operator= (const Vector& other) {
+        if (*this == other) {
+            return *this;
+        }
+        clear();
+        reserve(other._capacity);
+        _size = other._size;
+        _capacity = other._capacity;
+        std::copy(other._data, other._data + other._size, _data);
+        return *this;
+    }
 };
 
 
@@ -227,7 +244,7 @@ int main() {
         std::cout << v.at(1) << std::endl;
         std::cout << v.at(2) << std::endl;
 
-        Vector b;
+        Vector b = v;
 
         v.clear();
 
@@ -245,12 +262,19 @@ int main() {
             std::cout << elem << " ";
         }
         std::cout << "\n\n";
+        for (const auto& elem : b) {
+            std::cout << elem << " ";
+        }
+        std::cout << "\n\n";
         std::cout << (v == b) << '\n';
         std::cout << (v != b) << '\n';
         std::cout << (v < b) << '\n';
         std::cout << (v > b) << '\n';
 
-
+        b = v;
+        for (const auto& elem : b) {
+            std::cout << elem << " ";
+        }
         return 0;
     }
 
