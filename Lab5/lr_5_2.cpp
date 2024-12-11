@@ -46,17 +46,16 @@ public:
         }
 
         std::ifstream in(inputFile, std::ios::binary);
-        in.open(inputFile, std::ios::binary);
-        if (!in.is_open()) {
-            std::cout << inputFile << '\n';
+        if (!in) {
             std::cerr << "File openning error: " << inputFile << ", code: " << errno << '\n';
+            perror("Reason");
             return FILE_OPENING_ERROR;
         }
 
         std::ofstream out(outputFile, std::ios::binary);
-        out.open(outputFile, std::ios::binary);
         if (!out) {
-            // std::cout << outputFile << '\n';
+            std::cerr << "Output file openning error: " << outputFile << ", code: " << errno << '\n';
+            perror("Reason");
             return FILE_OPENING_ERROR;
         }
 
