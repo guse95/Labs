@@ -209,7 +209,7 @@ public:
     std::vector<std::shared_ptr<Product>> getExpiringProducts(unsigned int days) {
         std::vector<std::shared_ptr<Product>> dead;
         for (const auto& el : array) {
-            std::shared_ptr<PerishableProduct> product = std::dynamic_pointer_cast<PerishableProduct>(el);
+            std::shared_ptr<PerishableProduct> product = std::static_pointer_cast<PerishableProduct>(el);
             if (product && (product->deadline() <= days)) {
                 dead.push_back(product);
 //                product->displayInfo();

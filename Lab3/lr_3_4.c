@@ -435,7 +435,7 @@ struct Mail {
     struct String handing;
 };
 
-void printMail(struct Mail *mail) {
+void printMail(const struct Mail *mail) {
     printf("Mail:\n");
     printAddress(mail->address);
     printf("Weight: %f\n", mail->weight);
@@ -764,7 +764,7 @@ int main(int argc, char* argv[]) {
 //        printf("%c ", strnew.str[i]);
 //    }
 
-    char* addres = {"hui zalupa 52 aa 12 123456"};
+    char* addres = {"pushkino kalatushkino 52 aa 12 123456"};
     struct Post* head = (struct Post*) malloc(sizeof(struct Post));
     if (head == NULL) {
         printf("Malloc failed.\n");
