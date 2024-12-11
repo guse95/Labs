@@ -1,6 +1,7 @@
 add_executable(lr_2_1 lr_2_1.c)
 add_executable(lr_2_2 lr_2_2.c)
 add_executable(lr_2_3 lr_2_3.c)
+add_executable(lr_2_4 lr_2_4.c)
 add_executable(lr_2_5 lr_2_5.cpp)
 add_executable(lr_2_7 lr_2_7.c)
 add_executable(lr_2_8 lr_2_8.c)

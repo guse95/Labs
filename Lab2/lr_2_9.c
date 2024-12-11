@@ -67,12 +67,12 @@ int * GetPrimeDividers(int num) {
         primeDividers = p;
     }
     primeDividers[ind] = 0;
-    int i = 0;
-    while (primeDividers[i] != 0) {
-        printf("%d ", primeDividers[i]);
-        ++i;
-    }
-    printf("\n");
+//    int i = 0;
+//    while (primeDividers[i] != 0) {
+//        printf("%d ", primeDividers[i]);
+//        ++i;
+//    }
+//    printf("\n");
     return primeDividers;
 }
 
@@ -144,5 +144,5 @@ void HasFinalRepresentation(int base, int count, ...) {
 }
 
 int main() {
-    HasFinalRepresentation(3, 4, 0.2, 0.25, 0.666, 0.5);
+    HasFinalRepresentation(2, 4, 0.2, 0.25, 0.15, 0.5);
 }
