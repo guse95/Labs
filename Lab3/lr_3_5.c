@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-int toInt(const char* argv) {
+int Atoi(const char* argv) {
     int res = 0;
     int i = 0;
     int neg_flag = 0;
@@ -36,9 +36,9 @@ enum {
     TO_STR_FAIL,
     FILE_WRITE_FAIL,
     NOT_A_PATH
-} CODES;
+};
 
-void ValidateCode(const int code) {
+void HandlingError(const int code) {
     switch (code) {
         case MALLOC_FAILED: {
             printf("Memory allocation failed.\n");
@@ -131,7 +131,7 @@ struct SelectedStudents {
 
 int AddElemToStudent(int pos, struct Student* Students, int student_Ind, char curElem[100]) {
     if (pos == 0) {
-        int tek_id = toInt(curElem);
+        int tek_id = Atoi(curElem);
         Students[student_Ind].id = tek_id;
     }
     if (pos == 1) {
@@ -236,7 +236,7 @@ int ValidateCurStr(const char CurStr[], struct Student* Students, int student_In
 }
 
 int find_id(struct Student* Student, char id[100]) {
-    if (Student->id == (unsigned int)toInt(id)) {
+    if (Student->id == (unsigned int)Atoi(id)) {
         return 1;
     }
     return 0;
@@ -291,7 +291,7 @@ struct SelectedStudents find(int number_of_students, struct Student* Students, c
     struct Student* selected_students = malloc(sizeof(struct Student) * cnt_founded_students);
     int founded_students_ind = 0;
     if (selected_students == NULL) {
-        ValidateCode(MALLOC_FAILED);
+        HandlingError(MALLOC_FAILED);
         res.selected_students = NULL;
         res.size = 0;
         return res;
@@ -301,7 +301,7 @@ struct SelectedStudents find(int number_of_students, struct Student* Students, c
             cnt_founded_students *= 2;
             struct Student* new_founded_students = realloc(selected_students, sizeof(struct Student) * cnt_founded_students);
             if (new_founded_students == NULL) {
-                ValidateCode(MALLOC_FAILED);
+                HandlingError(MALLOC_FAILED);
                 free(selected_students);
                 res.selected_students = NULL;
                 res.size = 0;
@@ -397,7 +397,7 @@ int main(int argc, char* argv[]) {
     }
     struct Student* Students = malloc(sizeof(struct Student) * number_of_students);
     if (Students == NULL) {
-        ValidateCode(MALLOC_FAILED);
+        HandlingError(MALLOC_FAILED);
         fclose(fileIn);
         return -1;
     }
@@ -407,7 +407,7 @@ int main(int argc, char* argv[]) {
     while(fgets(CurStr, 500, fileIn) != NULL) {
         int ret_code = ValidateCurStr(CurStr, Students, student_Ind);
         if (ret_code != SUCCESS) {
-            ValidateCode(ret_code);
+            HandlingError(ret_code);
             Clear(Students, student_Ind, fileIn);
             return -1;
         }
@@ -416,7 +416,7 @@ int main(int argc, char* argv[]) {
             number_of_students *= 2;
             struct Student* new_students = realloc(Students, sizeof(struct Student) * number_of_students);
             if (new_students == NULL) {
-                ValidateCode(MALLOC_FAILED);
+                HandlingError(MALLOC_FAILED);
                 Clear(Students, student_Ind, fileIn);
                 return -1;
             }
@@ -505,7 +505,7 @@ int main(int argc, char* argv[]) {
     }
     int res_writing_to_a_file = WriteStudents(res_students, size_of_founded_students, fileOut, findCondition);
     if (res_writing_to_a_file != SUCCESS) {
-        ValidateCode(res_writing_to_a_file);
+        HandlingError(res_writing_to_a_file);
         Clear(Students, student_Ind, fileIn);
         fclose(fileOut);
         return -1;
