@@ -37,32 +37,35 @@ std::string cdecl_translate(const std::string& declaration) {
         std::string description = "declare " + identifier + " as ";
 
         size_t pointerCount = std::count(pointer.begin(), pointer.end(), '*');
+
+
+
+        if (!array_part.empty()) {
+            std::regex arrayRegex(R"(\[([0-9]*)\])");
+            std::sregex_iterator begin(array_part.begin(), array_part.end(), arrayRegex);
+            std::sregex_iterator end;
+
+            for (auto i = begin; i != end; ++i) {
+                std::string size = (*i)[1].str();
+                if (size.empty()) {
+                    description += "array of ";
+                } else {
+                    description += "array of " + size + " elements of ";
+                }
+            }
+        }
+
         for (size_t i = 0; i < pointerCount; ++i) {
             description += "pointer to ";
         }
+
+
         if (!func_part.empty() && !(std::regex_match(func_part, trash))) {
             description += "function returning ";
             description += base_type;
             description += " getting as args: " + func_part;
         } else {
-
-            if (!array_part.empty()) {
-                std::regex arrayRegex(R"(\[([0-9]*)\])");
-                std::sregex_iterator begin(array_part.begin(), array_part.end(), arrayRegex);
-                std::sregex_iterator end;
-
-                for (auto i = begin; i != end; ++i) {
-                    std::string size = (*i)[1].str();
-                    if (size.empty()) {
-                        description += "array of ";
-                    } else {
-                        description += "array of " + size + " elements of ";
-                    }
-                }
-                description += base_type;
-            } else {
-                description += base_type;
-            }
+            description += base_type;
         }
 
         return description;

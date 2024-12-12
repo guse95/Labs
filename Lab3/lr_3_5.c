@@ -462,7 +462,6 @@ int main(int argc, char* argv[]) {
         scanf("%99s", group);
         find_res = find(number_of_students, Students, group, str);
     }
-    else if(strcmp(findCondition, "no") == 0) {}
     else {
         printf("error: unknown command");
         Clear(Students, student_Ind, fileIn);
