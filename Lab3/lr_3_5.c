@@ -99,24 +99,24 @@ void HandlingError(const int code) {
     }
 }
 
-int path_checker(char* path) {
-    char* ptr = path + strlen(path);
-    while (*ptr != '.') {
-        --ptr;
-    }
-    ++ptr;
-    if(strcmp(ptr, "txt") != 0) {
-        return NOT_A_PATH;
-    }
-    while (isalpha(*ptr) || isdigit(*ptr) || *ptr == '-'
-           || *ptr == '_' || *ptr == '.' || *ptr == '\\') {
-        --ptr;
-    }
-    if (*ptr != ':' || !isupper(*(ptr - 1)) || *(ptr + 1) != '\\') {
-        return NOT_A_PATH;
-    }
-    return SUCCESS;
-}
+// int path_checker(char* path) {
+//     char* ptr = path + strlen(path);
+//     while (*ptr != '.') {
+//         --ptr;
+//     }
+//     ++ptr;
+//     if(strcmp(ptr, "txt") != 0) {
+//         return NOT_A_PATH;
+//     }
+//     while (isalpha(*ptr) || isdigit(*ptr) || *ptr == '-'
+//            || *ptr == '_' || *ptr == '.' || *ptr == '\\') {
+//         --ptr;
+//     }
+//     if (*ptr != ':' || !isupper(*(ptr - 1)) || *(ptr + 1) != '\\') {
+//         return NOT_A_PATH;
+//     }
+//     return SUCCESS;
+// }
 
 struct Student {
     unsigned int id;

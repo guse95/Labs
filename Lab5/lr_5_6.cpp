@@ -1,5 +1,5 @@
 #include <iostream>
-
+#include <algorithm>
 
 class Vector {
     double* _data;
@@ -257,6 +257,8 @@ int main() {
         v.pop_back();
         v.resize(5);
         v.resize(7, 12345);
+
+        std::sort(v.begin(), v.end());
 
         for (const auto& elem : v) {
             std::cout << elem << " ";
