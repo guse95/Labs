@@ -17,18 +17,34 @@ enum ret_type_t{
 
 void logErrors(int code) {
     switch (code) {
-        case ERROR_NAN: printf("Found not a number\n"); break;
-        case ERROR_FULL: printf("Overflow detected\n"); break;
-        case ERROR_ARGS: printf("Wrong arguments\n"); break;
-        case ERROR_MALLOC: printf("Failed to malloc\n"); break;
-        case ERROR_OPEN_FILE: printf("Failed to open file\n"); break;
-        case ERROR_ITERATIONS_LIMIT: printf("Too many iterations. Time to shut up\n"); break;
-        case ERROR_NO_SOLVE: printf("There is no solvement in your interval\n"); break;
-        default: printf("UNKNOWN ERROR CODE\n"); break;
+        case ERROR_NAN: {
+            printf("Found not a number\n"); break;
+        }
+        case ERROR_FULL: {
+            printf("Overflow detected\n"); break;
+        }
+        case ERROR_ARGS: {
+            printf("Wrong arguments\n"); break;
+        }
+        case ERROR_MALLOC: {
+            printf("Failed to malloc\n"); break;
+        }
+        case ERROR_OPEN_FILE: {
+            printf("Failed to open file\n"); break;
+        }
+        case ERROR_ITERATIONS_LIMIT: {
+            printf("Too many iterations. Time to shut up\n"); break;
+        }
+        case ERROR_NO_SOLVE: {
+            printf("There is no solvement in your interval\n"); break;
+        }
+        default: {
+            printf("UNKNOWN ERROR CODE\n"); break;
+        }
     }
 }
 
-void int_to_roman(int num, char *buffer) {
+void Roman(int num, char *buffer) {
     struct Roman {
         int value;
         const char *symbol;
@@ -47,7 +63,7 @@ void int_to_roman(int num, char *buffer) {
     }
 }
 
-void int_to_fib_zec(unsigned int num, char *buffer) {
+void Fidonachi(unsigned int num, char *buffer) {
     unsigned int fib[64], i = 0;
     fib[0] = 1; fib[1] = 2;
     for (i = 2; i < 64 && fib[i - 1] <= num; i++) {
@@ -66,7 +82,7 @@ void int_to_fib_zec(unsigned int num, char *buffer) {
     strcat(buffer, "1");
 }
 
-void int_to_base(int num, int base, char *buffer, int uppercase) {
+void FromDesToBase(int num, int base, char *buffer, int uppercase) {
     char digits[] = "0123456789abcdefghijklmnopqrstuvwxyz";
     if (uppercase) {
         for (int i = 10; i < 36; i++) digits[i] = toupper(digits[i]);
@@ -91,7 +107,7 @@ void int_to_base(int num, int base, char *buffer, int uppercase) {
     buffer[index] = '\0';
 }
 
-int base_to_decimal(const char *num_str, int base) {
+int FromSistToDes(const char *num_str, int base) {
     int result = 0;
     int is_negative = (*num_str == '-');
     if (is_negative) num_str++;
@@ -138,7 +154,7 @@ int overfprintf(FILE *stream, const char *format, ...) {
                             num *= -1;
                             flagMin = 1;
                         }
-                        int_to_roman(num, custom_buffer);
+                        Roman(num, custom_buffer);
                         if (flagMin) {
                             total_written += fprintf(stream, "-%s", custom_buffer);
                         }
@@ -151,7 +167,7 @@ int overfprintf(FILE *stream, const char *format, ...) {
                     format++;
                     if (*format == 'r') {
                         unsigned int num = va_arg(args, unsigned int);
-                        int_to_fib_zec(num, custom_buffer);
+                        Fidonachi(num, custom_buffer);
                         total_written += fprintf(stream, "%s", custom_buffer);
                     }
                     break;
@@ -167,7 +183,7 @@ int overfprintf(FILE *stream, const char *format, ...) {
                     if (base < 2 || base > 36) {
                         base = 10;
                     }
-                    int_to_base(num, base, custom_buffer, *format == 'V');
+                    FromDesToBase(num, base, custom_buffer, *format == 'V');
                     if (flagMin) {
                         total_written += fprintf(stream, "-%s", custom_buffer);
                     }
@@ -181,7 +197,7 @@ int overfprintf(FILE *stream, const char *format, ...) {
                         char *num_str = va_arg(args, char *);
                         int base = va_arg(args, int);
                         if (base < 2 || base > 36) base = 10;
-                        int result = base_to_decimal(num_str, base);
+                        int result = FromSistToDes(num_str, base);
                         total_written += fprintf(stream, "%d", result);
                     }
                     break;
@@ -191,7 +207,7 @@ int overfprintf(FILE *stream, const char *format, ...) {
                         char *num_str = va_arg(args, char *);
                         int base = va_arg(args, int);
                         if (base < 2 || base > 36) base = 10;
-                        int result = base_to_decimal(num_str, base);
+                        int result = FromSistToDes(num_str, base);
                         total_written += fprintf(stream, "%d", result);
                     }
                     break;
@@ -255,7 +271,7 @@ int oversprintf(char *str, const char *format, ...) {
                     format++;
                     if (*format == 'o') {
                         int num = abs(va_arg(args, int));
-                        int_to_roman(num, custom_buffer);
+                        Roman(num, custom_buffer);
                         total_written += fprintf(stdout, "%s", custom_buffer);
                     }
                     break;
@@ -263,7 +279,7 @@ int oversprintf(char *str, const char *format, ...) {
                     format++;
                     if (*format == 'r') {
                         unsigned int num = va_arg(args, unsigned int);
-                        int_to_fib_zec(num, custom_buffer);
+                        Fidonachi(num, custom_buffer);
                         total_written += fprintf(stdout, "%s", custom_buffer);
                     }
                     break;
@@ -272,7 +288,7 @@ int oversprintf(char *str, const char *format, ...) {
                     int num = abs(va_arg(args, int));
                     int base = abs(va_arg(args, int));
                     if (base < 2 || base > 36) base = 10;
-                    int_to_base(num, base, custom_buffer, *format == 'V');
+                    FromDesToBase(num, base, custom_buffer, *format == 'V');
                     total_written += fprintf(stdout, "%s", custom_buffer);
                     break;
                 case 't':
@@ -281,7 +297,7 @@ int oversprintf(char *str, const char *format, ...) {
                         char *num_str = va_arg(args, char *);
                         int base = va_arg(args, int);
                         if (base < 2 || base > 36) base = 10;
-                        int result = base_to_decimal(num_str, base);
+                        int result = FromSistToDes(num_str, base);
                         total_written += fprintf(stdout, "%d", result);
                     }
                     break;
@@ -291,7 +307,7 @@ int oversprintf(char *str, const char *format, ...) {
                         char *num_str = va_arg(args, char *);
                         int base = va_arg(args, int);
                         if (base < 2 || base > 36) base = 10;
-                        int result = base_to_decimal(num_str, base);
+                        int result = FromSistToDes(num_str, base);
                         total_written += fprintf(stdout, "%d", result);
                     }
                     break;
