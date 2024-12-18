@@ -15,7 +15,7 @@ enum ret_type_t{
     ERROR_NO_SOLVE
 };
 
-void logErrors(int code) {
+void HandlingError(int code) {
     switch (code) {
         case ERROR_NAN: {
             printf("Found not a number\n"); break;
