@@ -144,5 +144,5 @@ void HasFinalRepresentation(int base, int count, ...) {
 }
 
 int main() {
-    HasFinalRepresentation(2, 4, 0.2, 0.25, 0.15, 0.5);
+    HasFinalRepresentation(5, 4, 0.04, 0.25, 0.15, 0.5);
 }

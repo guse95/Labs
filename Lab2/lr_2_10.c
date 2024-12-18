@@ -73,8 +73,7 @@ int Kefs(double a, double* res_kefs, int n, ...) {
     }
     printf("\n");
     va_end(args);
-    free(RightTriangle_cur
-        );
+    free(RightTriangle_cur);
     free(cur_kefs);
     return SUCCESS;
 }

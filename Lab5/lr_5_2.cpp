@@ -54,7 +54,8 @@ public:
 
         std::ofstream out(outputFile, std::ios::binary);
         if (!out) {
-            std::cerr << "Output file openning error: " << outputFile << ", code: " << errno << '\n';
+            std::cerr << "Output file openning error: "
+            << outputFile << ", code: " << errno << '\n';
             perror("Reason");
             return FILE_OPENING_ERROR;
         }
@@ -80,7 +81,8 @@ public:
             i = (i + 1) % 256;
             j = (j + std::to_integer<int>(S[i])) % 256;
             swap(S[i], S[j]);
-            k = std::to_integer<int>(S[(std::to_integer<int>(S[i]) + std::to_integer<int>(S[j])) % 256]);
+            k = std::to_integer<int>(S[(std::to_integer<int>(S[i]) +
+                std::to_integer<int>(S[j])) % 256]);
 
             byte ^= static_cast<char>(k);
 
@@ -98,7 +100,9 @@ private:
 };
 
 int main() {
-    std::vector<std::byte> key = {std::byte(0x51), std::byte(0x23), std::byte(0x45), std::byte(0x6A), std::byte(0x89), std::byte(0xAB), std::byte(0x5D), std::byte(0xEF)};
+    std::vector<std::byte> key = {std::byte(0x51), std::byte(0x23), std::byte(0x45),
+        std::byte(0x6A), std::byte(0x89), std::byte(0xAB), std::byte(0x5D),
+        std::byte(0xEF)};/**/
     encoder encoder(key);
 
     int code = encoder.encode("img.png", "encoded.txt", true);

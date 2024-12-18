@@ -99,25 +99,6 @@ void HandlingError(const int code) {
     }
 }
 
-// int path_checker(char* path) {
-//     char* ptr = path + strlen(path);
-//     while (*ptr != '.') {
-//         --ptr;
-//     }
-//     ++ptr;
-//     if(strcmp(ptr, "txt") != 0) {
-//         return NOT_A_PATH;
-//     }
-//     while (isalpha(*ptr) || isdigit(*ptr) || *ptr == '-'
-//            || *ptr == '_' || *ptr == '.' || *ptr == '\\') {
-//         --ptr;
-//     }
-//     if (*ptr != ':' || !isupper(*(ptr - 1)) || *(ptr + 1) != '\\') {
-//         return NOT_A_PATH;
-//     }
-//     return SUCCESS;
-// }
-
 struct Student {
     unsigned int id;
     char group[100], surname[100], name[100];
@@ -267,14 +248,20 @@ int WriteStudents(struct Student* selected_students, int size, FILE *fileOut, ch
     for (int i = 0; i < size; i++) {
         char curStudent[500];
         if (strcmp(findCondition, "id") != 0) {
-            if (snprintf(curStudent, 500, "%d %s %s %s %c %c %c %c %c\n", selected_students[i].id, selected_students[i].name, selected_students[i].surname, selected_students[i].group, selected_students[i].marks[0],
-                         selected_students[i].marks[1], selected_students[i].marks[2], selected_students[i].marks[3], selected_students[i].marks[4]) < 0) {
+            if (snprintf(curStudent, 500, "%d %s %s %s %c %c %c %c %c\n",
+                selected_students[i].id, selected_students[i].name, selected_students[i].surname,
+                selected_students[i].group, selected_students[i].marks[0],
+                         selected_students[i].marks[1], selected_students[i].marks[2],
+                         selected_students[i].marks[3], selected_students[i].marks[4]) < 0) {
                 return TO_STR_FAIL;
             }
         }
         else {
-            if (snprintf(curStudent, 500, "%d %s %s %s %f\n", selected_students[i].id, selected_students[i].name, selected_students[i].surname, selected_students[i].group,
-                         (selected_students[i].marks[0] - '0' + selected_students[i].marks[1] - '0' + selected_students[i].marks[2] - '0' + selected_students[i].marks[3] - '0' + selected_students[i].marks[4] - '0') / 5.0) < 0) {
+            if (snprintf(curStudent, 500, "%d %s %s %s %f\n", selected_students[i].id,
+                selected_students[i].name, selected_students[i].surname, selected_students[i].group,
+                         (selected_students[i].marks[0] - '0' + selected_students[i].marks[1] - '0'
+                             + selected_students[i].marks[2] - '0' + selected_students[i].marks[3] - '0'
+                             + selected_students[i].marks[4] - '0') / 5.0) < 0) {
                 return TO_STR_FAIL;
             }
         }
@@ -299,7 +286,8 @@ struct SelectedStudents find(int number_of_students, struct Student* Students, c
     for (int i = 0; i < number_of_students; i++) {
         if (founded_students_ind == cnt_founded_students) {
             cnt_founded_students *= 2;
-            struct Student* new_founded_students = realloc(selected_students, sizeof(struct Student) * cnt_founded_students);
+            struct Student* new_founded_students = realloc(selected_students,
+                sizeof(struct Student) * cnt_founded_students);
             if (new_founded_students == NULL) {
                 HandlingError(MALLOC_FAILED);
                 free(selected_students);
@@ -423,7 +411,8 @@ int main(int argc, char* argv[]) {
             Students = new_students;
         }
 
-        AVG_MARK += (Students[student_Ind].marks[0] - '0' + Students[student_Ind].marks[1] - '0' + Students[student_Ind].marks[2] - '0' + Students[student_Ind].marks[3] - '0' + Students[student_Ind].marks[4] - '0') / 5.0;
+        AVG_MARK += (Students[student_Ind].marks[0] - '0' + Students[student_Ind].marks[1]
+            - '0' + Students[student_Ind].marks[2] - '0' + Students[student_Ind].marks[3] - '0' + Students[student_Ind].marks[4] - '0') / 5.0;
         student_Ind++;
     }
     number_of_students = student_Ind;
