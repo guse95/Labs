@@ -1,1 +1,1 @@
-add_subdirectory(my_array)
+add_subdirectory(src)
