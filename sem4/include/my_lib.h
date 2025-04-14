@@ -21,7 +21,7 @@ namespace my_container {
             ArrayIter(ArrayIter &&other) = default;
 
         public:
-            ArrayIter operator++() {
+            ArrayIter& operator++() {
                 ++this->iter;
                 return *this;
             }
@@ -30,7 +30,7 @@ namespace my_container {
                 ++this->iter;
                 return temp;
             }
-            ArrayIter operator--() {
+            ArrayIter& operator--() {
                 --this->iter;
                 return *this;
             }
@@ -62,21 +62,21 @@ namespace my_container {
             ArrayReverseIter(ArrayReverseIter &&other) = default;
 
         public:
-            ArrayReverseIter operator++() {
+            ArrayReverseIter& operator++() {
                 --this->iter;
                 return *this;
             }
             ArrayReverseIter operator++(int) {
-                ArrayIter temp = *this;
+                ArrayReverseIter temp = *this;
                 --this->iter;
                 return temp;
             }
-            ArrayReverseIter operator--() {
+            ArrayReverseIter& operator--() {
                 ++this->iter;
                 return *this;
             }
             ArrayReverseIter operator--(int) {
-                ArrayIter temp = *this;
+                ArrayReverseIter temp = *this;
                 ++this->iter;
                 return temp;
             }
@@ -97,145 +97,157 @@ namespace my_container {
         using ReverseIterator = ArrayReverseIter<T>;
         using ConstReverseIterator = ArrayReverseIter<const T>;
 
-        Array() : cap(N), arr(new T[this->cap]) {}
-        explicit Array(const std::size_t len, const T& val) : cap(N) {
-            arr = new T[cap];
+        Array() : cap(N), arr(new T[cap]) {}
+        explicit Array(const std::size_t len, const T& val) :
+        cap(N), arr(new T[len]) {
             for (std::size_t i = 0; i < len && i < cap; i++) {
                 arr[i] = val;
             }
         }
-        Array(const Array &other) : cap(other.cap) {
-            arr = new T[cap];
-            std::copy(other.begin(), other.end(), arr);
+        Array(const Array &other) :
+        cap(other.cap), arr(new T[cap]) {
+            std::copy(other.arr, other.arr + cap, arr);
         };
-        Array(Array &&other)  noexcept : cap(other.cap), arr(other.arr) {
+        explicit Array(Array &&other)  noexcept :
+        cap(other.cap), arr(other.arr) {
             other.arr = nullptr;
             other.cap = 0;
         }
-        Array(std::initializer_list<T> init) : cap(N) {
-            arr = new T[cap];
+        explicit Array(std::initializer_list<T> init) :
+        cap(N), arr(new T[cap]) {
             std::size_t i = 0;
             for (const auto el : init) {
-                arr[i++] = el;
                 if (i >= cap) break;
+                arr[i++] = el;
             }
         }
-        Array(std::initializer_list<const std::pair<size_t, T>> init) : cap(N) {
-            arr = new T[cap];
-            for (const auto [ind, val] : init) {
-                if (ind < N) {
+        explicit Array(std::initializer_list<const std::pair<size_t, T>> init) :
+        cap(N), arr(new T[cap]) {
+            for (const auto& [ind, val] : init) {
+                if (ind < cap) {
                     arr[ind] = val;
                 }
             }
         }
 
         ~Array() final{
-            delete[] this->arr;
+            delete[] arr;
         }
 
         Array& operator=(const Array &other) {
-            if (other and this != &other) {
-                delete[] this->arr;
-                this->cap = other.cap;
-                this->arr = new T[this->cap];
-                std::copy(other.begin(), other.end(), this->arr);
+            if (this != &other) {
+                delete[] arr;
+                cap = other.cap;
+                arr = new T[cap];
+                std::copy(other.arr, other.arr + cap, this->arr);
+            }
+            return *this;
+        }
+
+        Array& operator=(Array &&other) noexcept {
+            if (this != &other) {
+                delete[] arr;
+                cap = other.cap;
+                arr = other.arr;
+                other.arr = nullptr;
+                other.cap = 0;
             }
             return *this;
         }
 
         T& at(std::size_t poz) {
-            if (poz >= this->cap) {
-                throw std::out_of_range("");
+            if (poz >= cap) {
+                throw std::out_of_range("Index out of range");
             }
-            return this->arr[poz];
+            return arr[poz];
         }
         const T& at(std::size_t poz) const{
-            if (poz >= this->cap) {
-                throw std::out_of_range("");
+            if (poz >= cap) {
+                throw std::out_of_range("Index out of range");
             }
-            return this->arr[poz];
+            return arr[poz];
         }
 
         T& operator[](std::size_t poz) {
-            return this->arr[poz];
+            return arr[poz];
         }
         const T& operator[](std::size_t poz) const {
-            return this->arr[poz];
+            return arr[poz];
         }
 
         T& front() {
-            return this->arr[0];
+            return arr[0];
         }
         const T& front() const {
-            return this->arr[0];
+            return arr[0];
         }
 
         T& back() {
-            return this->arr[this->cap - 1];
+            return arr[cap - 1];
         }
         const T& back() const {
-            return this->arr[this->cap - 1];
+            return arr[cap - 1];
         }
 
         T* data() noexcept {
-            return this->arr;
+            return arr;
         }
         const T* data() const noexcept {
-            return this->arr;
+            return arr;
         }
 
         iterator begin() noexcept {
-            return this->arr;
+            return iterator(arr);
         }
         iterator end() noexcept {
-            return this->arr + this->cap;
+            return iterator(arr + cap);
         }
         ConstIterator cbegin() const noexcept {
-            return this->arr;
+            return ConstIterator(arr);
         }
         ConstIterator cend() const noexcept {
-            return this->arr + this->cap;
+            return ConstIterator(arr + cap);
         }
         ReverseIterator rbegin() noexcept {
-            return this->arr + this->cap - 1;
+            return ReverseIterator(arr + cap - 1);
         }
         ReverseIterator rend() noexcept {
-            return this->arr - 1;
+            return ReverseIterator(arr - 1);
         }
         ConstReverseIterator crbegin() const noexcept {
-            return this->arr + this->cap - 1;
+            return ConstReverseIterator(arr + cap - 1);
         }
         ConstReverseIterator crend() const noexcept {
-            return this->arr - 1;
+            return ConstReverseIterator(arr - 1);
         }
 
         [[nodiscard]] bool empty() const noexcept final {
-            return this->cap == 0;
+            return cap == 0;
         }
 
         [[nodiscard]] std::size_t size() const noexcept final {
-            return this->cap;
+            return cap;
         }
 
         [[nodiscard]] std::size_t max_size() const noexcept final {
-            return this->cap;
+            return cap;
         }
 
         void fill(const T& val) {
-            std::fill(this->arr, this->arr + this->cap, val);
+            std::fill(arr, arr + cap, val);
         }
 
         void swap(Array &other) noexcept {
-            std::swap(this->arr, other.arr);
-            std::swap(this->cap, other.cap);
+            std::swap(arr, other.arr);
+            std::swap(cap, other.cap);
         }
 
         bool operator==(const Array &other) const {
-            if (this->cap != other.cap) {
+            if (cap != other.cap) {
                 return false;
             }
-            for (std::size_t i = 0; i < this->cap; ++i) {
-                if (this->arr[i] != other.arr[i]) {
+            for (std::size_t i = 0; i < cap; ++i) {
+                if (arr[i] != other.arr[i]) {
                     return false;
                 }
             }
@@ -267,16 +279,14 @@ namespace my_container {
             return !(*this < other);
         }
 
-        std::weak_ordering operator<=>(const Array &other) const {
-            if (*this == other) {
-                return std::weak_ordering::equivalent;
-            }
-            if (*this < other) {
-                return std::weak_ordering::less;
-            }
-            return std::weak_ordering::greater;
-        }
-
-
+        // constexpr auto operator<=>(const Array &other) const {
+        //     if (*this == other) {
+        //         return std::weak_ordering::equivalent;
+        //     }
+        //     if (*this < other) {
+        //         return std::weak_ordering::less;
+        //     }
+        //     return std::weak_ordering::greater;
+        // }
     };
 }

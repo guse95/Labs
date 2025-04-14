@@ -1,5 +1,4 @@
-#include "../include/my_array.h"
-#include "../include/my_list.h"
+#include "my_lib.h"
 
 
 int main() {
