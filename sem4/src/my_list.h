@@ -16,9 +16,8 @@ namespace my_container {
         node *Head;
         node *Tail;
         std::size_t len;
-        const std::allocator<node> alloc;
-        // using AllocNode = typename std::allocator_traits<Allocator>::template rebind_alloc<node>;
-        // AllocNode allocNode;
+        using AllocNode = typename std::allocator_traits<Allocator>::template rebind_alloc<node>;
+        AllocNode alloc;
         
         template <class IterType>
         class ListIter
@@ -65,7 +64,7 @@ namespace my_container {
         class ListReverseIter
         {
         protected:
-            friend class Array;
+            friend class List;
             using NoConstIterT = std::remove_const_t<IterType>;
             NoConstIterT *iter = nullptr;
             explicit ListReverseIter(NoConstIterT *iter) : iter(iter) {}
@@ -78,7 +77,7 @@ namespace my_container {
                 return *this;
             }
             ListReverseIter operator++(int) {
-                ListIter temp = *this;
+                ListReverseIter temp = *this;
                 this->iter = this->iter->prev;
                 return temp;
             }
@@ -87,7 +86,7 @@ namespace my_container {
                 return *this;
             }
             ListReverseIter operator--(int) {
-                ListIter temp = *this;
+                ListReverseIter temp = *this;
                 this->iter = this->iter->next;
                 return temp;
             }
@@ -129,9 +128,9 @@ namespace my_container {
             Head->prev = nullptr;
             node *tmp = Head;
             for (std::size_t i = 1; i < cnt; i++) {
-                this->tmp->next = alloc.allocate(1);
-                this->tmp->next->prev = tmp;
-                this->tmp->next->next = nullptr;
+                tmp->next = alloc.allocate(1);
+                tmp->next->prev = tmp;
+                tmp->next->next = nullptr;
                 tmp = tmp->next;
             }
             Tail = tmp;
@@ -142,7 +141,7 @@ namespace my_container {
             using AllocNode = typename std::allocator_traits<Allocator>::template rebind_alloc<node>;
             AllocNode allocNode;
             alloc = allocNode;
-            Head = this->alloc.allocate(1);
+            Head = alloc.allocate(1);
             Head->prev = nullptr;
             node *tmp = Head;
             for (std::size_t i = 1; i < cnt; i++) {
@@ -194,26 +193,28 @@ namespace my_container {
         }
 
         List(List&& other)  noexcept :
-        Head(other.Head), Tail(other.Tail), len(other.len), alloc(other.alloc) {
+        Head(other.Head), Tail(other.Tail), len(other.len), alloc(std::move(other.alloc)) {
             other.Head = nullptr;
             other.Tail = nullptr;
             other.len = 0;
-            other.alloc = nullptr;
         }
 
         List(List&& other, const Allocator& alloc_ = Allocator())  noexcept :
         Head(other.Head), Tail(other.Tail), len(other.len) {
             using AllocNode = typename std::allocator_traits<Allocator>::template rebind_alloc<node>;
             AllocNode allocNode;
-            alloc = allocNode;
+            alloc = std::move(allocNode);
             other.Head = nullptr;
             other.Tail = nullptr;
             other.len = 0;
-            other.alloc = nullptr;
         }
 
         template< class InputIt >
-        List( InputIt first, InputIt last, const Allocator& alloc = Allocator() ) {
+        List( InputIt first, InputIt last, const Allocator& alloc_ = Allocator() ) :
+        Head(nullptr), Tail(nullptr), len(0), alloc(alloc_) {
+            if (first == last) {
+                return;
+            }
             len = std::distance(first, last);
             using AllocNode = typename std::allocator_traits<Allocator>::template rebind_alloc<node>;
             AllocNode allocNode;
@@ -604,13 +605,13 @@ namespace my_container {
             alloc = tmp_alloc;
         }
 
-        bool operator==( const List<T, Allocator>& lhs, const List<T, Allocator>& rhs ) {
-            if (lhs.size() != rhs.size()) {
+        bool operator==( const List<T, Allocator>& other ) {
+            if (len != other.len) {
                 return false;
             }
-            node* l = lhs.Head, r = rhs.Head;
-            for (std::size_t i = 0; i < lhs.size(); i++) {
-                if (l->val != rhs->val) {
+            node* l = Head, r = other.Head;
+            for (std::size_t i = 0; i < len; i++) {
+                if (l->val != other->val) {
                     return false;
                 }
                 l = l->next;
@@ -618,34 +619,35 @@ namespace my_container {
             }
             return true;
         }
-        bool operator!=( const List<T, Allocator>& lhs, const List<T, Allocator>& rhs ) {
-            return !(lhs == rhs);
+        bool operator!=( const List<T, Allocator>& other ) {
+            return !(this == other);
         }
 
-        bool operator<( const List<T, Allocator>& lhs, const List<T, Allocator>& rhs ) {
-            node* l = lhs.Head, r = rhs.Head;
-            for (std::size_t i = 0; i < lhs.size(); i++) {
-                if (l->val != rhs->val) {
-                    return l->val < rhs->val;
+        bool operator<( const List<T, Allocator>& other ) {
+            node* l = Head, r = other.Head;
+            for (std::size_t i = 0; i < len; i++) {
+                if (l->val != other->val) {
+                    return l->val < other->val;
                 }
                 l = l->next;
                 r = r->next;
             }
-            return lhs.len < rhs.len;
+            return len < other.len;
         }
-        bool operator<=( const List<T, Allocator>& lhs, const List<T, Allocator>& rhs ) {
-            return ((lhs == rhs)  || (lhs < rhs));
+        bool operator<=( const List<T, Allocator>& other ) {
+            return ((this == other)  || (this < other));
         }
-        bool operator>( const List<T, Allocator>& lhs, const List<T, Allocator>& rhs ) {
-            return !(lhs <= rhs);
+        bool operator>( const List<T, Allocator>& other ) {
+            return !(this <= other);
         }
-        bool operator>=( const List<T, Allocator>& lhs, const List<T, Allocator>& rhs ) {
-            return !(lhs < rhs);
+        bool operator>=( const List<T, Allocator>& other ) {
+            return !(this < other);
         }
-        std::weak_ordering operator<=>( const T& lhs, const List<T, Allocator>& rhs ) {
-            if (lhs > rhs) {
+        std::weak_ordering operator<=>( const List<T, Allocator>& other ) {
+            if (this > other) {
                 return std::weak_ordering::greater;
-            } else if (lhs == rhs) {
+            }
+            if (this == other) {
                 return std::weak_ordering::equivalent;
             }
             return std::weak_ordering::less;
