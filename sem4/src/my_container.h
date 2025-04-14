@@ -1,3 +1,4 @@
+#pragma once
 #include <iostream>
 
 
@@ -17,7 +18,7 @@ public:
 
     [[nodiscard]] virtual std::size_t size() const = 0;
 
-    // [[nodiscard]] virtual std::size_t max_size() const = 0;
+    [[nodiscard]] virtual std::size_t max_size() const = 0;
 
     [[nodiscard]] virtual bool empty() const = 0;
 };
