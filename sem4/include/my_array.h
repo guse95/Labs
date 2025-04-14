@@ -1,12 +1,11 @@
 #pragma once
-#include "my_container.h"
+#include "../src/my_container.h"
 
 namespace my_container {
     template <class T, std::size_t N>
     class Array : public Container<T>
     {
     protected:
-        std::size_t len = 0;
         std::size_t cap = 0;
         T *arr = nullptr;
 
@@ -98,31 +97,30 @@ namespace my_container {
         using ReverseIterator = ArrayReverseIter<T>;
         using ConstReverseIterator = ArrayReverseIter<const T>;
 
-        Array() : len(0), cap(N), arr(new T[this->cap]) {}
-        explicit Array(const std::size_t len_, const T& val) : len(len_), cap(N) {
+        Array() : cap(N), arr(new T[this->cap]) {}
+        explicit Array(const std::size_t len, const T& val) : cap(N) {
             arr = new T[cap];
-            for (std::size_t i = 0; i < len; i++) {
+            for (std::size_t i = 0; i < len && i < cap; i++) {
                 arr[i] = val;
             }
         }
-        Array(const Array &other) : len(other.len), cap(other.cap) {
+        Array(const Array &other) : cap(other.cap) {
             arr = new T[cap];
             std::copy(other.begin(), other.end(), arr);
         };
-        Array(Array &&other)  noexcept : len(other.len), cap(other.cap), arr(other.arr) {
+        Array(Array &&other)  noexcept : cap(other.cap), arr(other.arr) {
             other.arr = nullptr;
-            other.len = 0;
             other.cap = 0;
         }
-        Array(std::initializer_list<T>& init) : cap(N) {
+        Array(std::initializer_list<T> init) : cap(N) {
             arr = new T[cap];
-            len = 0;
+            std::size_t i = 0;
             for (const auto el : init) {
-                arr[len++] = el;
-                if (len >= cap) break;
+                arr[i++] = el;
+                if (i >= cap) break;
             }
         }
-        Array(std::initializer_list<const std::pair<size_t, T>> init) : len(N), cap(N) {
+        Array(std::initializer_list<const std::pair<size_t, T>> init) : cap(N) {
             arr = new T[cap];
             for (const auto [ind, val] : init) {
                 if (ind < N) {
@@ -138,7 +136,6 @@ namespace my_container {
         Array& operator=(const Array &other) {
             if (other and this != &other) {
                 delete[] this->arr;
-                this->len = other.len;
                 this->cap = other.cap;
                 this->arr = new T[this->cap];
                 std::copy(other.begin(), other.end(), this->arr);
@@ -146,15 +143,14 @@ namespace my_container {
             return *this;
         }
 
-
         T& at(std::size_t poz) {
-            if (poz >= this->len) {
+            if (poz >= this->cap) {
                 throw std::out_of_range("");
             }
             return this->arr[poz];
         }
         const T& at(std::size_t poz) const{
-            if (poz >= this->len) {
+            if (poz >= this->cap) {
                 throw std::out_of_range("");
             }
             return this->arr[poz];
@@ -175,10 +171,10 @@ namespace my_container {
         }
 
         T& back() {
-            return this->arr[this->len - 1];
+            return this->arr[this->cap - 1];
         }
         const T& back() const {
-            return this->arr[this->len - 1];
+            return this->arr[this->cap - 1];
         }
 
         T* data() noexcept {
@@ -192,33 +188,33 @@ namespace my_container {
             return this->arr;
         }
         iterator end() noexcept {
-            return this->arr + this->len;
+            return this->arr + this->cap;
         }
         ConstIterator cbegin() const noexcept {
             return this->arr;
         }
         ConstIterator cend() const noexcept {
-            return this->arr + this->len;
+            return this->arr + this->cap;
         }
         ReverseIterator rbegin() noexcept {
-            return this->arr + this->len - 1;
+            return this->arr + this->cap - 1;
         }
         ReverseIterator rend() noexcept {
             return this->arr - 1;
         }
         ConstReverseIterator crbegin() const noexcept {
-            return this->arr + this->len - 1;
+            return this->arr + this->cap - 1;
         }
         ConstReverseIterator crend() const noexcept {
             return this->arr - 1;
         }
 
         [[nodiscard]] bool empty() const noexcept final {
-            return this->len == 0;
+            return this->cap == 0;
         }
 
         [[nodiscard]] std::size_t size() const noexcept final {
-            return this->len;
+            return this->cap;
         }
 
         [[nodiscard]] std::size_t max_size() const noexcept final {
@@ -226,20 +222,19 @@ namespace my_container {
         }
 
         void fill(const T& val) {
-            std::fill(this->arr, this->arr + this->len, val);
+            std::fill(this->arr, this->arr + this->cap, val);
         }
 
         void swap(Array &other) noexcept {
             std::swap(this->arr, other.arr);
-            std::swap(this->len, other.len);
             std::swap(this->cap, other.cap);
         }
 
         bool operator==(const Array &other) const {
-            if (this->len != other.len) {
+            if (this->cap != other.cap) {
                 return false;
             }
-            for (std::size_t i = 0; i < this->len; ++i) {
+            for (std::size_t i = 0; i < this->cap; ++i) {
                 if (this->arr[i] != other.arr[i]) {
                     return false;
                 }
@@ -250,7 +245,7 @@ namespace my_container {
             return !(*this == other);
         }
         bool operator<(const Array &other) const {
-            const std::size_t less_len = (this->len > other.len) ? other.len : this->len;
+            const std::size_t less_len = (this->cap > other.cap) ? other.cap : this->cap;
 
             for (std::size_t i = 0; i < less_len; ++i) {
                 if (this->arr[i] < other.arr[i]) {
@@ -260,7 +255,7 @@ namespace my_container {
                     return false;
                 }
             }
-            return this->len < other.len;
+            return this->cap < other.cap;
         }
         bool operator<=(const Array &other) const {
             return (*this < other || *this == other);
