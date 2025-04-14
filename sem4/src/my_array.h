@@ -140,10 +140,10 @@ namespace my_container {
             return this->arr[poz];
         }
 
-        T& operator[](std::size_t poz) final{
+        T& operator[](std::size_t poz) {
             return this->arr[poz];
         }
-        const T& operator[](std::size_t poz) const final {
+        const T& operator[](std::size_t poz) const {
             return this->arr[poz];
         }
 
@@ -230,7 +230,8 @@ namespace my_container {
             return !(*this == other);
         }
         bool operator<(const Array &other) const {
-            const std::size_t less_len = min(this->len, other.len);
+            const std::size_t less_len = (this->len > other.len) ? other.len : this->len;
+
             for (std::size_t i = 0; i < less_len; ++i) {
                 if (this->arr[i] < other.arr[i]) {
                     return true;
@@ -260,5 +261,7 @@ namespace my_container {
             }
             return std::weak_ordering::greater;
         }
+
+
     };
 }
