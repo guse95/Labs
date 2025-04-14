@@ -278,15 +278,16 @@ namespace my_container {
         bool operator>=(const Array &other) const {
             return !(*this < other);
         }
-
-        // constexpr auto operator<=>(const Array &other) const {
-        //     if (*this == other) {
-        //         return std::weak_ordering::equivalent;
-        //     }
-        //     if (*this < other) {
-        //         return std::weak_ordering::less;
-        //     }
-        //     return std::weak_ordering::greater;
-        // }
+#if __cplusplus >= 202002L
+        constexpr auto operator<=>(const Array &other) const {
+            if (*this == other) {
+                return std::weak_ordering::equivalent;
+            }
+            if (*this < other) {
+                return std::weak_ordering::less;
+            }
+            return std::weak_ordering::greater;
+        }
+#endif
     };
 }
