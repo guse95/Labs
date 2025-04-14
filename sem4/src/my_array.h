@@ -1,3 +1,4 @@
+#pragma once
 #include "my_container.h"
 
 namespace my_container {
@@ -97,9 +98,12 @@ namespace my_container {
         using ReverseIterator = ArrayReverseIter<T>;
         using ConstReverseIterator = ArrayReverseIter<const T>;
 
-        Array() : len(0), cap(10), arr(new T[this->cap]) {}
-        Array(const std::size_t len_, const std::size_t cap_) : len(len_), cap(cap_) {
+        Array() : len(0), cap(N), arr(new T[this->cap]) {}
+        explicit Array(const std::size_t len_, const T& val) : len(len_), cap(N) {
             arr = new T[cap];
+            for (std::size_t i = 0; i < len; i++) {
+                arr[i] = val;
+            }
         }
         Array(const Array &other) : len(other.len), cap(other.cap) {
             arr = new T[cap];
@@ -109,6 +113,22 @@ namespace my_container {
             other.arr = nullptr;
             other.len = 0;
             other.cap = 0;
+        }
+        Array(std::initializer_list<T>& init) : cap(N) {
+            arr = new T[cap];
+            len = 0;
+            for (const auto el : init) {
+                arr[len++] = el;
+                if (len >= cap) break;
+            }
+        }
+        Array(std::initializer_list<const std::pair<size_t, T>> init) : len(N), cap(N) {
+            arr = new T[cap];
+            for (const auto [ind, val] : init) {
+                if (ind < N) {
+                    arr[ind] = val;
+                }
+            }
         }
 
         ~Array() final{
