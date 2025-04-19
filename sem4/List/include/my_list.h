@@ -13,6 +13,10 @@ namespace my_container {
             T val;
             node *next;
             node *prev;
+
+            node() : next(nullptr), prev(nullptr) {}
+            explicit node(const T& val) : val(val), next(nullptr), prev(nullptr) {}
+            explicit node(T&& val) : val(std::move(val)), next(nullptr), prev(nullptr) {}
         };
 
         node *Head;
@@ -27,13 +31,13 @@ namespace my_container {
         protected:
             friend class List;
             node *iter = nullptr;
-
-            explicit ListIter(node *iter) : iter(iter) {}
-            ListIter(const ListIter &other) = default;
-            ListIter(ListIter &&other) = default;
-
         public:
-            ListIter operator++() {
+            explicit ListIter(node *iter) : iter(iter) {}
+            ListIter(const ListIter &other) : iter(other.iter) {}
+            ListIter(ListIter &&other) noexcept : iter(other.iter) {}
+
+            ListIter& operator=(const ListIter &other) = default;
+            ListIter& operator++() {
                 this->iter = this->iter->next;
                 return *this;
             }
@@ -42,7 +46,7 @@ namespace my_container {
                 this->iter = this->iter->next;
                 return temp;
             }
-            ListIter operator--() {
+            ListIter& operator--() {
                 this->iter = this->iter->prev;
                 return *this;
             }
@@ -57,8 +61,13 @@ namespace my_container {
             bool operator!=(const ListIter &other) const {
                 return this->iter != other.iter;
             }
-            IterType operator*() const {
+            IterType& operator*() const {
+                if (!iter) throw std::runtime_error("Dereferencing null iterator");
                 return this->iter->val;
+            }
+            IterType* operator->() const {
+                if (!iter) throw std::runtime_error("Dereferencing null iterator");
+                return &this->iter->val;
             }
         };
 
@@ -68,12 +77,13 @@ namespace my_container {
         protected:
             friend class List;
             node *iter = nullptr;
+        public:
             explicit ListReverseIter(node *iter) : iter(iter) {}
             ListReverseIter(const ListReverseIter &other) = default;
             ListReverseIter(ListReverseIter &&other) = default;
 
-        public:
-            ListReverseIter operator++() {
+            ListReverseIter& operator=(const ListReverseIter &other) = default;
+            ListReverseIter& operator++() {
                 this->iter = this->iter->prev;
                 return *this;
             }
@@ -82,7 +92,7 @@ namespace my_container {
                 this->iter = this->iter->prev;
                 return temp;
             }
-            ListReverseIter operator--() {
+            ListReverseIter& operator--() {
                 this->iter = this->iter->next;
                 return *this;
             }
@@ -97,8 +107,13 @@ namespace my_container {
             bool operator!=(const ListReverseIter &other) const {
                 return this->iter != other.iter;
             }
-            IterType operator*() const {
+            IterType& operator*() const {
+                if (!iter) throw std::runtime_error("Dereferencing null iterator");
                 return this->iter->val;
+            }
+            IterType* operator->() const {
+                if (!iter) throw std::runtime_error("Dereferencing null iterator");
+                return &this->iter->val;
             }
         };
 
@@ -113,8 +128,8 @@ namespace my_container {
 
         explicit List(const Allocator& alloc_) : Head(nullptr), Tail(nullptr), len(0), alloc(alloc_) {}
 
-        explicit List(const std::size_t cnt, Allocator& alloc_ = Allocator()) :
-        len(cnt) {
+        explicit List(const std::size_t cnt, const Allocator& alloc_ = Allocator()) :
+        len(cnt), alloc(alloc_) {
             Head = std::allocator_traits<AllocNode>::allocate(alloc, 1);
             std::allocator_traits<AllocNode>::construct(alloc, Head);
             Head->prev = nullptr;
@@ -130,7 +145,7 @@ namespace my_container {
         }
 
         List(const std::size_t cnt, const T& val_, const Allocator& alloc_ = Allocator()) :
-        len(cnt) {
+        len(cnt), alloc(alloc_) {
             Head = std::allocator_traits<AllocNode>::allocate(alloc, 1);
             std::allocator_traits<AllocNode>::construct(alloc, Head, val_);
             Head->prev = nullptr;
@@ -145,14 +160,15 @@ namespace my_container {
             Tail = tmp;
         }
 
-        List(const List& other) : len(other->len), alloc(other.alloc) {
-            Head = alloc.allocate(1);
+        List(const List& other) :
+        len(other.len), alloc(other.alloc) {
+            Head = std::allocator_traits<AllocNode>::allocate(alloc, 1);
             Head->prev = nullptr;
             Head->val = other.Head->val;
             node *tmp = Head;
-            node *other_tmp = other->Head->next;
+            node *other_tmp = other.Head->next;
             for (std::size_t i = 1; i < len; i++) {
-                tmp->next = alloc.allocate(1);
+                tmp->next = std::allocator_traits<AllocNode>::allocate(alloc, 1);
                 tmp->next->prev = tmp;
                 tmp->next->next = nullptr;
                 tmp->next->val = other_tmp->val;
@@ -162,18 +178,15 @@ namespace my_container {
             Tail = tmp;
         }
 
-        List(const List& other, const Allocator& alloc_ = Allocator()) :
-        len(other->len) {
-            using AllocNode = typename std::allocator_traits<Allocator>::template rebind_alloc<node>;
-            AllocNode allocNode;
-            alloc = allocNode;
-            Head = alloc.allocate(1);
+        List(const List& other, const Allocator& alloc_ ) :
+        len(other.len), alloc(alloc_) {
+            Head = std::allocator_traits<AllocNode>::allocate(alloc, 1);
             Head->prev = nullptr;
             Head->val = other.Head->val;
             node *tmp = Head;
-            node *other_tmp = other->Head->next;
+            node *other_tmp = other.Head->next;
             for (std::size_t i = 1; i < len; i++) {
-                tmp->next = alloc.allocate(1);
+                tmp->next = std::allocator_traits<AllocNode>::allocate(alloc, 1);
                 tmp->next->prev = tmp;
                 tmp->next->next = nullptr;
                 tmp->next->val = other_tmp->val;
@@ -190,50 +203,51 @@ namespace my_container {
             other.len = 0;
         }
 
-        List(List&& other, const Allocator& alloc_ = Allocator())  noexcept :
-        Head(other.Head), Tail(other.Tail), len(other.len) {
-            using AllocNode = typename std::allocator_traits<Allocator>::template rebind_alloc<node>;
-            AllocNode allocNode;
-            alloc = std::move(allocNode);
+        List(List&& other, const Allocator& alloc_ )  noexcept :
+        Head(other.Head), Tail(other.Tail), len(other.len), alloc(std::move(alloc_)) {
             other.Head = nullptr;
             other.Tail = nullptr;
             other.len = 0;
         }
 
-        // template< class InputIt >
-        // List( InputIt first, InputIt last, const Allocator& alloc_ = Allocator() ) :
-        // Head(nullptr), Tail(nullptr), len(0), alloc(alloc_) {
-        //     if (first == last) {
-        //         return;
-        //     }
-        //     Head = std::allocator_traits<AllocNode>::allocate(alloc, 1);
-        //     Head->prev = nullptr;
-        //     len = 1;
-        //     Head->val = *first;
-        //     node *tmp = Head;
-        //     while (first != last) {
-        //         node* new_node = std::allocator_traits<AllocNode>::allocate(alloc, 1);
-        //         std::allocator_traits<AllocNode>::construct(alloc, new_node, *first++);
-        //
-        //         new_node->prev = tmp;
-        //         tmp->next = new_node;
-        //         tmp = new_node;
-        //         len++;
-        //     }
-        //     Tail = tmp;
-        //     Tail->next = nullptr;
-        // }
-        //
-        // List(std::initializer_list<T> init, const Allocator& alloc = Allocator()) :
-        // List(init.begin(), init.end(), alloc) {}
+        template< class InputIt >
+        List( InputIt first, InputIt last, const Allocator& alloc_ = Allocator() ) :
+        Head(nullptr), Tail(nullptr), len(0), alloc(alloc_) {
+            if (first == last) {
+                return;
+            }
+            Head = std::allocator_traits<AllocNode>::allocate(alloc, 1);
+            Head->prev = nullptr;
+            len = 1;
+            Head->val = *first;
+            node *tmp = Head;
+            while (first != last) {
+                node* new_node = std::allocator_traits<AllocNode>::allocate(alloc, 1);
+                std::allocator_traits<AllocNode>::construct(alloc, new_node, *first++);
+
+                new_node->prev = tmp;
+                tmp->next = new_node;
+                tmp = new_node;
+                len++;
+            }
+            Tail = tmp;
+            Tail->next = nullptr;
+        }
+
+        List(std::initializer_list<T> init, const Allocator& alloc = Allocator()) :
+        List(init.begin(), init.end(), alloc) {}
 
         ~List() final {
             node *tmp = Head;
             while (tmp != nullptr) {
                 node *next = tmp->next;
-                alloc.deallocate(tmp, 1);
+                std::allocator_traits<AllocNode>::destroy(alloc, tmp);
+                std::allocator_traits<AllocNode>::deallocate(alloc, tmp, 1);
                 tmp = next;
             }
+            Head = nullptr;
+            Tail = nullptr;
+            len = 0;
         }
 
         List& operator=(const List& other) {
@@ -242,15 +256,15 @@ namespace my_container {
             }
             if (alloc == other.alloc) {
                 if (Head == nullptr) {
-                    Head = alloc.allocate(1);
+                    Head = std::allocator_traits<AllocNode>::allocate(alloc, 1);
                     Head->prev = nullptr;
                 }
                 Head->val = other.Head->val;
                 node *tmp = Head;
-                node *other_tmp = other->Head->next;
+                node *other_tmp = other.Head->next;
                 for (std::size_t i = 1; i < other.len; i++) {
                     if (i >= len) {
-                        tmp->next = alloc.allocate(1);
+                        tmp->next = std::allocator_traits<AllocNode>::allocate(alloc, 1);
                         tmp->next->prev = tmp;
                         tmp->next->next = nullptr;
                     }
@@ -263,7 +277,7 @@ namespace my_container {
                 node *tmp_del = tmp;
                 while (tmp_del != nullptr) {
                     node *next = tmp_del->next;
-                    alloc.deallocate(tmp_del, 1);
+                    std::allocator_traits<AllocNode>::deallocate(alloc, tmp_del, 1);
                     tmp_del = next;
                 }
 
@@ -271,18 +285,23 @@ namespace my_container {
                 return *this;
             }
             // deallocate by old alloc
-            ~List();
+            node *tmp_d = Head;
+            while (tmp_d != nullptr) {
+                node *next = tmp_d->next;
+                std::allocator_traits<AllocNode>::deallocate(alloc, tmp_d, 1);
+                tmp_d = next;
+            }
             // copy constructor =)
             // *this = new List(other);
             alloc = other.alloc;
             len = other.len;
-            Head = alloc.allocate(1);
+            Head = std::allocator_traits<AllocNode>::allocate(alloc, 1);
             Head->prev = nullptr;
             Head->val = other.Head->val;
             node *tmp = Head;
-            node *other_tmp = other->Head->next;
+            node *other_tmp = other.Head->next;
             for (std::size_t i = 1; i < len; i++) {
-                tmp->next = alloc.allocate(1);
+                tmp->next = std::allocator_traits<AllocNode>::allocate(alloc, 1);
                 tmp->next->prev = tmp;
                 tmp->next->next = nullptr;
                 tmp->next->val = other_tmp->val;
@@ -306,7 +325,7 @@ namespace my_container {
                 }
                 Head->val = other.Head->val;
                 node *tmp = Head;
-                node *other_tmp = other->Head->next;
+                node *other_tmp = other.Head->next;
                 for (std::size_t i = 1; i < len && i < other.len; i++) {
                     tmp->next->val = other_tmp->val;
                     tmp = tmp->next;
@@ -316,7 +335,7 @@ namespace my_container {
                     node *tmp_del = tmp->next;
                     while (tmp_del != nullptr) {
                         node *next = tmp_del->next;
-                        alloc.deallocate(tmp_del, 1);
+                        std::allocator_traits<AllocNode>::deallocate(alloc, tmp_del, 1);
                         tmp_del = next;
                     }
                     Tail = tmp;
@@ -329,21 +348,25 @@ namespace my_container {
                 return *this;
             }
             // deallocate by old alloc
-            ~List();
+            node *tmp_d = Head;
+            while (tmp_d != nullptr) {
+                node *next = tmp_d->next;
+                std::allocator_traits<AllocNode>::deallocate(alloc, tmp_d, 1);
+                tmp_d = next;
+            }
             // copy constructor =))
-            // *this = new List(other);
-            alloc = other.alloc;
+            alloc = std::move(other.alloc);
             len = other.len;
-            Head = alloc.allocate(1);
+            Head = std::allocator_traits<AllocNode>::allocate(alloc, 1);
             Head->prev = nullptr;
-            Head->val = other.Head->val;
+            Head->val = std::move(other.Head->val);
             node *tmp = Head;
-            node *other_tmp = other->Head->next;
+            node *other_tmp = other.Head->next;
             for (std::size_t i = 1; i < len; i++) {
-                tmp->next = alloc.allocate(1);
+                tmp->next = std::allocator_traits<AllocNode>::allocate(alloc, 1);
                 tmp->next->prev = tmp;
                 tmp->next->next = nullptr;
-                tmp->next->val = other_tmp->val;
+                tmp->next->val = std::move(other_tmp->val);
                 tmp = tmp->next;
                 other_tmp = other_tmp->next;
             }
@@ -365,7 +388,7 @@ namespace my_container {
             if (ilist.end() != ptr) {
                 tmp = Tail;
                 while (ilist.end() != ptr) {
-                    tmp->next = alloc.allocate(1);
+                    tmp->next = std::allocator_traits<AllocNode>::allocate(alloc, 1);
                     tmp->next->prev = tmp;
                     tmp->next->next = nullptr;
                     tmp->next->val = ptr;
@@ -378,16 +401,16 @@ namespace my_container {
         }
 
         T& front() {
-            return *Head->val;
+            return Head->val;
         }
         T& back() {
-            return *Tail->val;
+            return Tail->val;
         }
         const T& front() const {
-            return *Head->val;
+            return Head->val;
         }
         const T& back() const {
-            return *Tail->val;
+            return Tail->val;
         }
 
         iterator begin() {
@@ -416,10 +439,10 @@ namespace my_container {
             return ConstReverseIterator(Head->prev);
         }
 
-        [[nodiscard]] bool empty() const final {
-            return Head == nullptr;
+        [[nodiscard]] bool empty() const noexcept final {
+            return len == 0;
         }
-        [[nodiscard]] std::size_t size() const final {
+        [[nodiscard]] std::size_t size() const noexcept final {
             return len;
         }
         [[nodiscard]] std::size_t max_size() const noexcept final {
@@ -427,41 +450,62 @@ namespace my_container {
         }
 
         void clear() {
-            ~List();
+            node *tmp = Head;
+            while (tmp != nullptr) {
+                node *next = tmp->next;
+                std::allocator_traits<AllocNode>::deallocate(alloc, tmp, 1);
+                tmp = next;
+            }
             Head = nullptr;
             Tail = nullptr;
             len = 0;
         }
 
-        iterator insert(ConstIterator pos, const T& val) {
-            node* new_node = alloc.allocate(1);
+        iterator insert(const iterator pos, const T& val) {
+            node* new_node = std::allocator_traits<AllocNode>::allocate(alloc, 1);
             new_node->val = val;
             new_node->next = pos.iter;
-            new_node->prev = pos.iter->prev;
-            if (pos != cbegin()) {
-                pos.iter->prev->next = new_node;
+            if (pos == end()) {
+                new_node->prev = Tail;
+                if (Tail != nullptr) {
+                    Tail->next = new_node;
+                }
+                new_node = Tail;
             } else {
-                Head = new_node;
+                new_node->prev = pos.iter->prev;
+                if (pos != begin()) {
+                    pos.iter->prev->next = new_node;
+                } else {
+                    Head = new_node;
+                }
+                pos.iter->prev = new_node;
             }
-            pos.iter->prev = new_node;
             ++len;
             return iterator(new_node);
         }
-        iterator insert(ConstIterator pos, const T&& val) {
-            node* new_node = alloc.allocate(1);
+        iterator insert(const iterator pos, const T&& val) {
+            node* new_node = std::allocator_traits<AllocNode>::allocate(alloc, 1);
             new_node->val = std::move(val);
             new_node->next = pos.iter;
-            new_node->prev = pos.iter->prev;
-            if (pos != cbegin()) {
-                pos.iter->prev->next = new_node;
+            if (pos == end()) {
+                new_node->prev = Tail;
+                if (Tail != nullptr) {
+                    Tail->next = new_node;
+                }
+                new_node = Tail;
             } else {
-                Head = new_node;
+                new_node->prev = pos.iter->prev;
+                if (pos != begin()) {
+                    pos.iter->prev->next = new_node;
+                } else {
+                    Head = new_node;
+                }
+                pos.iter->prev = new_node;
             }
-            pos.iter->prev = new_node;
             ++len;
             return iterator(new_node);
         }
-        iterator insert(ConstIterator pos, const std::size_t cnt, const T& val) {
+        iterator insert(const iterator pos, const std::size_t cnt, const T& val) {
             if (cnt == 0) {
                 return pos;
             }
@@ -472,84 +516,122 @@ namespace my_container {
             len += cnt;
             return iterator(tmp->next);
         }
-        // template<class InputIt>
-        // iterator insert(ConstIterator pos, InputIt first, InputIt last) {
-        //     if (first == last) {
-        //         return pos;
-        //     }
-        //     node* tmp = pos->prev;
-        //     InputIt* it = first;
-        //     while (it != last) {
-        //         insert(pos, *it);
-        //         ++it;
-        //         ++len;
-        //     }
-        //     return iterator(tmp->next);
-        // }
-        // iterator insert(ConstIterator pos, std::initializer_list<T> ilist) {
-        //     return insert(pos, ilist.begin(), ilist.end());
-        // }
-
-        iterator erase(ConstIterator pos) {
-            if (pos == cbegin()) {
-                Head = pos->next;
-                pos->next->prev = nullptr;
-            } else {
-                pos->prev->next = pos->next;
-                pos->next->prev = pos->prev;
+        template<class InputIt>
+        iterator insert(const iterator pos, InputIt first, InputIt last) {
+            if (first == last) {
+                return pos;
             }
-            node* tmp = pos->next;
-            alloc.deallocate(pos, 1);
-            --len;
-            return iterator(tmp);
+            node* tmp = pos.iter->prev;
+            InputIt* it = first;
+            while (it != last) {
+                insert(pos, *it);
+                ++it;
+                ++len;
+            }
+            return iterator(tmp->next);
         }
-        iterator erase(ConstIterator first, ConstIterator last) {
-            if (first == cbegin()) {
-                Head = last;
-                last->prev = nullptr;
+        iterator insert(const iterator pos, std::initializer_list<T> ilist) {
+            return insert(pos, ilist.begin(), ilist.end());
+        }
+
+        iterator erase(const iterator pos) {
+            if (pos == end()) {
+                throw std::out_of_range("out of range");
+            }
+            node* to_del = pos.iter;
+            node* next_node = to_del->next;
+
+            if (pos == begin()) {
+                Head = to_del->next;
+                if (Head) {
+                    Head->prev = nullptr;
+                }
+            }
+            if (to_del == Tail) {
+                Tail = to_del->prev;
+                if (Tail) {
+                    Tail->next = nullptr;
+                }
+            }
+            if (pos != iterator(Tail) && pos != begin()) {
+                to_del->prev->next = to_del->next;
+                to_del->next->prev = to_del->prev;
+            }
+
+            std::allocator_traits<AllocNode>::deallocate(alloc, to_del, 1);
+            --len;
+            return iterator(next_node);
+        }
+        iterator erase(const iterator first, const iterator last) {
+            if (first == last) {
+                return end();
+            }
+            if (first == end()) {
+                throw std::out_of_range("out of range");
+            }
+            if (first == begin()) {
+                Head = last.iter;
+                if (Head != nullptr) {
+                    Head->prev = nullptr;
+                }
+            }
+            if (last == end()) {
+                Tail = first.iter->prev;
+                if (Tail != nullptr) {
+                    Tail->next = nullptr;
+                }
             }
             else {
-                first->prev->next = last;
-                last->prev = first->prev;
+                first.iter->prev->next = last.iter;
+                last.iter->prev = first.iter->prev;
             }
             iterator it = first;
-            iterator next;
             while (it != last) {
-                next = ++it;
-                alloc.deallocate(it, 1);
-                it = next;
+                iterator next_it = ++it;
+                --it;
+                std::allocator_traits<AllocNode>::deallocate(alloc, it.iter, 1);
+                it = next_it;
                 --len;
             }
             return last;
         }
 
         void push_back(const T& val) {
-            node* new_node = alloc.allocate(1);
+            node* new_node = std::allocator_traits<AllocNode>::allocate(alloc, 1);
             new_node->val = val;
-            new_node->next = nullptr;
-            new_node->prev = Tail;
-            if (Head == nullptr) {
+            new_node->prev = nullptr;
+
+            if (empty()) {
                 Head = new_node;
+                Tail = new_node;
+            } else {
+                new_node->prev = Tail;
+                Tail->next = new_node;
+                Tail = new_node;
             }
-            Tail->next = new_node;
-            Tail = new_node;
             ++len;
         }
         void push_back(T&& val) {
-            node* new_node = alloc.allocate(1);
+            node* new_node = std::allocator_traits<AllocNode>::allocate(alloc, 1);
             new_node->val = std::move(val);
-            new_node->next = nullptr;
-            new_node->prev = Tail;
-            if (Head == nullptr) {
+            new_node->prev = nullptr;
+
+            if (empty()) {
                 Head = new_node;
+                Tail = new_node;
+            } else {
+                new_node->prev = Tail;
+                Tail->next = new_node;
+                Tail = new_node;
             }
-            Tail->next = new_node;
-            Tail = new_node;
             ++len;
         }
         void pop_back() {
+            if (empty()) {
+                throw std::out_of_range("list is empty");
+            }
             Tail = Tail->prev;
-            alloc.deallocate(Tail->next, 1);
+            std::allocator_traits<AllocNode>::deallocate(alloc, Tail->next, 1);
             Tail->next = nullptr;
             if (len == 1) {
                 Head = nullptr;
@@ -558,30 +640,41 @@ namespace my_container {
         }
 
         void push_front(const T& val) {
-            node* new_node = alloc.allocate(1);
+            node* new_node = std::allocator_traits<AllocNode>::allocate(alloc, 1);
             new_node->val = val;
-            new_node->next = Head;
             new_node->prev = nullptr;
-            if (Head != nullptr) {
+
+            if (empty()) {
+                Head = new_node;
+                Tail = new_node;
+            } else {
+                new_node->next = Head;
                 Head->prev = new_node;
+                Head = new_node;
             }
-            Head = new_node;
             ++len;
         }
         void push_front(T&& val) {
-            node* new_node = alloc.allocate(1);
+            node* new_node = std::allocator_traits<AllocNode>::allocate(alloc, 1);
             new_node->val = std::move(val);
-            new_node->next = Head;
             new_node->prev = nullptr;
-            if (Head != nullptr) {
+
+            if (empty()) {
+                Head = new_node;
+                Tail = new_node;
+            } else {
+                new_node->next = Head;
                 Head->prev = new_node;
+                Head = new_node;
             }
-            Head = new_node;
             ++len;
         }
         void pop_front() {
+            if (empty()) {
+                throw std::out_of_range("list is empty");
+            }
             Head = Head->next;
-            alloc.deallocate(Head->prev, 1);
+            std::allocator_traits<AllocNode>::deallocate(alloc, Head->prev, 1);
             Head->prev = nullptr;
             if (len == 1) {
                 Tail = nullptr;
@@ -594,7 +687,7 @@ namespace my_container {
                 return;
             }
             if (cnt < len) {
-                erase(begin() + cnt, end());
+                erase(iterator(begin().iter + cnt), end());
             }
             for (std::size_t i = len; i < cnt; i++) {
                 push_back(val);
@@ -605,10 +698,10 @@ namespace my_container {
                 return;
             }
             if (cnt < len) {
-                erase(begin() + cnt, end());
+                erase(iterator(begin().iter + cnt), end());
             }
             while (len != cnt) {
-                node* new_node = alloc.allocate(1);
+                node* new_node = std::allocator_traits<AllocNode>::allocate(alloc, 1);
                 new_node->next = nullptr;
                 new_node->prev = Tail;
                 if (Head == nullptr) {
@@ -635,13 +728,13 @@ namespace my_container {
             alloc = tmp_alloc;
         }
 
-        bool operator==( const List<T, Allocator>& other ) {
+        bool operator==( const List& other ) const {
             if (len != other.len) {
                 return false;
             }
-            node* l = Head, r = other.Head;
-            for (std::size_t i = 0; i < len; i++) {
-                if (l->val != other->val) {
+            node *l = Head, *r = other.Head;
+            while (l != nullptr) {
+                if (l->val != r->val) {
                     return false;
                 }
                 l = l->next;
@@ -649,38 +742,40 @@ namespace my_container {
             }
             return true;
         }
-        bool operator!=( const List<T, Allocator>& other ) {
-            return !(this == other);
+        bool operator!=( const List& other ) const {
+            return !(*this == other);
         }
 
-        bool operator<( const List<T, Allocator>& other ) {
-            node* l = Head, r = other.Head;
+        bool operator<( const List& other ) const {
+            node* l = Head, *r = other.Head;
             for (std::size_t i = 0; i < len; i++) {
-                if (l->val != other->val) {
-                    return l->val < other->val;
+                if (l->val != r->val) {
+                    return l->val < r->val;
                 }
                 l = l->next;
                 r = r->next;
             }
             return len < other.len;
         }
-        bool operator<=( const List<T, Allocator>& other ) {
-            return ((this == other)  || (this < other));
+        bool operator<=( const List& other ) const {
+            return ((*this == other)  || (*this < other));
         }
-        bool operator>( const List<T, Allocator>& other ) {
-            return !(this <= other);
+        bool operator>( const List& other ) const {
+            return !(*this <= other);
         }
-        bool operator>=( const List<T, Allocator>& other ) {
-            return !(this < other);
+        bool operator>=( const List& other ) const{
+            return !(*this < other);
         }
-        std::weak_ordering operator<=>( const List<T, Allocator>& other ) {
-            if (this > other) {
+#if __cplusplus >= 202002L
+        std::weak_ordering operator<=>( const List& other ) const {
+            if (*this > other) {
                 return std::weak_ordering::greater;
             }
-            if (this == other) {
+            if (*this == other) {
                 return std::weak_ordering::equivalent;
             }
             return std::weak_ordering::less;
         }
+#endif
     };
 }

@@ -97,7 +97,11 @@ namespace my_container {
         using ReverseIterator = ArrayReverseIter<T>;
         using ConstReverseIterator = ArrayReverseIter<const T>;
 
-        Array() : cap(N), arr(new T[cap]) {}
+        Array() : cap(N), arr(new T[cap]) {
+            for (std::size_t i = 0; i < cap; ++i) {
+                arr[i] = 0;
+            }
+        }
         explicit Array(const std::size_t len, const T& val) :
         cap(N), arr(new T[len]) {
             for (std::size_t i = 0; i < len && i < cap; i++) {
@@ -108,21 +112,27 @@ namespace my_container {
         cap(other.cap), arr(new T[cap]) {
             std::copy(other.arr, other.arr + cap, arr);
         };
-        explicit Array(Array &&other)  noexcept :
+        Array(Array &&other)  noexcept :
         cap(other.cap), arr(other.arr) {
             other.arr = nullptr;
             other.cap = 0;
         }
-        explicit Array(std::initializer_list<T> init) :
+        Array(std::initializer_list<T> init) :
         cap(N), arr(new T[cap]) {
             std::size_t i = 0;
+            for (std::size_t j = 0; j < cap; ++j) {
+                arr[j] = 0;
+            }
             for (const auto el : init) {
                 if (i >= cap) break;
                 arr[i++] = el;
             }
         }
-        explicit Array(std::initializer_list<const std::pair<size_t, T>> init) :
+        Array(std::initializer_list<const std::pair<size_t, T>> init) :
         cap(N), arr(new T[cap]) {
+            for (std::size_t j = 0; j < cap; ++j) {
+                arr[j] = 0;
+            }
             for (const auto& [ind, val] : init) {
                 if (ind < cap) {
                     arr[ind] = val;
