@@ -5,7 +5,6 @@
 #include <list>
 
 
-
 namespace my_container::testing {
 
     class ListTest : public ::testing::Test {

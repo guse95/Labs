@@ -6,8 +6,10 @@ namespace my_container {
     class Array : public Container<T>
     {
     protected:
+
+        using NoConstT = std::remove_const_t<T>;
         std::size_t cap = 0;
-        T *arr = nullptr;
+        NoConstT *arr = nullptr;
 
         template <class IterType>
         class ArrayIter
@@ -92,24 +94,24 @@ namespace my_container {
         };
 
     public:
-        using iterator = ArrayIter<T>;
-        using ConstIterator = ArrayIter<const T>;
-        using ReverseIterator = ArrayReverseIter<T>;
-        using ConstReverseIterator = ArrayReverseIter<const T>;
+        using iterator = ArrayIter<NoConstT>;
+        using ConstIterator = ArrayIter<const NoConstT>;
+        using ReverseIterator = ArrayReverseIter<NoConstT>;
+        using ConstReverseIterator = ArrayReverseIter<const NoConstT>;
 
-        Array() : cap(N), arr(new T[cap]) {
+        Array() : cap(N), arr(new NoConstT[cap]) {
             for (std::size_t i = 0; i < cap; ++i) {
                 arr[i] = 0;
             }
         }
         explicit Array(const std::size_t len, const T& val) :
-        cap(N), arr(new T[len]) {
+        cap(N), arr(new NoConstT[len]) {
             for (std::size_t i = 0; i < len && i < cap; i++) {
                 arr[i] = val;
             }
         }
         Array(const Array &other) :
-        cap(other.cap), arr(new T[cap]) {
+        cap(other.cap), arr(new NoConstT[cap]) {
             std::copy(other.arr, other.arr + cap, arr);
         };
         Array(Array &&other)  noexcept :
@@ -117,19 +119,19 @@ namespace my_container {
             other.arr = nullptr;
             other.cap = 0;
         }
-        Array(std::initializer_list<T> init) :
-        cap(N), arr(new T[cap]) {
+        Array(std::initializer_list<NoConstT> init) :
+        cap(N), arr(new NoConstT[cap]) {
             std::size_t i = 0;
-            for (std::size_t j = 0; j < cap; ++j) {
-                arr[j] = 0;
-            }
             for (const auto el : init) {
                 if (i >= cap) break;
                 arr[i++] = el;
             }
+            for (; i < cap; i++) {
+                arr[i] = 0;
+            }
         }
-        Array(std::initializer_list<const std::pair<size_t, T>> init) :
-        cap(N), arr(new T[cap]) {
+        Array(std::initializer_list<const std::pair<size_t, NoConstT>> init) :
+        cap(N), arr(new NoConstT[cap]) {
             for (std::size_t j = 0; j < cap; ++j) {
                 arr[j] = 0;
             }
@@ -148,7 +150,7 @@ namespace my_container {
             if (this != &other) {
                 delete[] arr;
                 cap = other.cap;
-                arr = new T[cap];
+                arr = new NoConstT[cap];
                 std::copy(other.arr, other.arr + cap, this->arr);
             }
             return *this;

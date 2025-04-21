@@ -151,13 +151,11 @@ namespace my_container {
 
         explicit List(const std::size_t cnt, const Allocator& alloc_ = Allocator()) :
         len(cnt), alloc(alloc_) {
-            Head = std::allocator_traits<AllocNode>::allocate(alloc, 1);
-            std::allocator_traits<AllocNode>::construct(alloc, Head);
+            Head = create_node(0);
             Head->prev = nullptr;
             node *tmp = Head;
             for (std::size_t i = 1; i < cnt; i++) {
-                tmp->next = std::allocator_traits<AllocNode>::allocate(alloc, 1);
-                std::allocator_traits<AllocNode>::construct(alloc, tmp->next);
+                tmp->next = create_node(0);
                 tmp->next->prev = tmp;
                 tmp = tmp->next;
             }
@@ -167,13 +165,11 @@ namespace my_container {
 
         List(const std::size_t cnt, const T& val_, const Allocator& alloc_ = Allocator()) :
         len(cnt), alloc(alloc_) {
-            Head = std::allocator_traits<AllocNode>::allocate(alloc, 1);
-            std::allocator_traits<AllocNode>::construct(alloc, Head, val_);
+            Head = create_node(val_);
             Head->prev = nullptr;
             node *tmp = Head;
             for (std::size_t i = 1; i < cnt; i++) {
-                tmp->next = std::allocator_traits<AllocNode>::allocate(alloc, 1);
-                std::allocator_traits<AllocNode>::construct(alloc, tmp->next, val_);
+                tmp->next = create_node(val_);
                 tmp->next->prev = tmp;
                 tmp->next->next = nullptr;
                 tmp = tmp->next;
@@ -183,16 +179,14 @@ namespace my_container {
 
         List(const List& other) :
         len(other.len), alloc(other.alloc) {
-            Head = std::allocator_traits<AllocNode>::allocate(alloc, 1);
+            Head = create_node(other.Head->val);
             Head->prev = nullptr;
-            Head->val = other.Head->val;
             node *tmp = Head;
             node *other_tmp = other.Head->next;
             for (std::size_t i = 1; i < len; i++) {
-                tmp->next = std::allocator_traits<AllocNode>::allocate(alloc, 1);
+                tmp->next = create_node(other_tmp->val);
                 tmp->next->prev = tmp;
                 tmp->next->next = nullptr;
-                tmp->next->val = other_tmp->val;
                 tmp = tmp->next;
                 other_tmp = other_tmp->next;
             }
@@ -201,16 +195,14 @@ namespace my_container {
 
         List(const List& other, const Allocator& alloc_ ) :
         len(other.len), alloc(alloc_) {
-            Head = std::allocator_traits<AllocNode>::allocate(alloc, 1);
+            Head = create_node(other.Head->val);
             Head->prev = nullptr;
-            Head->val = other.Head->val;
             node *tmp = Head;
             node *other_tmp = other.Head->next;
             for (std::size_t i = 1; i < len; i++) {
-                tmp->next = std::allocator_traits<AllocNode>::allocate(alloc, 1);
+                tmp->next = create_node(other_tmp->val);
                 tmp->next->prev = tmp;
                 tmp->next->next = nullptr;
-                tmp->next->val = other_tmp->val;
                 tmp = tmp->next;
                 other_tmp = other_tmp->next;
             }
@@ -256,7 +248,7 @@ namespace my_container {
         List(std::initializer_list<T> init, const Allocator& alloc = Allocator()) :
         List(init.begin(), init.end(), alloc) {}
 
-        ~List() final {
+        ~List() override {
             node* cur = Head;
             while (cur != nullptr) {
                 node* next = cur->next;
@@ -335,14 +327,6 @@ namespace my_container {
         ConstReverseIterator crend() const {
             return ConstReverseIterator(nullptr);
         }
-
-        // ConstIterator begin() const {
-        //     return ConstIterator(Head);
-        // }
-        //
-        // ConstIterator end() const {
-        //     return ConstIterator(nullptr);
-        // }
 
         [[nodiscard]] bool empty() const noexcept final {
             return Head == nullptr;
