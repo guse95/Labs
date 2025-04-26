@@ -32,6 +32,12 @@ namespace my_container {
             friend class List;
             node *iter = nullptr;
         public:
+            using iterator_category = std::forward_iterator_tag;
+            using value_type = T;
+            using difference_type = std::ptrdiff_t;
+            using pointer = T*;
+            using reference = T&;
+
             ListIter() : iter(nullptr) {}
             explicit ListIter(node *iter) : iter(iter) {}
             ListIter(const ListIter &other) : iter(other.iter) {}
@@ -39,19 +45,23 @@ namespace my_container {
 
             ListIter& operator=(const ListIter &other) = default;
             ListIter& operator++() {
+                if (!this->iter) throw std::runtime_error("Dereferencing null iterator");
                 this->iter = this->iter->next;
                 return *this;
             }
             ListIter operator++(int) {
+                if (!this->iter) throw std::runtime_error("Dereferencing null iterator");
                 ListIter temp = *this;
                 this->iter = this->iter->next;
                 return temp;
             }
             ListIter& operator--() {
+                if (!this->iter) throw std::runtime_error("Dereferencing null iterator");
                 this->iter = this->iter->prev;
                 return *this;
             }
             ListIter operator--(int) {
+                if (!this->iter) throw std::runtime_error("Dereferencing null iterator");
                 ListIter temp = *this;
                 this->iter = this->iter->prev;
                 return temp;
@@ -75,6 +85,7 @@ namespace my_container {
             friend class List;
             node *iter = nullptr;
         public:
+
             ListReverseIter() : iter(nullptr) {}
             explicit ListReverseIter(node *iter) : iter(iter) {}
             ListReverseIter(const ListReverseIter &other) = default;
@@ -82,19 +93,23 @@ namespace my_container {
 
             ListReverseIter& operator=(const ListReverseIter &other) = default;
             ListReverseIter& operator++() {
+                if (!this->iter) throw std::runtime_error("Dereferencing null iterator");
                 this->iter = this->iter->prev;
                 return *this;
             }
             ListReverseIter operator++(int) {
+                if (!this->iter) throw std::runtime_error("Dereferencing null iterator");
                 ListReverseIter temp = *this;
                 this->iter = this->iter->prev;
                 return temp;
             }
             ListReverseIter& operator--() {
+                if (!this->iter) throw std::runtime_error("Dereferencing null iterator");
                 this->iter = this->iter->next;
                 return *this;
             }
             ListReverseIter operator--(int) {
+                if (!this->iter) throw std::runtime_error("Dereferencing null iterator");
                 ListReverseIter temp = *this;
                 this->iter = this->iter->next;
                 return temp;
@@ -760,8 +775,9 @@ namespace my_container {
         }
 
         bool operator<( const List& other ) const {
-            node* l = Head, *r = other.Head;
-            for (std::size_t i = 0; i < len; i++) {
+            node* l = Head;
+            node* r = other.Head;
+            for (std::size_t i = 0; i < len && i < other.len; i++) {
                 if (l->val != r->val) {
                     return l->val < r->val;
                 }
@@ -780,14 +796,14 @@ namespace my_container {
             return !(*this < other);
         }
 #if __cplusplus >= 202002L
-        std::weak_ordering operator<=>( const List& other ) const {
+        int operator<=>( const List& other ) const {
             if (*this > other) {
-                return std::weak_ordering::greater;
+                return 1;
             }
             if (*this == other) {
-                return std::weak_ordering::equivalent;
+                return 0;
             }
-            return std::weak_ordering::less;
+            return -1;
         }
 #endif
     };

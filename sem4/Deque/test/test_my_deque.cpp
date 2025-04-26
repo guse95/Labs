@@ -6,7 +6,14 @@
 using namespace my_container;
 
 TEST(DequeTest, DefaultConstructor) {
-    Deque<int> d;
+    const Deque<int> d;
+    EXPECT_EQ(d.size(), 0);
+    EXPECT_TRUE(d.empty());
+}
+
+TEST(DequeTest, AllocConstructor) {
+    const std::allocator<int> a;
+    const Deque<int> d(a);
     EXPECT_EQ(d.size(), 0);
     EXPECT_TRUE(d.empty());
 }
@@ -16,6 +23,18 @@ TEST(DequeTest, InitializerListConstructor) {
     EXPECT_EQ(d.size(), 5);
     EXPECT_FALSE(d.empty());
     
+    auto it = d.begin();
+    EXPECT_EQ(*it, 1);
+    ++it;
+    EXPECT_EQ(*it, 2);
+}
+
+TEST(DequeTest, RangeConstructor) {
+    std::vector<int> d = {1, 2, 3, 4, 5};
+    Deque<int> d2(d.begin(), d.end());
+    EXPECT_EQ(d.size(), 5);
+    EXPECT_FALSE(d.empty());
+
     auto it = d.begin();
     EXPECT_EQ(*it, 1);
     ++it;
@@ -256,9 +275,11 @@ TEST(DequeTest, Erase) {
 
 TEST(DequeTest, RandomAccess) {
     Deque<int> d = {1, 2, 3, 4, 5};
+    const auto& a = d[3];
     
     EXPECT_EQ(d[0], 1);
     EXPECT_EQ(d[2], 3);
+    EXPECT_EQ(a, 4);
     EXPECT_EQ(d[4], 5);
     
     d[1] = 10;
@@ -267,6 +288,8 @@ TEST(DequeTest, RandomAccess) {
 
 TEST(DequeTest, At) {
     Deque<int> d = {1, 2, 3};
+    const int a = d.at(1);
+    EXPECT_EQ(a, 2);
     
     EXPECT_EQ(d.at(0), 1);
     EXPECT_EQ(d.at(2), 3);
@@ -291,8 +314,8 @@ TEST(DequeTest, StressTest) {
     for (const auto& item : d) {
         sum += item;
     }
-    
-    int expected_sum = ((N - 1) - 0) * (N/2);
+
+    constexpr int expected_sum = ((N - 1) - 0) * (N/2);
     EXPECT_EQ(sum, expected_sum);
 }
 

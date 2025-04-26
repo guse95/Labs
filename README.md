@@ -3,10 +3,11 @@
 ### Чтобы запустить CMAke ведите команды:
 
 ```aiignore
-mkdir build && cd build
-cmake -DCMAKE_CXX_FLAGS="-fsanitize=address" -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address" -DCMAKE_BUILD_TYPE=Debug ..  # Или Release
-cmake --build .         # Сборка
-ctest -V               # Запуск тестов
+cmake -DCMAKE_BUILD_TYPE:STRING=Debug -S./ -B./build
+cmake --build build
+cd build
+./tests_deque
+cmake --build . --target coverage_deque
 ```
 ### Удаление сборки:
 ```aiignore
