@@ -287,15 +287,15 @@ TEST(ListTest, ComparisonOperators) {
     EXPECT_TRUE(l3 >= l1);
 }
 
-// #if __cplusplus >= 202002L
-// TEST(ListTest, ThreeWayComparison) {
-//     const List<int> l1 = {1, 2};
-//     List<int> l2 = {1, 2, 3};
-//     EXPECT_TRUE((l1 <=> l2) < 0);
-//     EXPECT_TRUE((l2 <=> l1) > 0);
-//     EXPECT_TRUE((l1 <=> l1) == 0);
-// }
-// #endif
+#if __cplusplus >= 202002L
+TEST(ListTest, ThreeWayComparison) {
+    const List<int> l1 = {1, 2};
+    List<int> l2 = {1, 2, 3};
+    EXPECT_TRUE((l1 <=> l2) < 0);
+    EXPECT_TRUE((l2 <=> l1) > 0);
+    EXPECT_TRUE((l1 <=> l1) == 0);
+}
+#endif
 
 TEST(ListTest, StressTest) {
     List<int> l;
