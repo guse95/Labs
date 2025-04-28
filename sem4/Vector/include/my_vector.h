@@ -35,7 +35,8 @@ namespace my_container {
                 return temp;
             }
             VectorIter operator+(const std::size_t cnt) {
-                return VectorIter(iter + cnt);
+                T* tmp = iter + cnt;
+                return VectorIter(tmp);
             }
             VectorIter& operator--() {
                 --this->iter;
@@ -156,8 +157,10 @@ namespace my_container {
         Vector(InputIt first, InputIt last, const Allocator& alloc_ = Allocator()) :
         alloc(alloc_), sz(distance(first, last)), cap(distance(first, last)) {
             vec = alloc.allocate(cap);
+            InputIt tmp = first;
             for (std::size_t i = 0; i < cap; i++) {
-                *(vec + i) = first[i];
+                *(vec + i) = *tmp;
+                ++tmp;
             }
         }
 
@@ -380,7 +383,9 @@ namespace my_container {
                 for (std::size_t i = 0; i < sz; i++) {
                     *(new_vec + i) = vec[i];
                 }
-                alloc.deallocate(vec, cap);
+                if (vec != nullptr) {
+                    alloc.deallocate(vec, cap);
+                }
                 vec = new_vec;
                 cap = new_cap;
             }
@@ -392,7 +397,9 @@ namespace my_container {
                 for (std::size_t i = 0; i < sz; i++) {
                     *(new_vec + i) = vec[i];
                 }
-                alloc.deallocate(vec, cap);
+                if (vec != nullptr) {
+                    alloc.deallocate(vec, cap);
+                }
                 vec = new_vec;
                 cap = sz;
             }
@@ -404,7 +411,11 @@ namespace my_container {
 
         void push_back(const T& val) {
             if (sz == cap) {
-                reserve(cap * 2);
+                if (cap == 0) {
+                    reserve(2);
+                } else {
+                    reserve(cap * 2);
+                }
             }
             *(vec + sz) =  val;
             ++sz;
@@ -412,7 +423,11 @@ namespace my_container {
 
         void push_back(T&& val) {
             if (sz == cap) {
-                reserve(cap * 2);
+                if (cap == 0) {
+                    reserve(2);
+                } else {
+                    reserve(cap * 2);
+                }
             }
             *(vec + sz) = std::move(val);
             ++sz;
@@ -431,14 +446,18 @@ namespace my_container {
                 throw std::out_of_range("Vector index out of range");
             }
             if (sz == cap) {
-                reserve(cap * 2);
+                if (cap == 0) {
+                    reserve(2);
+                } else {
+                    reserve(cap * 2);
+                }
             }
             for (std::size_t i = sz; i > ind; i--) {
                 *(vec + i) = std::move(*(vec + i - 1));
             }
             *(vec + ind) = val;
             ++sz;
-            return pos; //xz
+            return iterator(vec + ind);
         }
 
         iterator insert(const iterator pos, T&& val) {
@@ -447,14 +466,18 @@ namespace my_container {
                 throw std::out_of_range("Vector index out of range");
             }
             if (sz == cap) {
-                reserve(cap * 2);
+                if (cap == 0) {
+                    reserve(2);
+                } else {
+                    reserve(cap * 2);
+                }
             }
             for (std::size_t i = sz; i > ind; i--) {
                 *(vec + i) = std::move(*(vec + i - 1));
             }
             *(vec + ind) = std::move(val);
             ++sz;
-            return pos;
+            return iterator(vec + ind);
         }
 
         iterator insert(const iterator pos, std::size_t cnt, const T& val) {
@@ -470,13 +493,13 @@ namespace my_container {
                 }
             }
             for (std::size_t i = sz; i > ind; i--) {
-                *(vec + i + cnt - 1) = std::move(*(vec + i + cnt - 2));
+                *(vec + i + cnt - 1) = std::move(*(vec + i - 1));
             }
             for (std::size_t i = 0; i < cnt; i++) {
                 *(vec + ind + i) = val;
             }
             sz += cnt;
-            return pos; //xz
+            return iterator(vec + ind);
         }
 
         template< class InputIt >
@@ -494,13 +517,13 @@ namespace my_container {
                 }
             }
             for (std::size_t i = sz; i > ind; i--) {
-                *(vec + i + cnt - 1) = std::move(*(vec + i + cnt - 2));
+                *(vec + i + cnt - 1) = std::move(*(vec + i - 1));
             }
             for (std::size_t i = 0; i < cnt; i++) {
                 *(vec + ind + i) = *(first + i);
             }
             sz += cnt;
-            return pos; //xz
+            return iterator(vec + ind);
         }
 
         iterator insert(const iterator pos, std::initializer_list<T> ilist) {
@@ -517,18 +540,18 @@ namespace my_container {
                 }
             }
             for (std::size_t i = sz; i > ind; i--) {
-                *(vec + i + cnt - 1) = std::move(*(vec + i + cnt - 2));
+                *(vec + i + cnt - 1) = std::move(*(vec + i - 1));
             }
             for (std::size_t i = 0; i < cnt; i++) {
                 *(vec + ind + i) = *(ilist.begin() + i);
             }
             sz += cnt;
-            return pos; //xz
+            return iterator(vec + ind); //xz
         }
 
         iterator erase(iterator pos) {
             std::size_t ind = distance(begin(), pos);
-            if (sz == 0 || ind > sz) {
+            if (sz == 0 || ind >= sz) {
                 throw std::out_of_range("Vector index out of range");
             }
             for (std::size_t i = ind; i < sz - 1; ++i) {
