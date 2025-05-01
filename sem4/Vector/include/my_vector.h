@@ -437,6 +437,7 @@ namespace my_container {
             if (sz == 0) {
                 throw std::out_of_range("Vector is empty");
             }
+            std::allocator_traits<decltype(alloc)>::destroy(alloc, vec + sz);
             --sz;
         }
 
@@ -554,6 +555,7 @@ namespace my_container {
             if (sz == 0 || ind >= sz) {
                 throw std::out_of_range("Vector index out of range");
             }
+            std::allocator_traits<decltype(alloc)>::destroy(alloc, pos.iter);
             for (std::size_t i = ind; i < sz - 1; ++i) {
                 *(vec + i) = std::move(*(vec + i + 1));
             }
@@ -566,6 +568,9 @@ namespace my_container {
             const std::size_t ind = distance(begin(), first);
             if (ind + cnt > sz) {
                 throw std::out_of_range("Vector index out of range");
+            }
+            for (std::size_t i = ind; i < (ind + cnt); ++i) {
+                std::allocator_traits<decltype(alloc)>::destroy(alloc, vec + i);
             }
             for (std::size_t i = ind; i < sz - cnt; ++i) {
                 *(vec + i) = std::move(*(vec + i + cnt));

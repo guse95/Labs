@@ -578,14 +578,18 @@ TEST_F(VectorTest, EdgeCases) {
     EXPECT_THROW(empty.pop_back(), std::out_of_range);
     EXPECT_THROW(empty.front(), std::out_of_range);
     EXPECT_THROW(empty.back(), std::out_of_range);
+}
 
+TEST_F(VectorTest, EdgeCases1) {
     // Single element vector
     Vector<int> single{42};
     EXPECT_EQ(single.front(), 42);
     EXPECT_EQ(single.back(), 42);
     single.pop_back();
     EXPECT_TRUE(single.empty());
+}
 
+TEST_F(VectorTest, EdgeCases2) {
     // Large vector
     Vector<int> large(10000ULL, 7);
     EXPECT_EQ(large.size(), 10000);

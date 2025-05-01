@@ -111,15 +111,6 @@ TEST(StackTest, InitializerListConstructorWithAllocator) {
     EXPECT_EQ(s.top(), "three");
 }
 
-// TEST(StackTest, CustomAllocatorConstructor) {
-//     using CustomAlloc = std::allocator<int>;
-//     Stack<int, std::allocator<int>> s(std::allocator<int>());
-//
-//     EXPECT_TRUE(s.empty());
-//     s.push(42);
-//     EXPECT_EQ(s.top(), 42);
-// }
-
 TEST(StackTest, CopyAssignment) {
     Stack<int> s1 = {1, 2, 3};
     Stack<int> s2;
