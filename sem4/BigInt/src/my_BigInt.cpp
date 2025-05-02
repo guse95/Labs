@@ -1,8 +1,8 @@
 #include "my_BigInt.h"
 
 int main() {
-    BigInt a("3456789029853123812389618369183");
-    BigInt b("15231623791273513123");
+    BigInt a("123456789");
+    BigInt b("1");
     std::cout << a << std::endl;
     std::cout << b << std::endl;
     std::cout << (a / b) << std::endl;

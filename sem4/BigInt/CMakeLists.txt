@@ -44,7 +44,7 @@ file(GLOB_RECURSE TEST_FILES CONFIGURE_DEPENDS test/*.cpp)
 add_executable(tests_BigInt ${TEST_FILES})
 
 if(NUM_SRC_FILES GREATER 0)
-    target_link_libraries(tests_BigInt PRIVATE my_lib GTest::gtest_main)
+    target_link_libraries(tests_BigInt PRIVATE my_BigInt GTest::gtest_main)
 else()
     target_include_directories(tests_BigInt PRIVATE include)
     target_link_libraries(tests_BigInt PRIVATE GTest::gtest_main)

@@ -22,13 +22,28 @@ protected:
     bool isNeg;
 
 public:
-    BigInt() : isNeg(false) {};
+    BigInt() : BigInt(0) {};
 
-    explicit BigInt(const ll val) : dig({(val < 0 ? -val : val)}), isNeg(val < 0) {}
+    explicit BigInt(const ll val) : isNeg(val < 0) {
+        ll tmp = val < 0 ? -val : val;
+        if (tmp < base) {
+            dig = {tmp};
+        }
+        else {
+            if (tmp / base < base) {
+                dig = {tmp / base, tmp % base};
+            } else {
+                dig = {tmp / base / base, tmp / base % base, tmp % base};
+            }
+        }
+    }
 
     explicit BigInt(const std::string& str) : isNeg(str[0] == '-') {
         int ind = (str[0] == '-') ? 1 : 0;
         const int sz = static_cast<int>(str.length()) - ind;
+        if (sz <= 0) {
+            throw std::invalid_argument("Invalid input in BigInt");
+        }
         const int first_len = sz % 8;
 
         if (first_len) {
@@ -44,7 +59,10 @@ public:
 
     BigInt(const BigInt& other) : dig(other.dig), isNeg(other.isNeg) {}
 
-    BigInt(BigInt&& other) noexcept : dig(std::move(other.dig)), isNeg(other.isNeg) {}
+    BigInt(BigInt&& other) noexcept : dig(std::move(other.dig)), isNeg(other.isNeg) {
+        other.isNeg = false;
+        other.dig.clear();
+    }
 
     ~BigInt() = default;
 
@@ -81,12 +99,20 @@ public:
             if (ind_other >= 0) {
                 res.dig.insert(res.dig.begin(), other.dig.begin(), other.dig.begin() + ind_other + 1);
             }
+            if (res.dig.size() == 1 && res.dig[0] == 0 && res.isNeg) {
+                res.isNeg = false;
+            }
             return res;
         }
 
         BigInt tmp = other;
         tmp.isNeg = !tmp.isNeg;
         return res - tmp;
+    }
+    BigInt operator-() const {
+        BigInt res = *this;
+        res.isNeg = !res.isNeg;
+        return res;
     }
     BigInt operator-(const BigInt& other) const {
         if (other.isNeg == isNeg) {
@@ -102,8 +128,11 @@ public:
                     --ind;
                     --ind_other;
                 }
-                while (dig.front() == 0 && dig.size() != 1) {
+                while (res.dig.front() == 0 && res.dig.size() != 1) {
                     res.dig.erase(res.dig.begin());
+                }
+                if (res.dig.size() == 1 && res.dig[0] == 0 && res.isNeg) {
+                    res.isNeg = false;
                 }
                 return res;
             }
@@ -121,6 +150,9 @@ public:
         int ind_other = 0;
 
         BigInt res;
+        if (*this == res || other == res) {
+            return res;
+        }
         res.dig = std::vector<ll>(ind, 0);
         res.isNeg = (isNeg != other.isNeg);
 
@@ -149,20 +181,28 @@ public:
         return res;
     }
     BigInt operator/(const BigInt& other) const {
+        if (other == BigInt(0)) {
+            throw std::invalid_argument("Divide by 0");
+        }
         int ind = 0;
 
         BigInt res;
+        if (*this == res) {
+            return res;
+        }
+        res.dig.pop_back();
         BigInt tmp;
+        tmp.dig.pop_back();
         res.isNeg = (isNeg != other.isNeg);
-
+        BigInt other_abs = abs(other);
         while (ind != static_cast<int>(dig.size())) {
             tmp.dig.push_back(dig[ind]);
-            if (tmp >= abs(other)) {
+            if (tmp >= other_abs) {
                 ll l = 0;
                 ll r = base;
                 while (l + 1 < r) {
                     const ll m = (l + r) / 2;
-                    BigInt mult = (other * BigInt(m));
+                    BigInt mult = (other_abs * BigInt(m));
                     if (tmp >= mult) {
                         l = m;
                     } else {
@@ -170,13 +210,19 @@ public:
                     }
                 }
                 res.dig.push_back(l);
-                tmp -= other * BigInt(l);
+                tmp -= other_abs * BigInt(l);
+                if (tmp == BigInt(0)) {
+                    tmp.dig.pop_back();
+                }
             } else {
                 if (!res.dig.empty()) {
                     res.dig.push_back(0);
                 }
             }
             ++ind;
+        }
+        if (res.dig.empty()) {
+            res.dig.push_back(0);
         }
         return res;
     }
@@ -195,9 +241,18 @@ public:
         *this = *this * other;
         return *this;
     }
-    BigInt operator/=(const BigInt& other);
-    BigInt operator++();
-    BigInt operator--();
+    BigInt operator/=(const BigInt& other) {
+        *this = *this / other;
+        return *this;
+    }
+    BigInt operator++() {
+        *this += BigInt(1);
+        return *this;
+    }
+    BigInt operator--() {
+        *this -= BigInt(1);
+        return *this;
+    }
 
     static BigInt abs(const BigInt& other) {
         BigInt res = other;
@@ -251,8 +306,7 @@ public:
         std::string input;
         is >> input;
         if (input.empty()) {
-            is.setstate(std::ios::failbit);
-            return is;
+            throw std::invalid_argument("Invalid input");
         }
         size_t start = 0;
         if (input[0] == '-') {
@@ -260,8 +314,7 @@ public:
         }
         for (size_t i = start; i < input.size(); ++i) {
             if (!isdigit(input[i])) {
-                is.setstate(std::ios::failbit);
-                return is;
+                throw std::invalid_argument("Invalid input");
             }
         }
         num = BigInt(input);
