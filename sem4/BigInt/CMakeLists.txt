@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
+cmake_policy(SET CMP0135 NEW)
 project(MyProject LANGUAGES CXX)
 
 include(CTest)
@@ -32,28 +33,28 @@ file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS src/*.cpp)
 list(LENGTH SRC_FILES NUM_SRC_FILES)
 
 if(NUM_SRC_FILES GREATER 0)
-    add_library(my_lib ${SRC_FILES})
-    target_include_directories(my_lib PUBLIC include)
-    target_compile_options(my_lib PRIVATE ${CXX_FLAGS} ${DEBUG_CXX_FLAGS})
-    target_link_libraries(my_lib PRIVATE ${LD_FLAGS} ${DEBUG_LD_FLAGS})
+    add_library(my_BigInt ${SRC_FILES})
+    target_include_directories(my_BigInt PUBLIC include)
+    target_compile_options(my_BigInt PRIVATE ${CXX_FLAGS} ${DEBUG_CXX_FLAGS})
+    target_link_libraries(my_BigInt PRIVATE ${LD_FLAGS} ${DEBUG_LD_FLAGS})
 endif()
 
 # Создаём отдельный исполняемый файл для тестов
-file(GLOB_RECURSE TEST_FILES CONFIGURE_DEPENDS tests/*.cpp)
-add_executable(tests ${TEST_FILES})
+file(GLOB_RECURSE TEST_FILES CONFIGURE_DEPENDS test/*.cpp)
+add_executable(tests_BigInt ${TEST_FILES})
 
 if(NUM_SRC_FILES GREATER 0)
-    target_link_libraries(tests PRIVATE my_lib GTest::gtest_main)
+    target_link_libraries(tests_BigInt PRIVATE my_lib GTest::gtest_main)
 else()
-    target_include_directories(tests PRIVATE include)
-    target_link_libraries(tests PRIVATE GTest::gtest_main)
+    target_include_directories(tests_BigInt PRIVATE include)
+    target_link_libraries(tests_BigInt PRIVATE GTest::gtest_main)
 endif()
 
-target_compile_options(tests PRIVATE ${CXX_FLAGS} ${DEBUG_CXX_FLAGS})
-target_link_libraries(tests PRIVATE ${LD_FLAGS} ${DEBUG_LD_FLAGS})
+target_compile_options(tests_BigInt PRIVATE ${CXX_FLAGS} ${DEBUG_CXX_FLAGS})
+target_link_libraries(tests_BigInt PRIVATE ${LD_FLAGS} ${DEBUG_LD_FLAGS})
 
 # Регистрируем тесты
-add_test(NAME MyTests COMMAND tests)
+add_test(NAME MyTests COMMAND tests_BigInt)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     # Добавляем цель для покрытия кода
@@ -102,3 +103,6 @@ add_custom_target(purge_BigInt
         COMMAND ${CMAKE_COMMAND} -E rm -rf ${CMAKE_BINARY_DIR}
         COMMENT "Полная очистка всех артефактов сборки"
 )
+
+add_executable(main_Bigint src/my_BigInt.cpp)
+target_link_libraries(main_Bigint PRIVATE my_BigInt)

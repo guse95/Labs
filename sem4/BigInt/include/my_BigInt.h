@@ -2,36 +2,244 @@
 #include <iostream>
 #include <vector>
 
+inline long long takeFromStr(const int ind, const int cnt, const std::string &str) {
+    long long val = 0;
+    for (int i = 0; i < cnt; i++) {
+        if (!isdigit(str[ind + i])) {
+            throw std::invalid_argument("Invalid input in BigInt");
+        }
+        val = val * 10 + (str[ind + i] - '0');
+    }
+    return val;
+}
+
 class BigInt {
+protected:
+    using ll = long long;
+    ll base = 100000000;
+
+    std::vector<ll> dig;
+    bool isNeg;
+
 public:
-    BigInt();
-    BigInt(long long value);
-    BigInt(const std::string& str);
-    BigInt(const BigInt& other);
-    BigInt(BigInt&& other) noexcept;
-    ~BigInt();
+    BigInt() : isNeg(false) {};
 
-    BigInt& operator=(const BigInt& other);
-    BigInt& operator=(BigInt&& other) noexcept;
+    explicit BigInt(const ll val) : dig({(val < 0 ? -val : val)}), isNeg(val < 0) {}
 
-    BigInt operator+(const BigInt& other) const;
-    BigInt operator-(const BigInt& other) const;
-    BigInt operator*(const BigInt& other) const;
-    BigInt operator/(const BigInt& other) const;
+    explicit BigInt(const std::string& str) : isNeg(str[0] == '-') {
+        int ind = (str[0] == '-') ? 1 : 0;
+        const int sz = static_cast<int>(str.length()) - ind;
+        const int first_len = sz % 8;
 
-    BigInt operator+=(const BigInt& other);
-    BigInt operator-=(const BigInt& other);
-    BigInt operator*=(const BigInt& other);
+        if (first_len) {
+            dig.push_back(takeFromStr(ind, first_len, str));
+            ind += first_len;
+        }
+
+        for (ll i = sz / 8; i > 0; i--) {
+            dig.push_back(takeFromStr(ind, 8, str));
+            ind += 8;
+        }
+    }
+
+    BigInt(const BigInt& other) : dig(other.dig), isNeg(other.isNeg) {}
+
+    BigInt(BigInt&& other) noexcept : dig(std::move(other.dig)), isNeg(other.isNeg) {}
+
+    ~BigInt() = default;
+
+    BigInt& operator=(const BigInt& other) {
+        dig = other.dig;
+        isNeg = other.isNeg;
+        return *this;
+    }
+    BigInt& operator=(BigInt&& other) noexcept {
+        dig = std::move(other.dig);
+        isNeg = other.isNeg;
+        return *this;
+    }
+
+    BigInt operator+(const BigInt& other) const {
+        BigInt res = *this;
+        if (other.isNeg == isNeg) {
+            ll mind = 0;
+            int ind = static_cast<int>(dig.size()) - 1;
+            int ind_other = static_cast<int>(other.dig.size()) - 1;
+            while (ind >= 0 && ind_other >= 0) {
+                const ll sum = dig[ind] + other.dig[ind_other] + mind;
+                res.dig[ind] = sum % base;
+                mind = sum / base;
+                --ind;
+                --ind_other;
+            }
+            while (ind_other >= 0 && mind) {
+                const ll sum = other.dig[ind_other] + mind;
+                res.dig.insert(res.dig.begin(), sum % base);
+                mind = sum / base;
+                --ind_other;
+            }
+            if (ind_other >= 0) {
+                res.dig.insert(res.dig.begin(), other.dig.begin(), other.dig.begin() + ind_other + 1);
+            }
+            return res;
+        }
+
+        BigInt tmp = other;
+        tmp.isNeg = !tmp.isNeg;
+        return res - tmp;
+    }
+    BigInt operator-(const BigInt& other) const {
+        if (other.isNeg == isNeg) {
+            if ((*this >= other && !isNeg) || (*this <= other && isNeg)) {
+                BigInt res = *this;
+                ll mind = 0;
+                int ind = static_cast<int>(dig.size()) - 1;
+                int ind_other = static_cast<int>(other.dig.size()) - 1;
+                while (ind_other >= 0) {
+                    const ll dif = dig[ind] - other.dig[ind_other] - mind;
+                    mind = dif < 0 ? 1 : 0;
+                    res.dig[ind] = (dif + mind * base) % base;
+                    --ind;
+                    --ind_other;
+                }
+                while (dig.front() == 0 && dig.size() != 1) {
+                    res.dig.erase(res.dig.begin());
+                }
+                return res;
+            }
+
+            BigInt tmp = other - *this;
+            tmp.isNeg = !tmp.isNeg;
+            return tmp;
+        }
+        BigInt tmp = other;
+        tmp.isNeg = !tmp.isNeg;
+        return *this + tmp;
+    }
+    BigInt operator*(const BigInt& other) const {
+        const int ind = static_cast<int>(dig.size()) - 1;
+        int ind_other = 0;
+
+        BigInt res;
+        res.dig = std::vector<ll>(ind, 0);
+        res.isNeg = (isNeg != other.isNeg);
+
+        while (ind_other != static_cast<int>(other.dig.size())) {
+            res.dig.push_back(0);
+            ll mind = 0;
+            int ind_res = static_cast<int>(res.dig.size()) - 1;
+            for (int i = ind; i >= 0; --i) {
+                const ll sum = dig[i] * other.dig[ind_other] + mind + res.dig[ind_res];
+                res.dig[ind_res] = sum % base;
+                mind = sum / base;
+                --ind_res;
+            }
+
+            while (ind_res >= 0 && mind) {
+                const ll sum = mind + res.dig[ind_res];
+                res.dig[ind_res] = sum % base;
+                mind = sum / base;
+                --ind_res;
+            }
+            if (mind) {
+                res.dig.insert(res.dig.begin(), mind);
+            }
+            ++ind_other;
+        }
+        return res;
+    }
+    BigInt operator/(const BigInt& other) const {
+        int ind = 0;
+
+        BigInt res;
+        BigInt tmp;
+        res.isNeg = (isNeg != other.isNeg);
+
+        while (ind != static_cast<int>(dig.size())) {
+            tmp.dig.push_back(dig[ind]);
+            if (tmp >= abs(other)) {
+                ll l = 0;
+                ll r = base;
+                while (l + 1 < r) {
+                    const ll m = (l + r) / 2;
+                    BigInt mult = (other * BigInt(m));
+                    if (tmp >= mult) {
+                        l = m;
+                    } else {
+                        r = m;
+                    }
+                }
+                res.dig.push_back(l);
+                tmp -= other * BigInt(l);
+            } else {
+                if (!res.dig.empty()) {
+                    res.dig.push_back(0);
+                }
+            }
+            ++ind;
+        }
+        return res;
+    }
+
+    BigInt operator+=(const BigInt& other) {
+        *this = *this + other;
+        return *this;
+    }
+
+    BigInt operator-=(const BigInt& other) {
+        *this = *this - other;
+        return *this;
+    }
+
+    BigInt operator*=(const BigInt& other) {
+        *this = *this * other;
+        return *this;
+    }
     BigInt operator/=(const BigInt& other);
     BigInt operator++();
     BigInt operator--();
 
-    bool operator==(const BigInt& other) const;
-    bool operator!=(const BigInt& other) const;
-    bool operator<(const BigInt& other) const;
-    bool operator>(const BigInt& other) const;
-    bool operator<=(const BigInt& other) const;
-    bool operator>=(const BigInt& other) const;
+    static BigInt abs(const BigInt& other) {
+        BigInt res = other;
+        if (other.isNeg) {
+            res.isNeg = false;
+        }
+        return res;
+    }
+
+    bool operator==(const BigInt& other) const {
+        return (dig == other.dig) && (isNeg == other.isNeg);
+    }
+    bool operator!=(const BigInt& other) const {
+        return !(*this == other);
+    }
+    bool operator<(const BigInt& other) const {
+        if (isNeg == other.isNeg) {
+            if (isNeg) {
+                if (dig.size() != other.dig.size()) {
+                    return dig.size() > other.dig.size();
+                }
+                return dig > other.dig;
+            }
+            if (dig.size() != other.dig.size()) {
+                return dig.size() < other.dig.size();
+            }
+            return dig < other.dig;
+        }
+        if (isNeg) {
+            return true;
+        }
+        return false;
+    }
+    bool operator>(const BigInt& other) const {
+        return !(*this < other || *this == other);
+    }
+    bool operator<=(const BigInt& other) const {
+        return !(*this > other);
+    }
+    bool operator>=(const BigInt& other) const {
+        return !(*this < other);
+    }
 
     BigInt mod_exp(const BigInt& exp, const BigInt& mod) const;
     BigInt fft_multiply(const BigInt& a) const;
@@ -39,9 +247,34 @@ public:
     BigInt newton_divide(const BigInt& a) const;
 
 
-    friend std::istream& operator>>(std::istream& is, BigInt& num);
-    friend std::ostream& operator<<(std::ostream& os, const BigInt& num);
-private:
-    std::vector<unsigned long long> digits;
-    bool isNegative;
+    friend std::istream& operator>>(std::istream& is, BigInt& num) {
+        std::string input;
+        is >> input;
+        if (input.empty()) {
+            is.setstate(std::ios::failbit);
+            return is;
+        }
+        size_t start = 0;
+        if (input[0] == '-') {
+            ++start;
+        }
+        for (size_t i = start; i < input.size(); ++i) {
+            if (!isdigit(input[i])) {
+                is.setstate(std::ios::failbit);
+                return is;
+            }
+        }
+        num = BigInt(input);
+        return is;
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const BigInt& num) {
+        if (num.isNeg) {
+            os << '-';
+        }
+        for (size_t i = 0; i < num.dig.size(); ++i) {
+            os << num.dig[i];
+        }
+        return os;
+    }
 };
