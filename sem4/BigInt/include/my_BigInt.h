@@ -1,6 +1,8 @@
 #pragma once
 #include <iostream>
 #include <vector>
+#include <complex>
+#include <cmath>
 
 inline long long takeFromStr(const int ind, const int cnt, const std::string &str) {
     long long val = 0;
@@ -96,6 +98,15 @@ public:
                 mind = sum / base;
                 --ind_other;
             }
+            while (ind >= 0 && mind) {
+                const ll sum = dig[ind] + mind;
+                res.dig[ind] = sum % base;
+                mind = sum / base;
+                --ind_other;
+            }
+            if (mind > 0) {
+                res.dig.insert(res.dig.begin(), mind);
+            }
             if (ind_other >= 0) {
                 res.dig.insert(res.dig.begin(), other.dig.begin(), other.dig.begin() + ind_other + 1);
             }
@@ -124,9 +135,15 @@ public:
                 while (ind_other >= 0) {
                     const ll dif = dig[ind] - other.dig[ind_other] - mind;
                     mind = dif < 0 ? 1 : 0;
-                    res.dig[ind] = (dif + mind * base) % base;
+                    res.dig[ind] = dif + mind * base;
                     --ind;
                     --ind_other;
+                }
+                while (mind != 0) {
+                    const ll dif = dig[ind] - mind;
+                    mind = dif < 0 ? 1 : 0;
+                    res.dig[ind] = dif + mind * base;
+                    --ind;
                 }
                 while (res.dig.front() == 0 && res.dig.size() != 1) {
                     res.dig.erase(res.dig.begin());
@@ -254,6 +271,14 @@ public:
         return *this;
     }
 
+    BigInt operator%(const BigInt& other) const {
+        if (*this > other) {
+            BigInt res = *this - (*this / other) * other;
+            return res;
+        }
+        return *this;
+    }
+
     static BigInt abs(const BigInt& other) {
         BigInt res = other;
         if (other.isNeg) {
@@ -296,9 +321,91 @@ public:
         return !(*this < other);
     }
 
-    BigInt mod_exp(const BigInt& exp, const BigInt& mod) const;
-    BigInt fft_multiply(const BigInt& a) const;
-    BigInt karatsuba_multiply(const BigInt& a) const;
+    [[nodiscard]] BigInt mod_exp(const BigInt& exp, const BigInt& mod) const {
+        if (exp < BigInt(2)) {
+            if (exp == BigInt(1)) {
+                return *this % mod;
+            }
+            return BigInt(1);
+        }
+        BigInt res = mod_exp(exp/BigInt(2), mod);
+        res = (res * res) % mod;
+        if (exp.dig[exp.dig.size() - 1] % 2 == 1) {
+            res = (res * *this) % mod;
+        }
+        return res;
+    }
+
+    // static void fft(std::vector<std::complex<double>>& a, bool invert) {
+    //     size_t n = a.size();
+    //     if (n == 1) return;
+    //
+    //     std::vector<std::complex<double>> a0(n / 2), a1(n / 2);
+    //     for (size_t i = 0; i < n / 2; ++i) {
+    //         a0[i] = a[2 * i];
+    //         a1[i] = a[2 * i + 1];
+    //     }
+    //
+    //     fft(a0, invert);
+    //     fft(a1, invert);
+    //     double PI = acos(-1);
+    //     double ang = 2 * PI / n * (invert ? -1 : 1);
+    //     std::complex<double> w(1), wn(std::cos(ang), std::sin(ang));
+    //
+    //     for (size_t i = 0; i < n / 2; ++i) {
+    //         a[i] = a0[i] + w * a1[i];
+    //         a[i + n / 2] = a0[i] - w * a1[i];
+    //         if (invert) {
+    //             a[i] /= 2;
+    //             a[i + n / 2] /= 2;
+    //         }
+    //         w *= wn;
+    //     }
+    // }
+    //
+    // BigInt fft_multiply(const BigInt& a) const;
+    BigInt karatsuba_multiply(const BigInt& a) const {
+        if (dig.size() < 2 || a.dig.size() < 2) {
+            return *this * a;
+        }
+        const size_t m = (a.dig.size() < dig.size() ? dig.size() : a.dig.size()) / 2;
+        BigInt res;
+        res.isNeg = (isNeg != a.isNeg);
+        BigInt g2, g1;
+        if (m < dig.size()) {
+            g1.dig = {a.dig.end() - m, a.dig.end()};
+            g2.dig = {a.dig.begin(), a.dig.end() - m};
+
+        } else {
+            g1.dig = a.dig;
+        }
+        BigInt f2, f1;
+        if (m < dig.size()) {
+            f1.dig = {dig.end() - m, dig.end()};
+            f2.dig = {dig.begin(), dig.end() - m};
+        } else {
+            f1.dig = a.dig;
+        }
+
+        BigInt sum_of_f_parts = f2 + f1;
+        BigInt sum_of_g_parts = g2 + g1;
+        BigInt mult_of_first_parts = g1.karatsuba_multiply(f1);
+        BigInt mult_of_second_parts = g2.karatsuba_multiply(f2);
+        BigInt mult_of_sum = sum_of_f_parts.karatsuba_multiply(sum_of_g_parts);
+        BigInt sum_of_mid_part = mult_of_sum - mult_of_first_parts - mult_of_second_parts;
+
+        res = mult_of_second_parts;
+
+        for (size_t i = 0; i < (mult_of_first_parts.dig.size() - m); ++i) {
+            res.dig.push_back(mult_of_first_parts.dig[i]);
+        }
+        res += sum_of_mid_part;
+        for (size_t i = m; i < mult_of_first_parts.dig.size(); ++i) {
+            res.dig.push_back(mult_of_first_parts.dig[i]);
+        }
+
+        return res;
+    }
     BigInt newton_divide(const BigInt& a) const;
 
 
@@ -321,11 +428,28 @@ public:
         return is;
     }
 
+    static size_t numb_len(ll numb) {
+        size_t len = 0;
+        while (numb > 0) {
+            ++len;
+            numb /= 10;
+        }
+        return len;
+    }
+
     friend std::ostream& operator<<(std::ostream& os, const BigInt& num) {
         if (num.isNeg) {
             os << '-';
         }
         for (size_t i = 0; i < num.dig.size(); ++i) {
+
+            if (i != 0) {
+                size_t len = numb_len(num.dig[i]);
+                while (8 - len > 0) {
+                    os << '0';
+                    ++len;
+                }
+            }
             os << num.dig[i];
         }
         return os;
