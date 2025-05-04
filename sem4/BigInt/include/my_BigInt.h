@@ -336,35 +336,92 @@ public:
         return res;
     }
 
-    // static void fft(std::vector<std::complex<double>>& a, bool invert) {
-    //     size_t n = a.size();
-    //     if (n == 1) return;
-    //
-    //     std::vector<std::complex<double>> a0(n / 2), a1(n / 2);
-    //     for (size_t i = 0; i < n / 2; ++i) {
-    //         a0[i] = a[2 * i];
-    //         a1[i] = a[2 * i + 1];
-    //     }
-    //
-    //     fft(a0, invert);
-    //     fft(a1, invert);
-    //     double PI = acos(-1);
-    //     double ang = 2 * PI / n * (invert ? -1 : 1);
-    //     std::complex<double> w(1), wn(std::cos(ang), std::sin(ang));
-    //
-    //     for (size_t i = 0; i < n / 2; ++i) {
-    //         a[i] = a0[i] + w * a1[i];
-    //         a[i + n / 2] = a0[i] - w * a1[i];
-    //         if (invert) {
-    //             a[i] /= 2;
-    //             a[i + n / 2] /= 2;
-    //         }
-    //         w *= wn;
-    //     }
-    // }
-    //
-    // BigInt fft_multiply(const BigInt& a) const;
-    BigInt karatsuba_multiply(const BigInt& a) const {
+    static void fft(std::vector<std::complex<double>>& a, bool invert) {
+        size_t n = a.size();
+        if (n == 1) return;
+
+        std::vector<std::complex<double>> A(n / 2), B(n / 2);
+        for (size_t i = 0; i < n / 2; ++i) {
+            A[i] = a[2 * i];
+            B[i] = a[2 * i + 1];
+        }
+
+        fft(A, invert);
+        fft(B, invert);
+        double PI = acos(-1);
+        double ang = 2 * PI / n * (invert ? -1 : 1);
+        std::complex<double> w(1, 0), wn(std::cos(ang), std::sin(ang));
+
+        for (size_t i = 0; i < n / 2; ++i) {
+            a[i] = A[i] + w * B[i];
+            a[i + n / 2] = A[i] - w * B[i];
+            if (invert) {
+                a[i] /= 2;
+                a[i + n / 2] /= 2;
+            }
+            w *= wn;
+        }
+    }
+
+    static std::vector<std::complex<double>> prepare_for_fft(const BigInt& num) {
+        std::vector<std::complex<double>> result(num.dig.begin(), num.dig.end());
+
+        while (result.size() > 1 && result.front() == 0.0) {
+            result.erase(result.begin());
+        }
+        return result;
+    }
+
+    static BigInt convert_from_fft(const std::vector<std::complex<double>>& a) {
+        BigInt result;
+
+        std::vector<long long> keffs(a.size());
+        for (size_t i = 0; i < a.size(); ++i) {
+            keffs[i] = static_cast<long long>(std::round(a[i].real()));
+        }
+
+        long long mind = 0;
+        for (size_t i = keffs.size(); i > 0; --i) {
+            keffs[i] += mind;
+            mind = keffs[i] / result.base;
+            keffs[i] %= result.base;
+        }
+
+        while (mind != 0) {
+            keffs.insert(keffs.begin() ,mind % result.base);
+            mind /= result.base;
+        }
+
+        while (keffs.size() > 1 && keffs.front() == 0) {
+            keffs.erase(keffs.begin());
+        }
+
+        result.dig = keffs;
+        return result;
+    }
+
+    [[nodiscard]] BigInt fft_multiply(const BigInt& a) const {
+        auto fft_a = prepare_for_fft(*this);
+        auto fft_b = prepare_for_fft(a);
+
+        size_t n = 1;
+        while (n < fft_a.size() + fft_b.size()) n <<= 1;
+        fft_a.resize(n);
+        fft_b.resize(n);
+
+        fft(fft_a, false);
+        fft(fft_b, false);
+
+        for (size_t i = 0; i < n; ++i) {
+            fft_a[i] *= fft_b[i];
+        }
+        fft(fft_a, true);
+        BigInt result = convert_from_fft(fft_a);
+        result.isNeg = (this->isNeg != a.isNeg);
+        return result;
+    }
+
+    [[nodiscard]] BigInt karatsuba_multiply(const BigInt& a) const {
         if (dig.size() < 2 || a.dig.size() < 2) {
             return *this * a;
         }
