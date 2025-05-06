@@ -1,4 +1,5 @@
 #pragma once
+#include <algorithm>
 #include <iostream>
 #include <vector>
 #include <complex>
@@ -272,7 +273,7 @@ public:
     }
 
     BigInt operator%(const BigInt& other) const {
-        if (*this > other) {
+        if (*this >= other) {
             BigInt res = *this - (*this / other) * other;
             return res;
         }
@@ -336,90 +337,102 @@ public:
         return res;
     }
 
-    static void fft(std::vector<std::complex<double>>& a, bool invert) {
-        size_t n = a.size();
-        if (n == 1) return;
-
-        std::vector<std::complex<double>> A(n / 2), B(n / 2);
-        for (size_t i = 0; i < n / 2; ++i) {
-            A[i] = a[2 * i];
-            B[i] = a[2 * i + 1];
-        }
-
-        fft(A, invert);
-        fft(B, invert);
-        double PI = acos(-1);
-        double ang = 2 * PI / n * (invert ? -1 : 1);
-        std::complex<double> w(1, 0), wn(std::cos(ang), std::sin(ang));
-
-        for (size_t i = 0; i < n / 2; ++i) {
-            a[i] = A[i] + w * B[i];
-            a[i + n / 2] = A[i] - w * B[i];
-            if (invert) {
-                a[i] /= 2;
-                a[i + n / 2] /= 2;
-            }
-            w *= wn;
-        }
-    }
-
-    static std::vector<std::complex<double>> prepare_for_fft(const BigInt& num) {
-        std::vector<std::complex<double>> result(num.dig.begin(), num.dig.end());
-
-        while (result.size() > 1 && result.front() == 0.0) {
-            result.erase(result.begin());
-        }
-        return result;
-    }
-
-    static BigInt convert_from_fft(const std::vector<std::complex<double>>& a) {
-        BigInt result;
-
-        std::vector<long long> keffs(a.size());
-        for (size_t i = 0; i < a.size(); ++i) {
-            keffs[i] = static_cast<long long>(std::round(a[i].real()));
-        }
-
-        long long mind = 0;
-        for (size_t i = keffs.size(); i > 0; --i) {
-            keffs[i] += mind;
-            mind = keffs[i] / result.base;
-            keffs[i] %= result.base;
-        }
-
-        while (mind != 0) {
-            keffs.insert(keffs.begin() ,mind % result.base);
-            mind /= result.base;
-        }
-
-        while (keffs.size() > 1 && keffs.front() == 0) {
-            keffs.erase(keffs.begin());
-        }
-
-        result.dig = keffs;
-        return result;
-    }
-
-    [[nodiscard]] BigInt fft_multiply(const BigInt& a) const {
-        auto fft_a = prepare_for_fft(*this);
-        auto fft_b = prepare_for_fft(a);
-
-        size_t n = 1;
-        while (n < fft_a.size() + fft_b.size()) n <<= 1;
-        fft_a.resize(n);
-        fft_b.resize(n);
-
-        fft(fft_a, false);
-        fft(fft_b, false);
-
-        for (size_t i = 0; i < n; ++i) {
-            fft_a[i] *= fft_b[i];
-        }
-        fft(fft_a, true);
-        BigInt result = convert_from_fft(fft_a);
-        result.isNeg = (this->isNeg != a.isNeg);
-        return result;
-    }
+    // static void fft(std::vector<std::complex<long double>> &a, bool invert)
+    // {
+    //     int n = (int)a.size();
+    //     if (n == 1)
+    //     {
+    //         return;
+    //     }
+    //     std::vector<std::complex<long double>> a0(n / 2), a1(n / 2);
+    //     for (int i = 0, j = 0; i < n; i += 2, j++)
+    //     {
+    //         a0[j] = a[i];
+    //         a1[j] = a[i + 1];
+    //     }
+    //     fft(a0, invert);
+    //     fft(a1, invert);
+    //
+    //     long double ang = 2 * (acos(-1)) / n * (invert ? -1 : 1);
+    //
+    //     std::complex<long double> w(1, 0), wn(std::cos(ang), std::sin(ang));
+    //     for (int i = 0; i < n / 2; ++i)
+    //     {
+    //         a[i] = a0[i] + w * a1[i];
+    //         a[i + n / 2] = a0[i] - w * a1[i];
+    //         if (invert)
+    //         {
+    //             a[i] /= 2;
+    //             a[i + n / 2] /= 2;
+    //         }
+    //         w *= wn;
+    //     }
+    // }
+    //
+    // BigInt fft_multiply(const BigInt &a) const
+    // {
+    //     BigInt result;
+    //
+    //     std::vector<std::complex<long double>> fa(dig.begin(), dig.end()), fb(a.dig.begin(), a.dig.end());
+    //     size_t n = 1;
+    //
+    //     while (n < std::max(dig.size(), a.dig.size()))
+    //     {
+    //         n <<= 1;
+    //     }
+    //     n <<= 1;
+    //     fa.resize(n);
+    //     fb.resize(n);
+    //
+    //     fft(fa, false);
+    //     fft(fb, false);
+    //
+    //     for (size_t i = 0; i < n; ++i)
+    //     {
+    //         fa[i] *= fb[i];
+    //     }
+    //
+    //     fft(fa, true);
+    //
+    //     result.dig.resize(n);
+    //
+    //     for (size_t i = 0; i < n; ++i)
+    //     {
+    //         result.dig[i] = static_cast<long long>(std::round(fa[i].real()));
+    //     }
+    //
+    //     std::vector<long long> res_digits;
+    //
+    //     while (result.dig.size() > 1 && result.dig.back() == 0)
+    //     {
+    //         result.dig.pop_back();
+    //     }
+    //     module_digits(result.dig, res_digits);
+    //     result.dig = res_digits;
+    //
+    //     result.isNeg = this->isNeg != a.isNeg;
+    //     return result;
+    // }
+    //
+    // static void module_digits(const std::vector<long long> &_digits, std::vector<long long> &_res_digits)
+    // {
+    //     long long div = 0, mod = 0;
+    //
+    //     for (int i = _digits.size() - 1; i >= 0; --i)
+    //     {
+    //         const long long base = 100000000;
+    //         mod = ((_digits[i] + div) % base);
+    //
+    //         _res_digits.push_back(mod);
+    //
+    //         div = _digits[i] / base;
+    //     }
+    //     if (div != 0)
+    //     {
+    //         _res_digits.push_back(div);
+    //     }
+    //     std::reverse(_res_digits.begin(), _res_digits.end());
+    // }
 
     [[nodiscard]] BigInt karatsuba_multiply(const BigInt& a) const {
         if (dig.size() < 2 || a.dig.size() < 2) {
@@ -427,7 +440,6 @@ public:
         }
         const size_t m = (a.dig.size() < dig.size() ? dig.size() : a.dig.size()) / 2;
         BigInt res;
-        res.isNeg = (isNeg != a.isNeg);
         BigInt g2, g1;
         if (m < dig.size()) {
             g1.dig = {a.dig.end() - m, a.dig.end()};
@@ -460,9 +472,10 @@ public:
         for (size_t i = m; i < mult_of_first_parts.dig.size(); ++i) {
             res.dig.push_back(mult_of_first_parts.dig[i]);
         }
-
+        res.isNeg = (isNeg != a.isNeg);
         return res;
     }
+
     BigInt newton_divide(const BigInt& a) const;
 
 
