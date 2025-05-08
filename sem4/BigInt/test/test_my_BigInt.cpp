@@ -53,14 +53,38 @@ TEST_F(BigIntAlgorithmsTest, KaratsubaMultiplyBasic) {
 }
 
 TEST_F(BigIntAlgorithmsTest, KaratsubaMultiplyMediumNumbers) {
-    BigInt x("123456789");
-    BigInt y("987654321");
-    BigInt expected("121932631112635269");
+    BigInt x("12345678934298509281057195719");
+    BigInt y("9876543219758591085");
+    BigInt expected("121932631571862410339465161399045027508533565115");
 
     EXPECT_EQ(x.karatsuba_multiply(y), expected);
 }
 
 TEST_F(BigIntAlgorithmsTest, KaratsubaMultiplyNegativeNumbers) {
+    BigInt neg_a = -a;
+    BigInt neg_b = -b;
+
+    EXPECT_EQ(neg_a.karatsuba_multiply(b), -(a.karatsuba_multiply(b)));
+    EXPECT_EQ(a.karatsuba_multiply(neg_b), -(a.karatsuba_multiply(b)));
+    EXPECT_EQ(neg_a.karatsuba_multiply(neg_b), a.karatsuba_multiply(b));
+}
+
+// Тесты для fft_multipy
+TEST_F(BigIntAlgorithmsTest, FftMultipyBasic) {
+    EXPECT_EQ(a.karatsuba_multiply(one), a);
+    EXPECT_EQ(a.karatsuba_multiply(zero), zero);
+    EXPECT_EQ(a.karatsuba_multiply(two), a + a);
+}
+
+TEST_F(BigIntAlgorithmsTest, FftMultipyBasicMediumNumbers) {
+    BigInt x("12345678934298509281057195719");
+    BigInt y("9876543219758591085");
+    BigInt expected("121932631571862410339465161399045027508533565115");
+
+    EXPECT_EQ(x.karatsuba_multiply(y), expected);
+}
+
+TEST_F(BigIntAlgorithmsTest, FftMultipyBasicNegativeNumbers) {
     BigInt neg_a = -a;
     BigInt neg_b = -b;
 
@@ -75,11 +99,11 @@ TEST(Constructor, DefaultConstructor) {
 }
 
 TEST(Constructor, LongLongConstructor) {
-    BigInt num1(123456789);
+    BigInt num1(12345567867872879);
     BigInt num2(-987654321);
     BigInt num3(0);
 
-    EXPECT_EQ(num1, BigInt("123456789"));
+    EXPECT_EQ(num1, BigInt("12345567867872879"));
     EXPECT_EQ(num2, BigInt("-987654321"));
     EXPECT_EQ(num3, BigInt("0"));
 }

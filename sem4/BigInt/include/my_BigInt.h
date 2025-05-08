@@ -337,102 +337,103 @@ public:
         return res;
     }
 
-    // static void fft(std::vector<std::complex<long double>> &a, bool invert)
-    // {
-    //     int n = (int)a.size();
-    //     if (n == 1)
-    //     {
-    //         return;
-    //     }
-    //     std::vector<std::complex<long double>> a0(n / 2), a1(n / 2);
-    //     for (int i = 0, j = 0; i < n; i += 2, j++)
-    //     {
-    //         a0[j] = a[i];
-    //         a1[j] = a[i + 1];
-    //     }
-    //     fft(a0, invert);
-    //     fft(a1, invert);
-    //
-    //     long double ang = 2 * (acos(-1)) / n * (invert ? -1 : 1);
-    //
-    //     std::complex<long double> w(1, 0), wn(std::cos(ang), std::sin(ang));
-    //     for (int i = 0; i < n / 2; ++i)
-    //     {
-    //         a[i] = a0[i] + w * a1[i];
-    //         a[i + n / 2] = a0[i] - w * a1[i];
-    //         if (invert)
-    //         {
-    //             a[i] /= 2;
-    //             a[i + n / 2] /= 2;
-    //         }
-    //         w *= wn;
-    //     }
-    // }
-    //
-    // BigInt fft_multiply(const BigInt &a) const
-    // {
-    //     BigInt result;
-    //
-    //     std::vector<std::complex<long double>> fa(dig.begin(), dig.end()), fb(a.dig.begin(), a.dig.end());
-    //     size_t n = 1;
-    //
-    //     while (n < std::max(dig.size(), a.dig.size()))
-    //     {
-    //         n <<= 1;
-    //     }
-    //     n <<= 1;
-    //     fa.resize(n);
-    //     fb.resize(n);
-    //
-    //     fft(fa, false);
-    //     fft(fb, false);
-    //
-    //     for (size_t i = 0; i < n; ++i)
-    //     {
-    //         fa[i] *= fb[i];
-    //     }
-    //
-    //     fft(fa, true);
-    //
-    //     result.dig.resize(n);
-    //
-    //     for (size_t i = 0; i < n; ++i)
-    //     {
-    //         result.dig[i] = static_cast<long long>(std::round(fa[i].real()));
-    //     }
-    //
-    //     std::vector<long long> res_digits;
-    //
-    //     while (result.dig.size() > 1 && result.dig.back() == 0)
-    //     {
-    //         result.dig.pop_back();
-    //     }
-    //     module_digits(result.dig, res_digits);
-    //     result.dig = res_digits;
-    //
-    //     result.isNeg = this->isNeg != a.isNeg;
-    //     return result;
-    // }
-    //
-    // static void module_digits(const std::vector<long long> &_digits, std::vector<long long> &_res_digits)
-    // {
-    //     long long div = 0, mod = 0;
-    //
-    //     for (int i = _digits.size() - 1; i >= 0; --i)
-    //     {
-    //         const long long base = 100000000;
-    //         mod = ((_digits[i] + div) % base);
-    //
-    //         _res_digits.push_back(mod);
-    //
-    //         div = _digits[i] / base;
-    //     }
-    //     if (div != 0)
-    //     {
-    //         _res_digits.push_back(div);
-    //     }
-    //     std::reverse(_res_digits.begin(), _res_digits.end());
-    // }
+    static void fft(std::vector<std::complex<long double>> &a, const std::complex<long double> w) {
+        const int n = static_cast<int>(a.size());
+        if (n == 1)
+        {
+            return;
+        }
+
+
+        std::complex<long double> wn(1, 0);
+
+        std::vector<std::complex<long double>> r0(n / 2), r1(n / 2);
+        for (int i = n / 2 - 1; i >= 0; --i) {
+            r0[i] = a[i + n / 2] + a[i];
+            r1[i] = (a[i + n / 2] - a[i]) * wn;
+            wn *= w;
+        }
+
+        fft(r0, w * w);
+        fft(r1, w * w);
+
+
+        for (int i = n / 2 - 1; i >= 0; --i) {
+            a[2 * i] = r1[i];
+            a[2 * i + 1] = r0[i];
+        }
+    }
+
+    BigInt fft_multiply(const BigInt &a) const
+    {
+        std::vector<std::complex<long double>> fa(dig.begin(), dig.end()), fb(a.dig.begin(), a.dig.end());
+        size_t n = 1;
+
+        while (n < std::max(dig.size(), a.dig.size()))
+        {
+            n <<= 1;
+        }
+        n <<= 1;
+
+        fa.insert(fa.begin(), static_cast<int>(n - fa.size()), std::complex<long double>(0, 0));
+        fb.insert(fb.begin(), static_cast<int>(n - fb.size()), std::complex<long double>(0, 0));
+
+        const long double ang = 2 * (acos(-1)) / static_cast<long double>(n);
+        const std::complex w(std::cos(ang), std::sin(ang));
+
+        fft(fa, w);
+        fft(fb, w);
+
+        for (size_t i = 0; i < n; ++i)
+        {
+            fa[i] *= fb[i];
+        }
+
+        fft(fa, std::complex<long double>(1, 0) / w);
+
+        BigInt res;
+        res.dig = std::vector<long long>(n, 0);
+
+        for (size_t i = 0; i < n; ++i)
+        {
+            res.dig[i] = static_cast<long long>(std::round(fa[i].real() / n));
+        }
+
+        std::vector<long long> res_digits;
+
+        while (res.dig.size() > 1 && res.dig.front() == 0)
+        {
+            res.dig.erase(res.dig.begin());
+        }
+        module_digits(res.dig, res_digits);
+        res.dig = res_digits;
+        // res /= BigInt(n); // не работает по какой-то причине(погрешность в первых разрядах)
+
+        res.isNeg = this->isNeg != a.isNeg;
+        return res;
+    }
+
+    static void module_digits(const std::vector<long long> &_digits, std::vector<long long> &_res_digits)
+    {
+        long long div = 0, mod = 0;
+        constexpr long long base = 100000000;
+        for (int i = static_cast<int>(_digits.size()) - 1; i >= 0; --i)
+        {
+            mod = _digits[i] + div;
+            if (div < 0) {
+                _res_digits.push_back((base - (std::abs(mod) % base)));
+                div = -(std::abs(mod) / base) - 1;
+            } else {
+                _res_digits.push_back(mod % base);
+                div = mod / base;
+            }
+        }
+        if (div != 0)
+        {
+            _res_digits.push_back(div);
+        }
+        std::reverse(_res_digits.begin(), _res_digits.end());
+    }
 
     [[nodiscard]] BigInt karatsuba_multiply(const BigInt& a) const {
         if (dig.size() < 2 || a.dig.size() < 2) {
@@ -520,7 +521,7 @@ public:
                     ++len;
                 }
             }
-            os << num.dig[i];
+            os << num.dig[i] << ' ';
         }
         return os;
     }
