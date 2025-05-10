@@ -343,8 +343,6 @@ public:
         {
             return;
         }
-
-
         std::complex<long double> wn(1, 0);
 
         std::vector<std::complex<long double>> r0(n / 2), r1(n / 2);
@@ -477,7 +475,65 @@ public:
         return res;
     }
 
-    BigInt newton_divide(const BigInt& a) const;
+    static long long ex_gcd(long long a, long long b, long long& x, long long& y) {
+        if (a == 0) {
+            x = 0;
+            y = 1;
+            return b;
+        }
+        long long x1, y1;
+        long long g = ex_gcd(b % a, a, x1, y1);
+        x = y1 -(b / a) * x1;
+        y = x1;
+
+        if (x < 0) {
+            long long k = (-x + (b / g) - 1) / (b / g);
+            x += k * (b / g);
+            y -= k * (a / g);
+        }
+        return g;
+    }
+
+    [[nodiscard]] static BigInt newton_opposite(const BigInt& f, const int& l) {
+        const int k = static_cast<int>(std::log2(l * 2 - 1));
+        long long f0, y;
+
+        ex_gcd(f.dig.back(), f.base, f0, y);
+
+        auto g = BigInt(f0); // как-то посчетать f0^-1
+
+        for (int i = 1; i <= k; ++i) {
+            g = (BigInt(2) - f * g) * g;
+
+            g.dig.erase(g.dig.begin(), g.dig.begin() + g.dig.size() - (1 << i));
+            if (g.isNeg) {
+                BigInt tmp = BigInt(1);
+                tmp.dig.insert(tmp.dig.end(), 1 << i, 0);
+                g = tmp - g;
+            }
+        }
+
+        return g;
+    }
+
+    BigInt newton_divide(const BigInt& g) const {
+        if (dig.size() < g.dig.size()) {
+            return BigInt();
+        }
+        const int m = static_cast<int>(dig.size() - g.dig.size());
+        BigInt h = g;
+        std::reverse(h.dig.begin(), h.dig.end());
+        h = newton_opposite(h, m + 1);
+
+        BigInt q = *this;
+        std::reverse(q.dig.begin(), q.dig.end());
+        q = q * h;
+
+        q.dig.erase(q.dig.begin(), q.dig.begin() + q.dig.size() - (m + 1));
+
+        std::reverse(q.dig.begin() + m, q.dig.end());
+        return q;
+    }
 
 
     friend std::istream& operator>>(std::istream& is, BigInt& num) {
